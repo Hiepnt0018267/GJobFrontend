@@ -14,6 +14,7 @@ import JobCard from '../components/job/JobCard'
 import CategoryCard from '../components/home/CategoryCard'
 import CompanyCard from '../components/home/CompanyCard'
 import { MOCK_JOBS, MOCK_CATEGORIES, MOCK_COMPANIES } from '../data/mockData'
+import type { Job } from '../types/job'
 
 const AI_FEATURES = [
   {
@@ -37,6 +38,10 @@ const AI_FEATURES = [
     desc: 'Hướng dẫn cụ thể để nâng cao điểm mạnh và lấp đầy khoảng trống.',
   },
 ]
+
+function featuredJobToApiJob(job: (typeof MOCK_JOBS)[number]): Job {
+  return { id: job.id, title: job.title, description: '', company_name: job.company, location: job.location, salary_min: null, salary_max: null, employment_type: job.type === 'Full-time' ? 'FULL_TIME' : null, experience_level: null, skills: [], status: 'APPROVED', created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+}
 
 export default function HomePage() {
   const [keyword, setKeyword] = useState('')
@@ -160,7 +165,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {MOCK_JOBS.map((job) => (
-              <JobCard key={job.id} job={job} />
+              <JobCard key={job.id} job={featuredJobToApiJob(job)} />
             ))}
           </div>
         </div>

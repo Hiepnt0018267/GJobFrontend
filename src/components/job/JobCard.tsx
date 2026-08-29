@@ -1,53 +1,8 @@
+import { ArrowRight, BriefcaseBusiness, CalendarDays, MapPin, Wallet } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { MapPin, DollarSign, Briefcase, ArrowRight } from 'lucide-react'
 import type { Job } from '../../types/job'
+import { employmentLabel, experienceLabel, formatSalary, postedDate } from '../../utils/jobDisplay'
 
-interface JobCardProps {
-  job: Job
-}
-
-export default function JobCard({ job }: JobCardProps) {
-  return (
-    <article className="group bg-white rounded-xl border border-slate-200 p-5 flex flex-col gap-4 hover:border-blue-300 hover:shadow-md transition-all duration-200">
-      {/* Header */}
-      <div>
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="font-semibold text-slate-900 text-base leading-snug group-hover:text-blue-600 transition-colors">
-            {job.title}
-          </h3>
-          <span className="shrink-0 text-xs font-medium bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full">
-            {job.type}
-          </span>
-        </div>
-        <p className="text-sm font-medium text-blue-600">{job.company}</p>
-      </div>
-
-      {/* Meta */}
-      <ul className="flex flex-col gap-1.5">
-        <li className="flex items-center gap-1.5 text-sm text-slate-500">
-          <MapPin size={14} className="shrink-0 text-slate-400" />
-          {job.location}
-        </li>
-        <li className="flex items-center gap-1.5 text-sm text-slate-500">
-          <DollarSign size={14} className="shrink-0 text-slate-400" />
-          {job.salary}
-        </li>
-        <li className="flex items-center gap-1.5 text-sm text-slate-500">
-          <Briefcase size={14} className="shrink-0 text-slate-400" />
-          {job.type}
-        </li>
-      </ul>
-
-      {/* Action */}
-      <div className="mt-auto pt-2 border-t border-slate-100">
-        <Link
-          to={`/jobs/${job.id}`}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors focus:outline-none focus:underline"
-        >
-          Xem chi tiết
-          <ArrowRight size={14} />
-        </Link>
-      </div>
-    </article>
-  )
+export default function JobCard({ job }: { job: Job }) {
+  return <article className="group flex h-full flex-col rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-900/8 hover:ring-blue-200"><div className="flex items-start justify-between gap-4"><div className="min-w-0"><h3 className="text-base font-semibold leading-snug text-slate-900 transition-colors group-hover:text-blue-700"><Link to={`/jobs/${job.id}`} className="focus:outline-none focus:underline">{job.title}</Link></h3><p className="mt-1 truncate text-sm font-medium text-blue-600">{job.company_name}</p></div><span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">{employmentLabel(job.employment_type)}</span></div><ul className="mt-5 grid gap-2 text-sm text-slate-600"><li className="flex items-center gap-2"><MapPin size={15} className="text-slate-400" />{job.location ?? 'Linh hoạt'}</li><li className="flex items-center gap-2"><Wallet size={15} className="text-slate-400" />{formatSalary(job)}</li><li className="flex items-center gap-2"><BriefcaseBusiness size={15} className="text-slate-400" />{experienceLabel(job.experience_level)}</li></ul>{job.skills && job.skills.length > 0 && <div className="mt-5 flex flex-wrap gap-2">{job.skills.slice(0, 4).map((skill) => <span key={skill} className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600">{skill}</span>)}</div>}<div className="mt-auto flex items-center justify-between gap-3 border-t border-slate-100 pt-4 text-xs text-slate-500"><span className="inline-flex items-center gap-1.5"><CalendarDays size={14} />{postedDate(job.created_at)}</span><Link to={`/jobs/${job.id}`} className="inline-flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-700 focus:outline-none focus:underline">Xem chi tiết <ArrowRight size={14} /></Link></div></article>
 }

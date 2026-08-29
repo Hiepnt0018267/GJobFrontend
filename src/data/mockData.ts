@@ -1,6 +1,6 @@
-import type { Job, Category, Company } from '../types/job'
+import type { MockJob, Category, Company } from '../types/job'
 
-export const MOCK_JOBS: Job[] = [
+export const MOCK_JOBS: MockJob[] = [
   {
     id: '1',
     title: 'Senior Frontend Developer',
