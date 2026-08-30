@@ -19,6 +19,8 @@ import CandidateDashboardPage from './pages/candidate/CandidateDashboardPage'
 import CandidateProfilePage   from './pages/candidate/CandidateProfilePage'
 import CandidateProfileEditPage from './pages/candidate/CandidateProfileEditPage'
 import RecruiterDashboardPage from './pages/recruiter/RecruiterDashboardPage'
+import RecruiterProfilePage from './pages/recruiter/RecruiterProfilePage'
+import RecruiterProfileEditPage from './pages/recruiter/RecruiterProfileEditPage'
 import AdminDashboardPage     from './pages/admin/AdminDashboardPage'
 
 // Route guards
@@ -81,6 +83,8 @@ function App() {
         {/* RECRUITER dashboard */}
         <Route element={<RoleRoute allowedRoles={['RECRUITER']} />}>
           <Route path="/recruiter" element={<RecruiterDashboardPage />} />
+          <Route path="/recruiter/profile" element={<RecruiterProfilePage />} />
+          <Route path="/recruiter/profile/edit" element={<RecruiterProfileEditPage />} />
         </Route>
 
         {/* ADMIN dashboard */}

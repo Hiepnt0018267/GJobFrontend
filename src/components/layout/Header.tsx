@@ -187,16 +187,16 @@ export default function Header() {
                       Dashboard của tôi
                     </button>
 
-                    {/* Profile link — CANDIDATE only */}
-                    {user.role === 'CANDIDATE' && (
+                    {/* Profile link */}
+                    {(user.role === 'CANDIDATE' || user.role === 'RECRUITER') && (
                       <button
                         type="button"
                         role="menuitem"
-                        onClick={() => { navigate('/candidate/profile'); setUserMenuOpen(false) }}
+                        onClick={() => { navigate(user.role === 'RECRUITER' ? '/recruiter/profile' : '/candidate/profile'); setUserMenuOpen(false) }}
                         className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                       >
                         <UserCircle2 size={15} className="text-slate-400" />
-                        Hồ sơ cá nhân
+                        {user.role === 'RECRUITER' ? 'Hồ sơ nhà tuyển dụng' : 'Hồ sơ cá nhân'}
                       </button>
                     )}
 
@@ -291,15 +291,15 @@ export default function Header() {
                   <UserCircle2 size={16} />
                   Dashboard của tôi
                 </button>
-                {/* Profile link — CANDIDATE only */}
-                {user.role === 'CANDIDATE' && (
+                {/* Profile link */}
+                {(user.role === 'CANDIDATE' || user.role === 'RECRUITER') && (
                   <button
                     type="button"
-                    onClick={() => { navigate('/candidate/profile'); setMobileOpen(false) }}
+                    onClick={() => { navigate(user.role === 'RECRUITER' ? '/recruiter/profile' : '/candidate/profile'); setMobileOpen(false) }}
                     className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                   >
                     <UserCircle2 size={16} />
-                    Hồ sơ cá nhân
+                    {user.role === 'RECRUITER' ? 'Hồ sơ nhà tuyển dụng' : 'Hồ sơ cá nhân'}
                   </button>
                 )}
                 {/* Logout */}

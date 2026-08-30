@@ -1,132 +1,76 @@
-import { Link } from 'react-router-dom'
 import {
-  PlusCircle, Users, BarChart2, Eye, Clock,
-  Zap, LogOut, MapPin, Briefcase,
+  AlertCircle, BadgeCheck, BriefcaseBusiness, Building2, CheckCircle2,
+  ClipboardClock, DoorClosed, FilePenLine, LogOut, MapPin, RefreshCw, Zap,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import { recruiterService } from '../../services/recruiterService'
+import type { RecruiterDashboardSummary, RecruiterProfile } from '../../types/recruiter'
+import { recruiterErrorMessage } from '../../utils/apiError'
 
-const STATS = [
-  { label: 'Tin đang đăng', value: '0',  icon: Briefcase, color: 'text-blue-600 bg-blue-50' },
-  { label: 'Ứng viên nhận',  value: '0',  icon: Users,     color: 'text-violet-600 bg-violet-50' },
-  { label: 'Lượt xem',       value: '0',  icon: Eye,       color: 'text-amber-600 bg-amber-50' },
-  { label: 'Hôm nay',        value: '0',  icon: Clock,     color: 'text-emerald-600 bg-emerald-50' },
-]
+type DashboardData = { profile: RecruiterProfile; summary: RecruiterDashboardSummary }
+const emptySummary: RecruiterDashboardSummary = { total_jobs: 0, pending_jobs: 0, approved_jobs: 0, rejected_jobs: 0, closed_jobs: 0 }
 
-const QUICK_ACTIONS = [
-  { icon: PlusCircle, label: 'Đăng tin mới',    to: '/recruiter/jobs/new',   primary: true },
-  { icon: Users,      label: 'Danh sách ứng viên', to: '/recruiter/candidates', primary: false },
-  { icon: BarChart2,  label: 'Thống kê',          to: '/recruiter/analytics',  primary: false },
-]
+function Skeleton() {
+  return <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 4 }, (_, index) => <div key={index} className="h-32 animate-pulse rounded-2xl bg-slate-200" />)}</div>
+}
 
 export default function RecruiterDashboardPage() {
   const { user, logout } = useAuth()
-  const initial = user?.full_name.charAt(0).toUpperCase() ?? '?'
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [retry, setRetry] = useState(0)
+  const initial = (data?.profile.full_name ?? user?.full_name ?? '?').charAt(0).toUpperCase()
 
-  return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header bar */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-7 h-7 bg-blue-600 rounded-lg">
-              <Zap size={15} className="text-white" strokeWidth={2.5} />
-            </div>
-            <span className="text-base font-bold text-slate-900">
-              G<span className="text-blue-600">Job</span>
-            </span>
-          </Link>
+  useEffect(() => {
+    let active = true
+    Promise.resolve()
+      .then(() => {
+        if (active) setError(null)
+        return Promise.all([recruiterService.getMyRecruiterProfile(), recruiterService.getRecruiterDashboard()])
+      })
+      .then(([profile, summary]) => { if (active) setData({ profile, summary }) })
+      .catch((requestError) => { if (active) setError(recruiterErrorMessage(requestError)) })
+    return () => { active = false }
+  }, [retry])
 
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-white text-xs font-bold">
-              {initial}
-            </div>
-            <button
-              type="button"
-              onClick={logout}
-              className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
-            >
-              <LogOut size={14} />
-              Đăng xuất
-            </button>
-          </div>
+  const summary = data?.summary ?? emptySummary
+  const cards = [
+    { label: 'Tổng tin tuyển dụng', value: summary.total_jobs, icon: BriefcaseBusiness, tone: 'bg-blue-50 text-blue-700' },
+    { label: 'Đang chờ duyệt', value: summary.pending_jobs, icon: ClipboardClock, tone: 'bg-amber-50 text-amber-700' },
+    { label: 'Đã duyệt', value: summary.approved_jobs, icon: BadgeCheck, tone: 'bg-emerald-50 text-emerald-700' },
+    { label: 'Đã đóng', value: summary.closed_jobs, icon: DoorClosed, tone: 'bg-slate-100 text-slate-700' },
+  ]
+
+  return <div className="min-h-screen bg-slate-50">
+    <header className="sticky top-0 z-10 border-b border-slate-200 bg-white">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <Link to="/" className="flex items-center gap-2" aria-label="GJob - Trang chủ">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600"><Zap size={15} className="text-white" strokeWidth={2.5} /></span>
+          <span className="text-base font-bold text-slate-900">G<span className="text-blue-600">Job</span></span>
+        </Link>
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white" aria-label={data?.profile.full_name ?? user?.full_name}>{initial}</span>
+          <button type="button" onClick={logout} className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600"><LogOut size={14} /><span className="hidden sm:inline">Đăng xuất</span></button>
         </div>
-      </header>
+      </div>
+    </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-        {/* Welcome */}
-        <div className="bg-gradient-to-br from-violet-600 to-blue-600 rounded-2xl p-6 text-white">
-          <p className="text-sm text-violet-200 mb-1">Dashboard Nhà tuyển dụng 🏢</p>
-          <h1 className="text-xl font-bold mb-1">{user?.full_name}</h1>
-          <p className="text-sm text-violet-100">{user?.email}</p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {QUICK_ACTIONS.map(({ icon: Icon, label, to, primary }) => (
-              <Link
-                key={to}
-                to={to}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  primary
-                    ? 'bg-white text-violet-700 hover:bg-violet-50'
-                    : 'bg-white/15 text-white hover:bg-white/25'
-                }`}
-              >
-                <Icon size={12} />
-                {label}
-              </Link>
-            ))}
-          </div>
-        </div>
+    <main className="mx-auto max-w-6xl space-y-7 px-4 py-8 sm:px-6">
+      <section className="rounded-2xl bg-slate-900 px-6 py-8 text-white sm:px-8">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Xin chào, {data?.profile.full_name ?? user?.full_name ?? 'nhà tuyển dụng'}</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">Quản lý hoạt động tuyển dụng và hoàn thiện hồ sơ doanh nghiệp của bạn tại GJob.</p>
+      </section>
 
-        {/* Stats */}
-        <section aria-label="Thống kê nhanh">
-          <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-4">Tổng quan</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {STATS.map(({ label, value, icon: Icon, color }) => (
-              <div
-                key={label}
-                className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col gap-3"
-              >
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${color}`}>
-                  <Icon size={16} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-slate-900">{value}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{label}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+      <section aria-label="Tổng quan tuyển dụng">
+        {!data && !error ? <Skeleton /> : error ? <div role="alert" className="rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-slate-200"><AlertCircle className="mx-auto text-red-500" size={32} /><h2 className="mt-4 text-lg font-bold text-slate-900">Không thể tải dashboard</h2><p className="mt-2 text-sm text-slate-500">{error}</p><button onClick={() => setRetry((value) => value + 1)} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"><RefreshCw size={15} />Thử lại</button></div> : <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{cards.map(({ label, value, icon: Icon, tone }) => <article key={label} className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200"><span className={`flex h-10 w-10 items-center justify-center rounded-xl ${tone}`}><Icon size={19} /></span><p className="mt-5 text-3xl font-bold tabular-nums text-slate-900">{value}</p><p className="mt-1 text-sm text-slate-500">{label}</p></article>)}</div>}
+      </section>
 
-        {/* Empty jobs state */}
-        <section
-          aria-label="Tin tuyển dụng"
-          className="bg-white rounded-xl border border-slate-200 p-8 text-center"
-        >
-          <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <Briefcase size={22} className="text-slate-400" />
-          </div>
-          <h3 className="text-sm font-semibold text-slate-700 mb-2">Chưa có tin tuyển dụng</h3>
-          <p className="text-xs text-slate-400 mb-5">
-            Đăng tin tuyển dụng đầu tiên để bắt đầu tìm kiếm ứng viên phù hợp.
-          </p>
-          <Link
-            to="/recruiter/jobs/new"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-          >
-            <PlusCircle size={15} />
-            Đăng tin ngay
-          </Link>
-        </section>
-
-        {/* Coming soon note */}
-        <div className="flex items-center gap-2 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-          <MapPin size={14} className="text-amber-600 shrink-0" />
-          <p className="text-xs text-amber-700">
-            <span className="font-semibold">Task 03+:</span>{' '}
-            Quản lý tin tuyển dụng, xem ứng viên, và thống kê chi tiết sẽ được triển khai ở các task tiếp theo.
-          </p>
-        </div>
-      </main>
-    </div>
-  )
+      {data && <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <article className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><div><h2 className="text-lg font-bold text-slate-900">Thông tin công ty</h2><p className="mt-1 text-sm text-slate-500">Thông tin hiển thị trong hồ sơ nhà tuyển dụng.</p></div><Link to="/recruiter/profile" className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Xem hồ sơ</Link></div><div className="mt-6 grid gap-5 sm:grid-cols-2"><div className="flex gap-3"><Building2 size={18} className="mt-0.5 text-blue-600" /><div><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Công ty</p><p className="mt-1 text-sm font-medium text-slate-900">{data.profile.company_name || 'Chưa cập nhật'}</p></div></div><div className="flex gap-3"><MapPin size={18} className="mt-0.5 text-blue-600" /><div><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Địa chỉ</p><p className="mt-1 text-sm font-medium text-slate-900">{data.profile.company_address || 'Chưa cập nhật'}</p></div></div></div></article>
+        <aside className="rounded-2xl bg-blue-50 p-6 ring-1 ring-blue-100"><FilePenLine size={22} className="text-blue-600" /><h2 className="mt-4 text-base font-bold text-blue-950">Hoàn thiện hồ sơ doanh nghiệp</h2><p className="mt-2 text-sm leading-6 text-blue-900">Bổ sung thông tin công ty để chuẩn bị cho các tính năng tuyển dụng ở Task 06.</p><Link to="/recruiter/profile/edit" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800">Cập nhật hồ sơ <CheckCircle2 size={16} /></Link></aside>
+      </section>}
+    </main>
+  </div>
 }

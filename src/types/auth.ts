@@ -60,4 +60,5 @@ export interface AuthContextType {
   register: (data: RegisterRequest) => Promise<RegisterResponse>
   logout: () => void
   updateUser: (data: UpdateProfileRequest) => Promise<void>
+  updateAuthenticatedUser: (data: Partial<User>) => void
 }
