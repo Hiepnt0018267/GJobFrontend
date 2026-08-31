@@ -1,306 +1,130 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import {
-  Search,
-  MapPin,
-  Sparkles,
-  FileText,
-  CheckCircle2,
-  Lightbulb,
-  ArrowRight,
-  ChevronRight,
-} from 'lucide-react'
-import JobCard from '../components/job/JobCard'
+import { useEffect, useState } from 'react'
+import { AlertCircle, ArrowRight, BriefcaseBusiness, CheckCircle2, FileText, Lightbulb, RefreshCw, Sparkles } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import CategoryCard from '../components/home/CategoryCard'
 import CompanyCard from '../components/home/CompanyCard'
-import { MOCK_JOBS, MOCK_CATEGORIES, MOCK_COMPANIES } from '../data/mockData'
+import PersonalizedHomeHero from '../components/home/PersonalizedHomeHero'
+import JobCard from '../components/job/JobCard'
+import { useAuth } from '../hooks/useAuth'
+import { MOCK_CATEGORIES, MOCK_COMPANIES } from '../data/mockData'
+import { jobService } from '../services/jobService'
+import type { UserRole } from '../types/auth'
 import type { Job } from '../types/job'
 
-const AI_FEATURES = [
-  {
-    icon: FileText,
-    title: 'Phân tích CV thông minh',
-    desc: 'AI đánh giá và cho điểm CV của bạn theo từng vị trí ứng tuyển.',
-  },
-  {
-    icon: CheckCircle2,
-    title: 'Đánh giá mức độ phù hợp',
-    desc: 'Biết ngay bạn phù hợp bao nhiêu % với công việc trước khi nộp.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Gợi ý việc làm cá nhân hoá',
-    desc: 'Nhận danh sách việc làm được chọn lọc riêng cho hồ sơ của bạn.',
-  },
-  {
-    icon: Lightbulb,
-    title: 'Đề xuất cải thiện CV',
-    desc: 'Hướng dẫn cụ thể để nâng cao điểm mạnh và lấp đầy khoảng trống.',
-  },
+const FEATURED_PAGE_SIZE = 6
+
+const CANDIDATE_AI_FEATURES = [
+  { icon: FileText, title: 'Phân tích CV', description: 'Nhận diện điểm mạnh và khoảng cần bổ sung trong hồ sơ.' },
+  { icon: CheckCircle2, title: 'Đối chiếu với vị trí', description: 'Hiểu rõ kỹ năng phù hợp và những điểm cần phát triển.' },
 ]
 
-function featuredJobToApiJob(job: (typeof MOCK_JOBS)[number]): Job {
-  return { id: job.id, title: job.title, description: '', company_name: job.company, location: job.location, salary_min: null, salary_max: null, employment_type: job.type === 'Full-time' ? 'FULL_TIME' : null, experience_level: null, skills: [], status: 'APPROVED', created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+const RECRUITER_AI_FEATURES = [
+  { icon: Sparkles, title: 'Sàng lọc có định hướng', description: 'Hỗ trợ tìm ứng viên phù hợp nhanh hơn theo yêu cầu vị trí.' },
+  { icon: Lightbulb, title: 'Giải thích mức độ phù hợp', description: 'Làm rõ kỹ năng khớp hoặc còn thiếu để ra quyết định tự tin hơn.' },
+]
+
+function ctaFor(role: UserRole | undefined) {
+  if (role === 'CANDIDATE') return { title: 'Sẵn sàng cho cơ hội tiếp theo?', description: 'Tiếp tục khám phá những vị trí phù hợp với hành trình của bạn.', primary: { label: 'Vào Dashboard', to: '/candidate' }, secondary: { label: 'Tìm việc', to: '/jobs' } }
+  if (role === 'RECRUITER') return { title: 'Xây dựng đội ngũ cùng GJob', description: 'Quay lại khu vực tuyển dụng để đăng tin và quản lý các vị trí của bạn.', primary: { label: 'Vào Dashboard tuyển dụng', to: '/recruiter' }, secondary: { label: 'Đăng tin tuyển dụng', to: '/recruiter/jobs/create' } }
+  if (role === 'ADMIN') return { title: 'Quay lại khu vực quản trị', description: 'Các công cụ quản trị của bạn vẫn sẵn sàng trong workspace.', primary: { label: 'Trang quản trị', to: '/admin' }, secondary: { label: 'Khám phá việc làm', to: '/jobs' } }
+  return { title: 'Bắt đầu hành trình cùng GJob', description: 'Khám phá cơ hội phù hợp hoặc tạo tài khoản để bắt đầu hành trình của bạn.', primary: { label: 'Tìm việc ngay', to: '/jobs' }, secondary: { label: 'Đăng ký', to: '/register' } }
+}
+
+function FeaturedJobsSkeleton() {
+  return <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <div key={index} className="h-72 animate-pulse rounded-2xl bg-slate-200" />)}</div>
 }
 
 export default function HomePage() {
+  const { user, loading: authLoading } = useAuth()
+  const navigate = useNavigate()
   const [keyword, setKeyword] = useState('')
   const [location, setLocation] = useState('')
-  const navigate = useNavigate()
+  const [featuredJobs, setFeaturedJobs] = useState<Job[]>([])
+  const [featuredLoading, setFeaturedLoading] = useState(true)
+  const [featuredError, setFeaturedError] = useState(false)
+  const [featuredRequest, setFeaturedRequest] = useState(0)
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    navigate('/jobs')
+  useEffect(() => {
+    let active = true
+    Promise.resolve()
+      .then(() => {
+        if (active) {
+          setFeaturedLoading(true)
+          setFeaturedError(false)
+        }
+        return jobService.getJobs({ page: 1, page_size: FEATURED_PAGE_SIZE, sort: 'newest' })
+      })
+      .then((response) => { if (active) setFeaturedJobs(response.items) })
+      .catch(() => { if (active) setFeaturedError(true) })
+      .finally(() => { if (active) setFeaturedLoading(false) })
+    return () => { active = false }
+  }, [featuredRequest])
+
+  function handleSearch(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const params = new URLSearchParams()
+    if (keyword.trim()) params.set('keyword', keyword.trim())
+    if (location.trim()) params.set('location', location.trim())
+    navigate(params.size ? `/jobs?${params.toString()}` : '/jobs')
   }
+
+  const finalCta = ctaFor(user?.role)
+  const aiCta = user?.role === 'RECRUITER'
+    ? { label: 'Vào Dashboard tuyển dụng', to: '/recruiter' }
+    : user?.role === 'CANDIDATE'
+      ? { label: 'Khám phá việc làm', to: '/jobs' }
+      : user?.role === 'ADMIN'
+        ? { label: 'Trang quản trị', to: '/admin' }
+        : { label: 'Bắt đầu với GJob', to: '/register' }
+  const featuredContent = (() => {
+    if (featuredLoading) return <FeaturedJobsSkeleton />
+
+    if (featuredError) {
+      return <div role="alert" className="rounded-2xl bg-white p-8 text-center ring-1 ring-slate-200">
+        <AlertCircle className="mx-auto text-red-500" size={32} />
+        <h3 className="mt-4 text-lg font-bold text-slate-900">Chưa thể tải việc làm mới nhất</h3>
+        <p className="mt-2 text-sm text-slate-500">Vui lòng kiểm tra kết nối và thử lại.</p>
+        <button type="button" onClick={() => setFeaturedRequest((value) => value + 1)} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"><RefreshCw size={16} />Thử lại</button>
+      </div>
+    }
+
+    if (featuredJobs.length === 0) {
+      return <div className="rounded-2xl bg-white p-10 text-center ring-1 ring-slate-200">
+        <BriefcaseBusiness className="mx-auto text-blue-600" size={32} />
+        <h3 className="mt-4 text-lg font-bold text-slate-900">Chưa có việc làm để hiển thị</h3>
+        <p className="mt-2 text-sm text-slate-500">Hãy quay lại sau hoặc khám phá toàn bộ danh sách việc làm.</p>
+        <Link to="/jobs" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700">Khám phá việc làm <ArrowRight size={16} /></Link>
+      </div>
+    }
+
+    return <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">{featuredJobs.map((job) => <JobCard key={job.id} job={job} />)}</div>
+  })()
 
   return (
     <div className="overflow-x-hidden">
-      {/* ───────────────────── SECTION 1 — HERO ───────────────────── */}
-      <section className="relative bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white overflow-hidden">
-        {/* Decorative blobs */}
-        <div className="absolute top-0 right-0 w-72 h-72 bg-blue-600/20 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3 pointer-events-none" aria-hidden="true" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4 pointer-events-none" aria-hidden="true" />
+      {authLoading ? <section className="bg-slate-900 py-20 sm:py-28" aria-label="Đang tải trang chủ"><div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"><div className="mx-auto h-12 w-72 max-w-full animate-pulse rounded-xl bg-slate-800" /><div className="mx-auto mt-6 h-6 w-full max-w-2xl animate-pulse rounded-lg bg-slate-800" /><div className="mx-auto mt-10 h-14 w-full max-w-3xl animate-pulse rounded-2xl bg-slate-800" /></div></section> : <PersonalizedHomeHero user={user} keyword={keyword} location={location} onKeywordChange={setKeyword} onLocationChange={setLocation} onSearch={handleSearch} />}
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full mb-6">
-            <Sparkles size={14} />
-            Nền tảng tuyển dụng AI thế hệ mới
-          </div>
+      <section className="bg-white py-20" aria-labelledby="categories-heading"><div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"><div className="mb-12 text-center"><h2 id="categories-heading" className="text-3xl font-bold text-slate-900">Khám phá theo nhóm ngành</h2><p className="mt-3 text-slate-500">Bắt đầu tìm hiểu các lĩnh vực đang có cơ hội tại GJob.</p></div><div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">{MOCK_CATEGORIES.map((category) => <CategoryCard key={category.id} category={category} />)}</div></div></section>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight mb-6">
-            Kiến tạo cơ hội nghề nghiệp
-            <br />
-            <span className="text-blue-400">phù hợp với bạn</span>
-          </h1>
-
-          <p className="text-slate-300 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            Tìm kiếm việc làm, xây dựng CV và khám phá những cơ hội phù hợp với năng lực của bạn.
-          </p>
-
-          {/* Search Box */}
-          <form
-            onSubmit={handleSearch}
-            className="bg-white rounded-2xl p-2 sm:p-3 flex flex-col sm:flex-row gap-2 max-w-3xl mx-auto shadow-2xl"
-            role="search"
-            aria-label="Tìm kiếm việc làm"
-          >
-            <label htmlFor="hero-keyword" className="sr-only">Từ khóa tìm kiếm</label>
-            <div className="flex items-center gap-3 flex-1 bg-slate-50 rounded-xl px-4 py-3">
-              <Search size={18} className="text-slate-400 shrink-0" aria-hidden="true" />
-              <input
-                id="hero-keyword"
-                type="text"
-                placeholder="Tìm kiếm theo kỹ năng, vị trí, công ty..."
-                className="flex-1 bg-transparent text-slate-800 text-sm placeholder-slate-400 outline-none"
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-              />
-            </div>
-
-            <label htmlFor="hero-location" className="sr-only">Địa điểm</label>
-            <div className="flex items-center gap-3 flex-1 bg-slate-50 rounded-xl px-4 py-3">
-              <MapPin size={18} className="text-slate-400 shrink-0" aria-hidden="true" />
-              <input
-                id="hero-location"
-                type="text"
-                placeholder="Tất cả địa điểm"
-                className="flex-1 bg-transparent text-slate-800 text-sm placeholder-slate-400 outline-none"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-white shrink-0"
-            >
-              <Search size={16} />
-              Tìm việc
-            </button>
-          </form>
-
-          <p className="mt-5 text-slate-500 text-sm">
-            Hơn <span className="text-slate-300 font-semibold">3.500+</span> công việc đang chờ bạn
-          </p>
-        </div>
-      </section>
-
-      {/* ───────────────── SECTION 2 — JOB CATEGORIES ────────────── */}
-      <section className="py-20 bg-white" aria-labelledby="categories-heading">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 id="categories-heading" className="text-3xl font-bold text-slate-900 mb-3">
-              Khám phá theo nhóm ngành
-            </h2>
-            <p className="text-slate-500">Tìm kiếm công việc theo lĩnh vực bạn đam mê</p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {MOCK_CATEGORIES.map((category) => (
-              <CategoryCard key={category.id} category={category} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ──────────────── SECTION 3 — FEATURED JOBS ─────────────── */}
-      <section className="py-20 bg-slate-50" aria-labelledby="jobs-heading">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+      <section className="bg-slate-50 py-20" aria-labelledby="jobs-heading">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <h2 id="jobs-heading" className="text-3xl font-bold text-slate-900 mb-2">
-                Việc làm nổi bật
-              </h2>
-              <p className="text-slate-500">Những cơ hội tốt nhất đang chờ bạn ứng tuyển</p>
+              <h2 id="jobs-heading" className="text-3xl font-bold text-slate-900">Việc làm mới nhất</h2>
+              <p className="mt-3 text-slate-500">Những cơ hội vừa được cập nhật từ hệ thống GJob.</p>
             </div>
-            <Link
-              to="/jobs"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700 shrink-0 transition-colors"
-            >
-              Xem tất cả việc làm
-              <ChevronRight size={16} />
-            </Link>
+            <Link to="/jobs" className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700">Xem tất cả việc làm <ArrowRight size={16} /></Link>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {MOCK_JOBS.map((job) => (
-              <JobCard key={job.id} job={featuredJobToApiJob(job)} />
-            ))}
-          </div>
+          {featuredContent}
         </div>
       </section>
 
-      {/* ─────────────── SECTION 4 — FEATURED COMPANIES ───────────── */}
-      <section className="py-20 bg-white" aria-labelledby="companies-heading">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 id="companies-heading" className="text-3xl font-bold text-slate-900 mb-3">
-              Công ty hàng đầu
-            </h2>
-            <p className="text-slate-500">Khám phá các công ty uy tín đang tuyển dụng</p>
-          </div>
+      <section className="bg-white py-20" aria-labelledby="companies-heading"><div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"><div className="mb-12 text-center"><h2 id="companies-heading" className="text-3xl font-bold text-slate-900">Khám phá doanh nghiệp</h2><p className="mt-3 text-slate-500">Một số doanh nghiệp được giới thiệu trên GJob.</p></div><div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">{MOCK_COMPANIES.map((company) => <CompanyCard key={company.id} company={company} />)}</div></div></section>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {MOCK_COMPANIES.map((company) => (
-              <CompanyCard key={company.id} company={company} />
-            ))}
-          </div>
-        </div>
-      </section>
+      <section className="bg-slate-900 py-20 text-white" aria-labelledby="ai-heading"><div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:px-8"><div><h2 id="ai-heading" className="text-3xl font-bold leading-tight sm:text-4xl">AI đồng hành cùng quá trình tuyển dụng</h2><p className="mt-5 max-w-xl text-lg leading-8 text-slate-300">Các trợ lý AI đang được phát triển trong GJob để hỗ trợ ứng viên và nhà tuyển dụng ra quyết định rõ ràng hơn.</p><Link to={aiCta.to} className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-blue-300 transition-colors hover:text-blue-200">{aiCta.label} <ArrowRight size={16} /></Link></div><div className="grid gap-6 sm:grid-cols-2"><section className="rounded-2xl border border-slate-700 bg-slate-800/60 p-6"><h3 className="text-lg font-bold text-white">Dành cho ứng viên</h3><ul className="mt-6 space-y-5">{CANDIDATE_AI_FEATURES.map(({ icon: Icon, title, description }) => <li key={title} className="flex gap-3"><Icon size={19} className="mt-0.5 shrink-0 text-blue-300" /><div><p className="font-semibold text-slate-100">{title}</p><p className="mt-1 text-sm leading-6 text-slate-300">{description}</p></div></li>)}</ul></section><section className="rounded-2xl border border-slate-700 bg-slate-800/60 p-6"><h3 className="text-lg font-bold text-white">Dành cho nhà tuyển dụng</h3><ul className="mt-6 space-y-5">{RECRUITER_AI_FEATURES.map(({ icon: Icon, title, description }) => <li key={title} className="flex gap-3"><Icon size={19} className="mt-0.5 shrink-0 text-blue-300" /><div><p className="font-semibold text-slate-100">{title}</p><p className="mt-1 text-sm leading-6 text-slate-300">{description}</p></div></li>)}</ul></section></div></div></section>
 
-      {/* ──────────────── SECTION 5 — AI FEATURE ──────────────────── */}
-      <section className="py-20 bg-slate-900" aria-labelledby="ai-heading">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            {/* Left: Content */}
-            <div>
-              <div className="inline-flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-5">
-                <Sparkles size={16} />
-                AI-Powered
-              </div>
-              <h2 id="ai-heading" className="text-3xl sm:text-4xl font-bold text-white leading-tight mb-5">
-                AI đồng hành cùng{' '}
-                <span className="text-blue-400">hành trình nghề nghiệp</span>
-              </h2>
-              <p className="text-slate-400 text-lg mb-10 leading-relaxed">
-                Hệ thống AI của GJob phân tích, đánh giá và cá nhân hoá mọi bước trong quá trình tìm việc của bạn.
-              </p>
-
-              <ul className="space-y-6">
-                {AI_FEATURES.map((feature) => {
-                  const Icon = feature.icon
-                  return (
-                    <li key={feature.title} className="flex items-start gap-4">
-                      <div className="shrink-0 flex items-center justify-center w-10 h-10 bg-blue-600/20 text-blue-400 rounded-lg mt-0.5">
-                        <Icon size={20} />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-white text-sm mb-1">{feature.title}</h3>
-                        <p className="text-slate-400 text-sm leading-relaxed">{feature.desc}</p>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-
-            {/* Right: Visual */}
-            <div className="hidden lg:block">
-              <div className="relative bg-gradient-to-br from-blue-900/50 to-slate-800/50 rounded-2xl p-8 border border-slate-700">
-                {/* Simulated AI UI card */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                      <Sparkles size={18} className="text-white" />
-                    </div>
-                    <div>
-                      <p className="text-white font-semibold text-sm">GJob AI Assistant</p>
-                      <p className="text-slate-400 text-xs">Đang phân tích hồ sơ...</p>
-                    </div>
-                  </div>
-
-                  {[
-                    { label: 'Điểm CV', value: '87/100', color: 'bg-emerald-500', pct: '87%' },
-                    { label: 'Phù hợp với Frontend Dev', value: '92%', color: 'bg-blue-500', pct: '92%' },
-                    { label: 'Hoàn thiện hồ sơ', value: '74%', color: 'bg-amber-500', pct: '74%' },
-                  ].map((item) => (
-                    <div key={item.label} className="bg-slate-800/60 rounded-xl p-4">
-                      <div className="flex justify-between mb-2">
-                        <span className="text-slate-300 text-xs font-medium">{item.label}</span>
-                        <span className="text-white text-xs font-bold">{item.value}</span>
-                      </div>
-                      <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${item.color}`}
-                          style={{ width: item.pct }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-
-                  <div className="bg-blue-600/20 border border-blue-500/30 rounded-xl p-4">
-                    <p className="text-blue-300 text-xs font-medium mb-1.5">💡 Gợi ý AI</p>
-                    <p className="text-slate-300 text-xs leading-relaxed">
-                      Thêm kinh nghiệm với React Testing Library để tăng điểm phù hợp lên 15%.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ──────────────────── SECTION 6 — CTA ─────────────────────── */}
-      <section className="py-20 bg-blue-600" aria-labelledby="cta-heading">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <h2 id="cta-heading" className="text-3xl sm:text-4xl font-bold text-white mb-4 leading-tight">
-            Dù bạn đang tìm việc hay tìm kiếm nhân tài,
-            <br className="hidden sm:block" />
-            GJob luôn sẵn sàng đồng hành.
-          </h2>
-          <p className="text-blue-100 text-lg mb-10">
-            Hàng nghìn cơ hội đang chờ — bắt đầu ngay hôm nay.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              to="/jobs"
-              className="inline-flex items-center gap-2 bg-white text-blue-600 font-semibold px-8 py-3.5 rounded-xl hover:bg-blue-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
-            >
-              Tìm việc ngay
-              <ArrowRight size={18} />
-            </Link>
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-2 bg-blue-700 text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-blue-800 border border-blue-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
-            >
-              Đăng tin tuyển dụng
-              <ChevronRight size={18} />
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* impeccable-disable-next-line gray-on-color: sibling CTA variants are independently colored in one JSX expression. */}
+      {!authLoading && <section className="bg-blue-600 py-20 text-white" aria-labelledby="cta-heading"><div className="mx-auto max-w-3xl px-4 text-center sm:px-6"><h2 id="cta-heading" className="text-3xl font-bold leading-tight sm:text-4xl">{finalCta.title}</h2><p className="mt-4 text-lg text-blue-100">{finalCta.description}</p><div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"><Link to={finalCta.primary.to} className="inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50">{finalCta.primary.label} <ArrowRight size={18} /></Link><Link to={finalCta.secondary.to} className="inline-flex items-center gap-2 rounded-xl border border-blue-400 bg-blue-700 px-7 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-blue-800">{finalCta.secondary.label}</Link></div></div></section>}
     </div>
   )
 }

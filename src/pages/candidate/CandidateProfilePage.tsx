@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Zap, AlertCircle, LogOut, Edit2, MapPin, Phone, Mail, FileText } from 'lucide-react'
-import { useAuth } from '../../hooks/useAuth'
+import { AlertCircle, Edit2, MapPin, Phone, Mail, FileText } from 'lucide-react'
 import { userService } from '../../services/userService'
 import type { User } from '../../types/auth'
 import axios from 'axios'
+import CandidateHeader from '../../components/candidate/CandidateHeader'
 
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 function ProfileSkeleton() {
@@ -58,8 +58,6 @@ function Initials({ name }: { name: string }) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function CandidateProfilePage() {
-  const { user: authUser, logout } = useAuth()
-  const initial = authUser?.full_name.charAt(0).toUpperCase() ?? '?'
   const navigate = useNavigate()
 
   const [profile,  setProfile]  = useState<User | null>(null)
@@ -81,43 +79,7 @@ export default function CandidateProfilePage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* ── Page header ─────────────────────────────────────────────────── */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 shrink-0">
-            <div className="flex items-center justify-center w-7 h-7 bg-blue-600 rounded-lg">
-              <Zap size={15} className="text-white" strokeWidth={2.5} />
-            </div>
-            <span className="text-base font-bold text-slate-900">
-              G<span className="text-blue-600">Job</span>
-            </span>
-          </Link>
-
-          {/* Right: avatar + logout */}
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="hidden sm:flex items-center gap-1.5 text-xs text-blue-500 hover:text-blue-700 transition-colors px-2 py-1 rounded-lg hover:bg-blue-50"
-            >
-              <ArrowLeft size={13} />
-              Quay lại
-            </button>
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-              {initial}
-            </div>
-            <button
-              type="button"
-              onClick={logout}
-              className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-600 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
-            >
-              <LogOut size={14} />
-              <span className="hidden sm:inline">Đăng xuất</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <CandidateHeader />
 
       {/* ── Main content ─────────────────────────────────────────────────── */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">

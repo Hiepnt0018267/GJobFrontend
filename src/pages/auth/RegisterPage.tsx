@@ -160,13 +160,13 @@ export default function RegisterPage() {
         {/* Bottom note */}
         <p className="text-xs text-emerald-200/70">
           Bằng cách đăng ký, bạn đồng ý với{' '}
-          <Link to="/terms" className="underline hover:text-white transition-colors">
+          <span className="underline">
             Điều khoản sử dụng
-          </Link>{' '}
+          </span>{' '}
           và{' '}
-          <Link to="/privacy" className="underline hover:text-white transition-colors">
+          <span className="underline">
             Chính sách bảo mật
-          </Link>{' '}
+          </span>{' '}
           của GJob.
         </p>
       </div>
@@ -420,13 +420,13 @@ export default function RegisterPage() {
 
           <p className="text-center text-xs text-slate-400 mt-6">
             Bằng cách đăng ký, bạn đồng ý với{' '}
-            <Link to="/terms" className="text-slate-600 hover:text-slate-900 transition-colors">
+            <span className="text-slate-600">
               Điều khoản sử dụng
-            </Link>{' '}
+            </span>{' '}
             và{' '}
-            <Link to="/privacy" className="text-slate-600 hover:text-slate-900 transition-colors">
+            <span className="text-slate-600">
               Chính sách bảo mật
-            </Link>
+            </span>
             .
           </p>
         </div>

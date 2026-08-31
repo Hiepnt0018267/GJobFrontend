@@ -1,16 +1,10 @@
 import { Link } from 'react-router-dom'
 import {
-  Search, FileText, Star, Briefcase, Bell, User,
-  TrendingUp, MapPin, Zap, LogOut,
+  Briefcase, User,
+  TrendingUp, MapPin,
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
-
-const QUICK_LINKS = [
-  { icon: Search,   label: 'Tìm việc làm',  to: '/jobs',      color: 'bg-blue-50 text-blue-600' },
-  { icon: FileText, label: 'Tạo CV',         to: '/cv',        color: 'bg-violet-50 text-violet-600' },
-  { icon: Star,     label: 'Việc đã lưu',    to: '/saved',     color: 'bg-amber-50 text-amber-600' },
-  { icon: Bell,     label: 'Thông báo',      to: '/notifs',    color: 'bg-emerald-50 text-emerald-600' },
-]
+import CandidateHeader from '../../components/candidate/CandidateHeader'
 
 const MOCK_JOBS = [
   { title: 'Frontend Developer', company: 'TechViet Corp', location: 'Hà Nội', match: 94 },
@@ -19,71 +13,24 @@ const MOCK_JOBS = [
 ]
 
 export default function CandidateDashboardPage() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const initial = user?.full_name.charAt(0).toUpperCase() ?? '?'
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header bar */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-7 h-7 bg-blue-600 rounded-lg">
-              <Zap size={15} className="text-white" strokeWidth={2.5} />
-            </div>
-            <span className="text-base font-bold text-slate-900">
-              G<span className="text-blue-600">Job</span>
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
-              {initial}
-            </div>
-            <button
-              type="button"
-              onClick={logout}
-              className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
-            >
-              <LogOut size={14} />
-              Đăng xuất
-            </button>
-          </div>
-        </div>
-      </header>
+      <CandidateHeader />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         {/* Welcome */}
         <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-6 text-white">
-          <p className="text-sm text-blue-200 mb-1">Xin chào 👋</p>
-          <h1 className="text-xl font-bold mb-1">{user?.full_name}</h1>
-          <p className="text-sm text-blue-100">
-            Ứng viên · {user?.email}
-          </p>
+          <h1 className="text-xl font-bold mb-1">Dashboard ứng viên</h1>
+          <p className="text-sm text-blue-100">Xin chào, {user?.full_name} · Ứng viên</p>
+          <p className="mt-1 text-sm text-blue-100">{user?.email}</p>
           <div className="mt-4 inline-flex items-center gap-1.5 bg-white/15 px-3 py-1.5 rounded-full text-xs font-medium">
             <TrendingUp size={12} />
             3 việc làm phù hợp mới hôm nay
           </div>
         </div>
-
-        {/* Quick links */}
-        <section aria-label="Truy cập nhanh">
-          <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-4">Truy cập nhanh</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {QUICK_LINKS.map(({ icon: Icon, label, to, color }) => (
-              <Link
-                key={to}
-                to={to}
-                className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border border-slate-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-center"
-              >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
-                  <Icon size={18} />
-                </div>
-                <span className="text-xs font-medium text-slate-700">{label}</span>
-              </Link>
-            ))}
-          </div>
-        </section>
 
         {/* Recommended jobs */}
         <section aria-label="Việc làm gợi ý">

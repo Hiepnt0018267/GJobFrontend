@@ -1,15 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { ShieldOff, Home, ArrowLeft } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
-import type { UserRole } from '../../types/auth'
-
-function dashboardFor(role: UserRole): string {
-  switch (role) {
-    case 'CANDIDATE': return '/candidate'
-    case 'RECRUITER': return '/recruiter'
-    case 'ADMIN':     return '/admin'
-  }
-}
+import { dashboardFor } from '../../utils/dashboardFor'
 
 export default function ForbiddenPage() {
   const { user } = useAuth()

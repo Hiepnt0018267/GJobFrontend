@@ -1,4 +1,4 @@
-import { MapPin, Briefcase } from 'lucide-react'
+import { MapPin } from 'lucide-react'
 import type { Company } from '../../types/job'
 
 interface CompanyCardProps {
@@ -26,10 +26,6 @@ export default function CompanyCard({ company }: CompanyCardProps) {
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
-        <Briefcase size={12} />
-        {company.jobCount} việc đang tuyển
-      </div>
     </div>
   )
 }

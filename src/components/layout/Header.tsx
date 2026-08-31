@@ -3,6 +3,7 @@ import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { Menu, X, Zap, LogOut, ChevronDown, UserCircle2 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import type { UserRole } from '../../types/auth'
+import { dashboardFor } from '../../utils/dashboardFor'
 
 // ─── Auth skeleton (declared outside component to satisfy ESLint static-components) ─
 function AuthSkeleton() {
@@ -15,10 +16,18 @@ function AuthSkeleton() {
 }
 
 const NAV_LINKS = [
-  { to: '/',         label: 'Trang chủ',      end: true },
-  { to: '/jobs',     label: 'Tìm việc làm',   end: false },
-  { to: '/companies',label: 'Nhà tuyển dụng', end: false },
-  { to: '/about',    label: 'Về chúng tôi',   end: false },
+  { to: '/', label: 'Trang chủ', end: true },
+  { to: '/jobs', label: 'Việc làm', end: false },
+]
+
+const RECRUITER_PUBLIC_NAV_LINKS = [
+  ...NAV_LINKS,
+  { to: '/recruiter', label: 'Vào Recruiter Center', end: true },
+]
+
+const ADMIN_PUBLIC_NAV_LINKS = [
+  ...NAV_LINKS,
+  { to: '/admin', label: 'Trang quản trị', end: true },
 ]
 
 function roleBadgeText(role: UserRole): string {
@@ -37,11 +46,11 @@ function roleBadgeColor(role: UserRole): string {
   }
 }
 
-function dashboardFor(role: UserRole): string {
+function dashboardLabel(role: UserRole): string {
   switch (role) {
-    case 'CANDIDATE': return '/candidate'
-    case 'RECRUITER': return '/recruiter'
-    case 'ADMIN':     return '/admin'
+    case 'CANDIDATE': return 'Dashboard của tôi'
+    case 'RECRUITER': return 'Dashboard tuyển dụng'
+    case 'ADMIN': return 'Trang quản trị'
   }
 }
 
@@ -68,6 +77,11 @@ export default function Header() {
   const [mobileOpen,   setMobileOpen]   = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const navLinks = user?.role === 'RECRUITER'
+    ? RECRUITER_PUBLIC_NAV_LINKS
+    : user?.role === 'ADMIN'
+      ? ADMIN_PUBLIC_NAV_LINKS
+      : NAV_LINKS
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -120,7 +134,7 @@ export default function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
-            {NAV_LINKS.map((link) => (
+            {loading ? <div className="h-5 w-72 animate-pulse rounded bg-slate-100" aria-label="Đang tải điều hướng" /> : navLinks.map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}
@@ -176,27 +190,28 @@ export default function Header() {
                       <p className="text-xs text-slate-400 truncate mt-0.5">{user.email}</p>
                     </div>
 
-                    {/* Dashboard link */}
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => { navigate(dashboardFor(user.role)); setUserMenuOpen(false) }}
-                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-                    >
-                      <UserCircle2 size={15} className="text-slate-400" />
-                      Dashboard của tôi
-                    </button>
-
-                    {/* Profile link */}
-                    {(user.role === 'CANDIDATE' || user.role === 'RECRUITER') && (
+                    {user.role === 'CANDIDATE' && (
                       <button
                         type="button"
                         role="menuitem"
-                        onClick={() => { navigate(user.role === 'RECRUITER' ? '/recruiter/profile' : '/candidate/profile'); setUserMenuOpen(false) }}
+                        onClick={() => { navigate(dashboardFor(user.role)); setUserMenuOpen(false) }}
                         className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                       >
                         <UserCircle2 size={15} className="text-slate-400" />
-                        {user.role === 'RECRUITER' ? 'Hồ sơ nhà tuyển dụng' : 'Hồ sơ cá nhân'}
+                        {dashboardLabel(user.role)}
+                      </button>
+                    )}
+
+                    {/* Profile link */}
+                    {user.role === 'CANDIDATE' && (
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => { navigate('/candidate/profile'); setUserMenuOpen(false) }}
+                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                      >
+                        <UserCircle2 size={15} className="text-slate-400" />
+                        Hồ sơ cá nhân
                       </button>
                     )}
 
@@ -250,7 +265,7 @@ export default function Header() {
       {mobileOpen && (
         <div className="md:hidden border-t border-slate-200 bg-white">
           <nav className="max-w-7xl mx-auto px-4 py-3 space-y-1" aria-label="Mobile navigation">
-            {NAV_LINKS.map((link) => (
+            {loading ? <div className="h-10 animate-pulse rounded-lg bg-slate-100" aria-label="Đang tải điều hướng" /> : navLinks.map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}
@@ -282,24 +297,25 @@ export default function Header() {
                     </span>
                   </div>
                 </div>
-                {/* Dashboard */}
-                <button
-                  type="button"
-                  onClick={() => { navigate(dashboardFor(user.role)); setMobileOpen(false) }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
-                >
-                  <UserCircle2 size={16} />
-                  Dashboard của tôi
-                </button>
-                {/* Profile link */}
-                {(user.role === 'CANDIDATE' || user.role === 'RECRUITER') && (
+                {user.role === 'CANDIDATE' && (
                   <button
                     type="button"
-                    onClick={() => { navigate(user.role === 'RECRUITER' ? '/recruiter/profile' : '/candidate/profile'); setMobileOpen(false) }}
+                    onClick={() => { navigate(dashboardFor(user.role)); setMobileOpen(false) }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                  >
+                    <UserCircle2 size={16} />
+                    {dashboardLabel(user.role)}
+                  </button>
+                )}
+                {/* Profile link */}
+                {user.role === 'CANDIDATE' && (
+                  <button
+                    type="button"
+                    onClick={() => { navigate('/candidate/profile'); setMobileOpen(false) }}
                     className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                   >
                     <UserCircle2 size={16} />
-                    {user.role === 'RECRUITER' ? 'Hồ sơ nhà tuyển dụng' : 'Hồ sơ cá nhân'}
+                    Hồ sơ cá nhân
                   </button>
                 )}
                 {/* Logout */}

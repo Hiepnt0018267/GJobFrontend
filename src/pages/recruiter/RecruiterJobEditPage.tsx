@@ -1,0 +1,15 @@
+import { AlertCircle, ArrowLeft } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import RecruiterHeader from '../../components/recruiter/RecruiterHeader'
+import RecruiterJobForm from '../../components/recruiter/RecruiterJobForm'
+import { recruiterJobService } from '../../services/recruiterJobService'
+import type { JobCreateRequest, RecruiterJob } from '../../types/job'
+import { recruiterJobErrorMessage } from '../../utils/apiError'
+
+export default function RecruiterJobEditPage() {
+  const { id = '' } = useParams(); const navigate = useNavigate(); const [job, setJob] = useState<RecruiterJob | null>(null); const [loading, setLoading] = useState(true); const [submitting, setSubmitting] = useState(false); const [error, setError] = useState<string | null>(null)
+  useEffect(() => { let active = true; recruiterJobService.getMyJob(id).then((value) => { if (active) { if (value.status === 'CLOSED') navigate(`/recruiter/jobs/${id}`, { replace: true }); else setJob(value) } }).catch((requestError) => { if (active) setError(recruiterJobErrorMessage(requestError)) }).finally(() => { if (active) setLoading(false) }); return () => { active = false } }, [id, navigate])
+  const submit = async (payload: JobCreateRequest) => { setSubmitting(true); setError(null); try { await recruiterJobService.updateJob(id, payload); navigate('/recruiter/jobs', { state: { message: 'Tin tuyển dụng đã được cập nhật và chuyển về trạng thái chờ duyệt.' } }) } catch (requestError) { setError(recruiterJobErrorMessage(requestError)) } finally { setSubmitting(false) } }
+  return <div className="min-h-screen bg-slate-50"><RecruiterHeader /><main className="mx-auto max-w-4xl px-4 py-8 sm:px-6"><Link to="/recruiter/jobs" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-blue-600"><ArrowLeft size={16} />Quản lý tin tuyển dụng</Link><h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950">Chỉnh sửa tin tuyển dụng</h1>{job?.status === 'APPROVED' && <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900 ring-1 ring-amber-200">Tin tuyển dụng sẽ được chuyển về trạng thái chờ duyệt sau khi chỉnh sửa.</p>}{job?.status === 'REJECTED' && <p className="mt-4 rounded-xl bg-blue-50 px-4 py-3 text-sm font-medium text-blue-900 ring-1 ring-blue-200">Tin tuyển dụng sẽ được gửi lại để duyệt sau khi chỉnh sửa.</p>}{loading && <div className="mt-7 space-y-5">{Array.from({ length: 3 }, (_, index) => <div key={index} className="h-52 animate-pulse rounded-2xl bg-slate-200" />)}</div>}{error && !job && <div role="alert" className="mt-7 rounded-2xl bg-white p-8 text-center ring-1 ring-slate-200"><AlertCircle className="mx-auto text-red-500" /><p className="mt-3 font-semibold text-slate-900">{error}</p></div>}{job && <div className="mt-7"><RecruiterJobForm initialJob={job} submitting={submitting} serverError={error} submitLabel="Lưu thay đổi" onSubmit={submit} onCancel={() => navigate('/recruiter/jobs')} /></div>}</main></div>
+}

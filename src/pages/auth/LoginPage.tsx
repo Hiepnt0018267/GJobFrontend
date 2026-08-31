@@ -214,12 +214,7 @@ export default function LoginPage() {
                 <label htmlFor="login-password" className="block text-sm font-medium text-slate-700">
                   Mật khẩu
                 </label>
-                <Link
-                  to="/forgot-password"
-                  className="text-xs text-blue-600 hover:text-blue-700 transition-colors"
-                >
-                  Quên mật khẩu?
-                </Link>
+                <span className="text-xs text-slate-500">Khôi phục mật khẩu sẽ sớm có.</span>
               </div>
               <div className="relative">
                 <input

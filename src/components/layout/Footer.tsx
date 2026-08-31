@@ -1,22 +1,20 @@
 import { Link } from 'react-router-dom'
-import { Zap, ExternalLink, Mail, Globe } from 'lucide-react'
+import { Zap } from 'lucide-react'
 
 const FOOTER_LINKS = {
-  about: [
-    { label: 'Về GJob', to: '/about' },
-    { label: 'Đội ngũ', to: '/team' },
-    { label: 'Blog', to: '/blog' },
-    { label: 'Liên hệ', to: '/contact' },
+  discovery: [
+    { label: 'Trang chủ', to: '/' },
+    { label: 'Việc làm', to: '/jobs' },
   ],
   candidates: [
     { label: 'Tìm việc làm', to: '/jobs' },
-    { label: 'Tạo CV', to: '/cv' },
-    { label: 'Gợi ý AI', to: '/ai' },
+    { label: 'Đăng nhập', to: '/login' },
+    { label: 'Đăng ký', to: '/register' },
   ],
   employers: [
     { label: 'Đăng tin tuyển dụng', to: '/login' },
-    { label: 'Tìm ứng viên', to: '/login' },
-    { label: 'Nhà tuyển dụng', to: '/companies' },
+    { label: 'Quản lý tin tuyển dụng', to: '/login' },
+    { label: 'Đăng ký tài khoản', to: '/register' },
   ],
 }
 
@@ -38,26 +36,15 @@ export default function Footer() {
             <p className="text-sm leading-relaxed mb-6">
               Nền tảng tuyển dụng thế hệ mới — kết nối tài năng và cơ hội thông qua sức mạnh của trí tuệ nhân tạo.
             </p>
-            <div className="flex items-center gap-4">
-              <a href="#" aria-label="Website" className="text-slate-500 hover:text-slate-200 transition-colors">
-                <Globe size={18} />
-              </a>
-              <a href="#" aria-label="External Link" className="text-slate-500 hover:text-slate-200 transition-colors">
-                <ExternalLink size={18} />
-              </a>
-              <a href="#" aria-label="Email liên hệ" className="text-slate-500 hover:text-slate-200 transition-colors">
-                <Mail size={18} />
-              </a>
-            </div>
           </div>
 
-          {/* About */}
+          {/* Discovery */}
           <div>
             <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              Về GJob
+              Khám phá
             </h3>
             <ul className="space-y-2.5">
-              {FOOTER_LINKS.about.map((link) => (
+              {FOOTER_LINKS.discovery.map((link) => (
                 <li key={link.label}>
                   <Link
                     to={link.to}
@@ -114,14 +101,7 @@ export default function Footer() {
           <p className="text-xs text-slate-500">
             &copy; {new Date().getFullYear()} GJob. Bảo lưu mọi quyền.
           </p>
-          <div className="flex items-center gap-6">
-            <Link to="/terms" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
-              Điều khoản sử dụng
-            </Link>
-            <Link to="/privacy" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
-              Chính sách bảo mật
-            </Link>
-          </div>
+          <p className="text-xs text-slate-500">Kết nối cơ hội nghề nghiệp và nhân tài.</p>
         </div>
       </div>
     </footer>

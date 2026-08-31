@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 
 // Layouts
@@ -21,6 +21,11 @@ import CandidateProfileEditPage from './pages/candidate/CandidateProfileEditPage
 import RecruiterDashboardPage from './pages/recruiter/RecruiterDashboardPage'
 import RecruiterProfilePage from './pages/recruiter/RecruiterProfilePage'
 import RecruiterProfileEditPage from './pages/recruiter/RecruiterProfileEditPage'
+import RecruiterJobsPage from './pages/recruiter/RecruiterJobsPage'
+import RecruiterJobCreatePage from './pages/recruiter/RecruiterJobCreatePage'
+import RecruiterJobEditPage from './pages/recruiter/RecruiterJobEditPage'
+import RecruiterJobDetailPage from './pages/recruiter/RecruiterJobDetailPage'
+import RecruiterHeader from './components/recruiter/RecruiterHeader'
 import AdminDashboardPage     from './pages/admin/AdminDashboardPage'
 
 // Route guards
@@ -38,6 +43,10 @@ function RedirectIfAuthenticated({ children }: { children: React.ReactNode }) {
     return <Navigate to={dest} replace />
   }
   return <>{children}</>
+}
+
+function RecruiterProfileLayout() {
+  return <><RecruiterHeader /><Outlet /></>
 }
 
 function App() {
@@ -83,8 +92,14 @@ function App() {
         {/* RECRUITER dashboard */}
         <Route element={<RoleRoute allowedRoles={['RECRUITER']} />}>
           <Route path="/recruiter" element={<RecruiterDashboardPage />} />
-          <Route path="/recruiter/profile" element={<RecruiterProfilePage />} />
+          <Route element={<RecruiterProfileLayout />}>
+            <Route path="/recruiter/profile" element={<RecruiterProfilePage />} />
+          </Route>
           <Route path="/recruiter/profile/edit" element={<RecruiterProfileEditPage />} />
+          <Route path="/recruiter/jobs" element={<RecruiterJobsPage />} />
+          <Route path="/recruiter/jobs/create" element={<RecruiterJobCreatePage />} />
+          <Route path="/recruiter/jobs/:id/edit" element={<RecruiterJobEditPage />} />
+          <Route path="/recruiter/jobs/:id" element={<RecruiterJobDetailPage />} />
         </Route>
 
         {/* ADMIN dashboard */}
