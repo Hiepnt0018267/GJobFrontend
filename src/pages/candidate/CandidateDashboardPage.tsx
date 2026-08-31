@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import {
-  Briefcase, User,
+  Briefcase, FileText, User,
   TrendingUp, MapPin,
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
@@ -31,6 +31,13 @@ export default function CandidateDashboardPage() {
             3 việc làm phù hợp mới hôm nay
           </div>
         </div>
+
+        <section className="rounded-xl border border-slate-200 bg-white p-5">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+            <div><h2 className="font-bold text-slate-900">CV của tôi</h2><p className="mt-1 text-sm text-slate-500">Tạo và quản lý CV cho các cơ hội sắp tới.</p></div>
+            <div className="flex gap-2"><Link to="/candidate/cvs" className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"><FileText size={14}/>CV của tôi</Link><Link to="/candidate/cvs/templates" className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700">Tạo CV</Link></div>
+          </div>
+        </section>
 
         {/* Recommended jobs */}
         <section aria-label="Việc làm gợi ý">

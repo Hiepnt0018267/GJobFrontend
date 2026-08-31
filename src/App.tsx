@@ -18,6 +18,11 @@ import ForbiddenPage from './pages/errors/ForbiddenPage'
 import CandidateDashboardPage from './pages/candidate/CandidateDashboardPage'
 import CandidateProfilePage   from './pages/candidate/CandidateProfilePage'
 import CandidateProfileEditPage from './pages/candidate/CandidateProfileEditPage'
+import CandidateCVsPage from './pages/candidate/CandidateCVsPage'
+import CandidateCVCreatePage from './pages/candidate/CandidateCVCreatePage'
+import CandidateCVDetailPage from './pages/candidate/CandidateCVDetailPage'
+import CandidateCVEditPage from './pages/candidate/CandidateCVEditPage'
+import CandidateCVTemplatesPage from './pages/candidate/CandidateCVTemplatesPage'
 import RecruiterDashboardPage from './pages/recruiter/RecruiterDashboardPage'
 import RecruiterProfilePage from './pages/recruiter/RecruiterProfilePage'
 import RecruiterProfileEditPage from './pages/recruiter/RecruiterProfileEditPage'
@@ -87,6 +92,11 @@ function App() {
           <Route path="/candidate"              element={<CandidateDashboardPage />} />
           <Route path="/candidate/profile"      element={<CandidateProfilePage />} />
           <Route path="/candidate/profile/edit" element={<CandidateProfileEditPage />} />
+          <Route path="/candidate/cvs" element={<CandidateCVsPage />} />
+          <Route path="/candidate/cvs/templates" element={<CandidateCVTemplatesPage />} />
+          <Route path="/candidate/cvs/create" element={<CandidateCVCreatePage />} />
+          <Route path="/candidate/cvs/:id" element={<CandidateCVDetailPage />} />
+          <Route path="/candidate/cvs/:id/edit" element={<CandidateCVEditPage />} />
         </Route>
 
         {/* RECRUITER dashboard */}
