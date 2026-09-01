@@ -22,3 +22,12 @@ export function recruiterJobErrorMessage(error: unknown): string {
     default: return error.response.status >= 500 ? 'Máy chủ đang gặp sự cố.' : 'Không thể xử lý yêu cầu. Vui lòng thử lại.'
   }
 }
+
+export function adminDashboardErrorMessage(error: unknown): string {
+  if (!axios.isAxiosError(error) || !error.response) return 'Không thể kết nối tới máy chủ.'
+  switch (error.response.status) {
+    case 401: return 'Phiên đăng nhập đã hết hạn.'
+    case 403: return 'Bạn không có quyền truy cập dữ liệu tổng quan.'
+    default: return error.response.status >= 500 ? 'Máy chủ đang gặp sự cố.' : 'Không thể tải dữ liệu tổng quan.'
+  }
+}
