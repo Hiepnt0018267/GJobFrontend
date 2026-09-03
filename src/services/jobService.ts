@@ -2,8 +2,8 @@ import api from './api'
 import type { Job, JobListResponse, JobSearchParams } from '../types/job'
 
 export const jobService = {
-  getJobs: async (params: JobSearchParams): Promise<JobListResponse> => {
-    const { data } = await api.get<JobListResponse>('/api/v1/jobs', { params })
+  getJobs: async (params: JobSearchParams, signal?: AbortSignal): Promise<JobListResponse> => {
+    const { data } = await api.get<JobListResponse>('/api/v1/jobs', { params, signal })
     return data
   },
   getJobById: async (id: string): Promise<Job> => {

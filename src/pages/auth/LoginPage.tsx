@@ -38,7 +38,6 @@ export default function LoginPage() {
   const [showPw,   setShowPw]   = useState(false)
   const [loading,  setLoading]  = useState(false)
   const [error,    setError]    = useState<string | null>(null)
-  const [shake,    setShake]    = useState(false)
   const [justLoggedIn, setJustLoggedIn] = useState(false)
 
   // ── After successful login: user state updates → redirect ────────────────
@@ -68,8 +67,6 @@ export default function LoginPage() {
     } catch (err) {
       const msg = mapError(err)
       setError(msg)
-      setShake(true)
-      setTimeout(() => setShake(false), 600)
       setLoading(false)
     }
   }
@@ -167,8 +164,7 @@ export default function LoginPage() {
           {error && (
             <div
               role="alert"
-              className="flex items-start gap-3 p-4 mb-6 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700"
-              style={shake ? { animation: 'shake 0.5s ease-in-out' } : undefined}
+              className="motion-error flex items-start gap-3 p-4 mb-6 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700"
             >
               <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-500" />
               <span>{error}</span>
@@ -293,19 +289,6 @@ export default function LoginPage() {
           </Link>
         </div>
       </div>
-
-      {/* Shake keyframes */}
-      <style>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          15% { transform: translateX(-6px); }
-          30% { transform: translateX(6px); }
-          45% { transform: translateX(-4px); }
-          60% { transform: translateX(4px); }
-          75% { transform: translateX(-2px); }
-          90% { transform: translateX(2px); }
-        }
-      `}</style>
     </div>
   )
 }

@@ -6,6 +6,7 @@ import CompanyCard from '../components/home/CompanyCard'
 import PersonalizedHomeHero from '../components/home/PersonalizedHomeHero'
 import JobCard from '../components/job/JobCard'
 import { useAuth } from '../hooks/useAuth'
+import { useDataRefreshVersion } from '../hooks/useDataRefreshVersion'
 import { MOCK_CATEGORIES, MOCK_COMPANIES } from '../data/mockData'
 import { jobService } from '../services/jobService'
 import type { UserRole } from '../types/auth'
@@ -36,6 +37,7 @@ function FeaturedJobsSkeleton() {
 
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth()
+  const refreshVersion = useDataRefreshVersion()
   const navigate = useNavigate()
   const [keyword, setKeyword] = useState('')
   const [location, setLocation] = useState('')
@@ -58,7 +60,7 @@ export default function HomePage() {
       .catch(() => { if (active) setFeaturedError(true) })
       .finally(() => { if (active) setFeaturedLoading(false) })
     return () => { active = false }
-  }, [featuredRequest])
+  }, [featuredRequest, refreshVersion])
 
   function handleSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()

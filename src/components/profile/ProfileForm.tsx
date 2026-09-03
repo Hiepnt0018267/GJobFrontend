@@ -191,8 +191,7 @@ export default function ProfileForm({ initialData, onCancel, onSuccess }: Profil
       {success && (
         <div
           role="status"
-          className="flex items-center gap-3 p-4 mb-6 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-700"
-          style={{ animation: 'slideDown 0.3s ease-out' }}
+          className="motion-error flex items-center gap-3 p-4 mb-6 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-700"
         >
           <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
           <span>Cập nhật thông tin thành công.</span>
@@ -203,7 +202,7 @@ export default function ProfileForm({ initialData, onCancel, onSuccess }: Profil
       {error && (
         <div
           role="alert"
-          className="flex items-start gap-3 p-4 mb-6 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700"
+          className="motion-error flex items-start gap-3 p-4 mb-6 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700"
         >
           <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
           <span>{error}</span>

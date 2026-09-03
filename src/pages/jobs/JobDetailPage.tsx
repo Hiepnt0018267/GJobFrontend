@@ -3,6 +3,7 @@ import { AlertCircle, ArrowLeft, BriefcaseBusiness, CalendarDays, MapPin, Refres
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import JobApplyAction from '../../components/application/JobApplyAction'
+import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 import { jobService } from '../../services/jobService'
 import type { Job } from '../../types/job'
 import { employmentLabel, experienceLabel, formatSalary, postedDate } from '../../utils/jobDisplay'
@@ -18,6 +19,7 @@ function DetailSkeleton() {
 
 export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const refreshVersion = useDataRefreshVersion()
   const [job, setJob] = useState<Job | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -31,7 +33,7 @@ export default function JobDetailPage() {
       .catch((requestError: unknown) => { if (active) setError(errorMessage(requestError)) })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
-  }, [id, reload])
+  }, [id, refreshVersion, reload])
 
   const retry = () => {
     setLoading(true)

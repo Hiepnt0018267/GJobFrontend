@@ -60,7 +60,7 @@ export default function WorkspaceHeader({ workspaceLabel, workspaceHome, navigat
         </div>
       </div>
 
-      {open && <div className="border-t border-slate-200 bg-white px-4 py-3 xl:hidden"><nav className="mx-auto grid max-w-7xl gap-1" aria-label={navigationLabel}>{links.map(({ to, label, icon: Icon, end }) => <NavLink key={to} to={to} end={end} className={navClass} onClick={() => setOpen(false)}><Icon size={16} />{label}</NavLink>)}<button type="button" onClick={handleLogout} className="mt-1 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 sm:hidden"><LogOut size={16} />Đăng xuất</button></nav></div>}
+      {open && <div className="motion-dropdown border-t border-slate-200 bg-white px-4 py-3 xl:hidden"><nav className="mx-auto grid max-w-7xl gap-1" aria-label={navigationLabel}>{links.map(({ to, label, icon: Icon, end }) => <NavLink key={to} to={to} end={end} className={navClass} onClick={() => setOpen(false)}><Icon size={16} />{label}</NavLink>)}<button type="button" onClick={handleLogout} className="mt-1 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 sm:hidden"><LogOut size={16} />Đăng xuất</button></nav></div>}
     </header>
   )
 }

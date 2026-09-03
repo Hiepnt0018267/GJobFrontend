@@ -5,6 +5,7 @@ import { userService } from '../../services/userService'
 import type { User } from '../../types/auth'
 import axios from 'axios'
 import CandidateHeader from '../../components/candidate/CandidateHeader'
+import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 function ProfileSkeleton() {
@@ -59,10 +60,12 @@ function Initials({ name }: { name: string }) {
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function CandidateProfilePage() {
   const navigate = useNavigate()
+  const refreshVersion = useDataRefreshVersion()
 
   const [profile,  setProfile]  = useState<User | null>(null)
   const [loading,  setLoading]  = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [requestVersion, setRequestVersion] = useState(0)
 
   // Fetch full profile on mount (includes phone/address/bio from UserProfile)
   useEffect(() => {
@@ -75,7 +78,7 @@ export default function CandidateProfilePage() {
       .finally(() => { if (!cancelled) setLoading(false) })
 
     return () => { cancelled = true }
-  }, [])
+  }, [refreshVersion, requestVersion])
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -126,7 +129,11 @@ export default function CandidateProfilePage() {
                   <p>{loadError}</p>
                   <button
                     type="button"
-                    onClick={() => window.location.reload()}
+                    onClick={() => {
+                      setLoading(true)
+                      setLoadError(null)
+                      setRequestVersion((version) => version + 1)
+                    }}
                     className="mt-2 text-xs text-red-600 underline hover:no-underline"
                   >
                     Thử lại

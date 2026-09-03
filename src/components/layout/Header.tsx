@@ -179,7 +179,7 @@ export default function Header() {
                 {/* Dropdown */}
                 {userMenuOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-52 bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/60 overflow-hidden py-1"
+                    className="motion-dropdown absolute right-0 mt-2 w-52 bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/60 overflow-hidden py-1"
                     role="menu"
                     aria-orientation="vertical"
                     aria-labelledby="user-menu-button"

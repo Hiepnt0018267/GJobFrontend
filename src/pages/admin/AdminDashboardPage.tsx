@@ -1,8 +1,10 @@
 import { AlertCircle, BriefcaseBusiness, Clock3, FileText, Files, RefreshCw, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import AdminHeader from '../../components/admin/AdminHeader'
 import MetricCard from '../../components/admin/MetricCard'
 import StatusOverview, { type StatusMetric } from '../../components/admin/StatusOverview'
+import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 import { adminDashboardService } from '../../services/adminDashboardService'
 import type { AdminDashboardResponse } from '../../types/adminDashboard'
 import { adminDashboardErrorMessage } from '../../utils/apiError'
@@ -75,21 +77,27 @@ function getTemplateMetrics(data: AdminDashboardResponse): StatusMetric[] {
 }
 
 export default function AdminDashboardPage() {
+  const refreshVersion = useDataRefreshVersion()
   const [dashboard, setDashboard] = useState<AdminDashboardResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [requestVersion, setRequestVersion] = useState(0)
 
   useEffect(() => {
     let active = true
-    setError(null)
-    setDashboard(null)
 
-    adminDashboardService.getAdminDashboard()
+    Promise.resolve()
+      .then(() => {
+        if (active) {
+          setError(null)
+          setDashboard(null)
+        }
+        return adminDashboardService.getAdminDashboard()
+      })
       .then((data) => { if (active) setDashboard(data) })
       .catch((requestError: unknown) => { if (active) setError(adminDashboardErrorMessage(requestError)) })
 
     return () => { active = false }
-  }, [requestVersion])
+  }, [refreshVersion, requestVersion])
 
   const refreshDashboard = () => setRequestVersion((version) => version + 1)
   const userMetrics = dashboard ? getUserMetrics(dashboard) : []
@@ -119,10 +127,10 @@ export default function AdminDashboardPage() {
         {dashboard && (
           <div className="space-y-6">
             <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Chỉ số tổng quan">
-              <MetricCard title="Người dùng" value={dashboard.users.total} description="Tất cả tài khoản trong hệ thống" icon={Users} tone="blue" />
-              <MetricCard title="Tin tuyển dụng" value={dashboard.jobs.total} description="Bao gồm mọi trạng thái đăng tuyển" icon={BriefcaseBusiness} tone="violet" />
-              <MetricCard title="Đơn ứng tuyển" value={dashboard.applications.total} description="Toàn bộ đơn đã được tạo" icon={FileText} tone="emerald" />
-              <MetricCard title="CV" value={dashboard.cvs.total} description="Hồ sơ CV của ứng viên" icon={Files} tone="slate" />
+              <MetricCard title="Người dùng" value={dashboard.users.total} description="Tất cả tài khoản trong hệ thống" icon={Users} tone="blue" to="/admin/users" />
+              <MetricCard title="Tin tuyển dụng" value={dashboard.jobs.total} description="Bao gồm mọi trạng thái đăng tuyển" icon={BriefcaseBusiness} tone="violet" to="/admin/jobs" />
+              <MetricCard title="Đơn ứng tuyển" value={dashboard.applications.total} description="Toàn bộ đơn đã được tạo" icon={FileText} tone="emerald" to="/admin/applications" />
+              <MetricCard title="CV" value={dashboard.cvs.total} description="Hồ sơ CV của ứng viên" icon={Files} tone="slate" to="/admin/cvs" />
             </section>
 
             <section className="grid gap-6 xl:grid-cols-2">
@@ -136,9 +144,12 @@ export default function AdminDashboardPage() {
             </section>
 
             {dashboard.jobs.pending > 0 && (
-              <aside className="flex items-start gap-3 rounded-2xl bg-amber-50 px-5 py-4 text-sm text-amber-950 ring-1 ring-amber-200">
+              <aside className="flex flex-col gap-3 rounded-2xl bg-amber-50 px-5 py-4 text-sm text-amber-950 ring-1 ring-amber-200 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex items-start gap-3">
                 <Clock3 size={19} className="mt-0.5 shrink-0 text-amber-700" aria-hidden="true" />
-                <p><span className="font-semibold">{dashboard.jobs.pending.toLocaleString('vi-VN')} tin đang chờ duyệt.</span> Thông tin chi tiết sẽ được bổ sung khi các chức năng quản lý được mở rộng.</p>
+                <p><span className="font-semibold">{dashboard.jobs.pending.toLocaleString('vi-VN')} tin đang chờ duyệt.</span> Các tin này cần được xem xét trước khi được công khai cho ứng viên.</p>
+                </div>
+                <Link to="/admin/jobs?status=PENDING" className="shrink-0 font-semibold text-amber-900 underline decoration-amber-400 underline-offset-4 hover:text-amber-950">Quản lý tin tuyển dụng</Link>
               </aside>
             )}
           </div>

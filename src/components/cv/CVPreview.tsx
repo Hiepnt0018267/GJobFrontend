@@ -1,9 +1,9 @@
-import type { CVCreateRequest, CVTemplateSummary } from '../../types/cv'
-import CVTemplateRenderer from './CVTemplateRenderer'
+import type { CVCreateRequest } from '../../types/cv'
+import CVTemplateRenderer, { type CVTemplateRenderable } from './CVTemplateRenderer'
 
 type Props = {
   cv: CVCreateRequest
-  template: CVTemplateSummary
+  template: CVTemplateRenderable
   className?: string
 }
 

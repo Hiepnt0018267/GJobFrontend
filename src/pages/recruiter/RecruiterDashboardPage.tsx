@@ -9,6 +9,7 @@ import { recruiterService } from '../../services/recruiterService'
 import type { RecruiterDashboardSummary, RecruiterProfile } from '../../types/recruiter'
 import { recruiterErrorMessage } from '../../utils/apiError'
 import RecruiterHeader from '../../components/recruiter/RecruiterHeader'
+import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 
 type DashboardData = { profile: RecruiterProfile; summary: RecruiterDashboardSummary }
 const emptySummary: RecruiterDashboardSummary = { total_jobs: 0, pending_jobs: 0, approved_jobs: 0, rejected_jobs: 0, closed_jobs: 0 }
@@ -19,6 +20,7 @@ function Skeleton() {
 
 export default function RecruiterDashboardPage() {
   const { user } = useAuth()
+  const refreshVersion = useDataRefreshVersion()
   const [data, setData] = useState<DashboardData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [retry, setRetry] = useState(0)
@@ -33,7 +35,7 @@ export default function RecruiterDashboardPage() {
       .then(([profile, summary]) => { if (active) setData({ profile, summary }) })
       .catch((requestError) => { if (active) setError(recruiterErrorMessage(requestError)) })
     return () => { active = false }
-  }, [retry])
+  }, [refreshVersion, retry])
 
   const summary = data?.summary ?? emptySummary
   const cards = [

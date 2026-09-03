@@ -1,17 +1,31 @@
 export type CVSkillLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT'
 export type CVLanguageProficiency = 'BASIC' | 'CONVERSATIONAL' | 'PROFESSIONAL' | 'FLUENT' | 'NATIVE'
 export type CVTemplateLayoutKey = 'MODERN' | 'CLASSIC' | 'MINIMAL'
+export type CVFontFamily = 'INTER' | 'ARIAL' | 'TIMES_NEW_ROMAN'
+export type CVFontScale = 'SMALL' | 'NORMAL' | 'LARGE'
+export type CVSectionSpacing = 'COMPACT' | 'NORMAL' | 'RELAXED'
+export type CVHeadingStyle = 'SOLID' | 'UNDERLINE' | 'MINIMAL'
+
+export interface CVTemplateThemeConfig {
+  primary_color: string
+  font_family: CVFontFamily
+  font_scale: CVFontScale
+  section_spacing: CVSectionSpacing
+  heading_style: CVHeadingStyle
+}
 
 export interface CVTemplateSummary {
   id: string
   name: string
   layout_key: CVTemplateLayoutKey
+  theme_config?: Partial<CVTemplateThemeConfig> | null
+  is_featured: boolean
+  sort_order: number
 }
 
 export interface CVTemplate extends CVTemplateSummary {
   description: string | null
   thumbnail_url: string | null
-  is_featured: boolean
 }
 
 export interface CVTemplateCatalogResponse {

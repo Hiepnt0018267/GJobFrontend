@@ -20,6 +20,11 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
+
+  --motion-feedback: 140ms;
+  --motion-normal: 200ms;
+  --motion-overlay: 300ms;
+  --ease-gjob: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
@@ -37,6 +42,16 @@
     overflow-x: hidden;
   }
 
+  ::selection {
+    background: #bfdbfe;
+    color: #172554;
+  }
+
+  :focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+  }
+
   a {
     text-decoration: none;
     color: inherit;
@@ -46,5 +61,75 @@
     list-style: none;
     margin: 0;
     padding: 0;
+  }
+}
+
+@layer components {
+  .input {
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-normal text-slate-900 outline-none transition-[border-color,background-color,box-shadow,color] duration-150 ease-out focus:border-blue-500 focus:ring-2 focus:ring-blue-100;
+  }
+
+  .motion-page {
+    animation: gjob-page-enter var(--motion-normal) var(--ease-gjob) both;
+  }
+
+  .motion-card {
+    transition: transform var(--motion-normal) var(--ease-gjob), box-shadow var(--motion-normal) var(--ease-gjob), border-color var(--motion-feedback) ease-out, background-color var(--motion-feedback) ease-out;
+  }
+
+  @media (hover: hover) {
+    .motion-card:hover {
+      transform: translateY(-2px);
+    }
+  }
+
+  .motion-dropdown {
+    animation: gjob-overlay-enter var(--motion-feedback) var(--ease-gjob) both;
+    transform-origin: top right;
+  }
+
+  .motion-backdrop {
+    animation: gjob-backdrop-enter var(--motion-feedback) ease-out both;
+  }
+
+  .motion-dialog {
+    animation: gjob-overlay-enter var(--motion-overlay) var(--ease-gjob) both;
+  }
+
+  .motion-error {
+    animation: gjob-error-enter var(--motion-feedback) var(--ease-gjob) both;
+  }
+}
+
+@keyframes gjob-page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gjob-overlay-enter {
+  from { opacity: 0; transform: translateY(-4px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes gjob-backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes gjob-error-enter {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+:where(button, [role='button'], a):not([aria-disabled='true']):not(:disabled):active {
+  transform: scale(0.99);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
   }
 }

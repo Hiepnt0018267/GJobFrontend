@@ -1,5 +1,6 @@
 import { FileText, LayoutDashboard, Search, UserRound } from 'lucide-react'
 import WorkspaceHeader from '../navigation/WorkspaceHeader'
+import { useWorkspaceShell } from '../../layouts/workspaceShellContext'
 
 const links = [
   { to: '/jobs', label: 'Tìm việc làm', icon: Search },
@@ -9,5 +10,6 @@ const links = [
 ]
 
 export default function CandidateHeader() {
+  if (useWorkspaceShell()) return null
   return <WorkspaceHeader workspaceLabel="Khu vực ứng viên" workspaceHome="/candidate" navigationLabel="Điều hướng ứng viên" links={links} />
 }

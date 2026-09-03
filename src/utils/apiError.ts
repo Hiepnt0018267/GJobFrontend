@@ -31,3 +31,71 @@ export function adminDashboardErrorMessage(error: unknown): string {
     default: return error.response.status >= 500 ? 'Máy chủ đang gặp sự cố.' : 'Không thể tải dữ liệu tổng quan.'
   }
 }
+
+export function getApiErrorStatus(error: unknown): number | null {
+  return axios.isAxiosError(error) ? (error.response?.status ?? null) : null
+}
+
+function getApiErrorDetail(error: unknown): string {
+  if (!axios.isAxiosError(error) || !error.response?.data || typeof error.response.data !== 'object') return ''
+  const detail = 'detail' in error.response.data ? error.response.data.detail : ''
+  return typeof detail === 'string' ? detail.toLowerCase() : ''
+}
+
+export function adminJobErrorMessage(error: unknown, context: 'list' | 'detail' | 'action'): string {
+  const status = getApiErrorStatus(error)
+  if (status === null) return 'Không thể kết nối tới máy chủ. Vui lòng thử lại.'
+  if (status === 401) return 'Phiên đăng nhập đã hết hạn.'
+  if (status === 403) return 'Bạn không có quyền thực hiện thao tác này.'
+  if (context === 'detail' && status === 404) return 'Tin tuyển dụng không còn tồn tại.'
+  if (status === 409) return 'Tin tuyển dụng đã thay đổi trạng thái. Vui lòng tải lại dữ liệu.'
+  if (status >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại.'
+  return context === 'list' ? 'Không thể tải danh sách tin tuyển dụng.' : 'Không thể tải dữ liệu tin tuyển dụng.'
+}
+
+export function adminUserErrorMessage(error: unknown, context: 'list' | 'detail' | 'activate' | 'deactivate'): string {
+  const status = getApiErrorStatus(error)
+  if (status === null) return 'Không thể kết nối tới máy chủ. Vui lòng thử lại.'
+  if (status === 401) return 'Phiên đăng nhập đã hết hạn.'
+  if (status === 403) return 'Bạn không có quyền thực hiện thao tác này.'
+  if (context === 'detail' && status === 404) return 'Người dùng không còn tồn tại.'
+  if (status === 404) return 'Người dùng không còn tồn tại.'
+  if (status === 409) {
+    const detail = getApiErrorDetail(error)
+    if (detail.includes('last active admin')) return 'Không thể vô hiệu hóa quản trị viên hoạt động cuối cùng.'
+    if (detail.includes('chính mình')) return 'Bạn không thể vô hiệu hóa tài khoản của chính mình.'
+    if (context === 'activate') return 'Tài khoản đã ở trạng thái hoạt động.'
+    if (context === 'deactivate') return 'Tài khoản đã bị vô hiệu hóa.'
+    return 'Trạng thái tài khoản đã thay đổi. Vui lòng tải lại dữ liệu.'
+  }
+  if (status >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại.'
+  return context === 'list' ? 'Không thể tải danh sách người dùng.' : 'Không thể tải thông tin người dùng.'
+}
+
+export function adminCVTemplateErrorMessage(error: unknown, context: 'list' | 'detail' | 'form' | 'action'): string {
+  const status = getApiErrorStatus(error)
+  if (status === null) return 'Không thể kết nối tới máy chủ. Vui lòng thử lại.'
+  if (status === 401) return 'Phiên đăng nhập đã hết hạn.'
+  if (status === 403) return 'Bạn không có quyền thực hiện thao tác này.'
+  if (status === 404) return context === 'detail' ? 'Mẫu CV không còn tồn tại.' : 'Không tìm thấy mẫu CV.'
+  if (status === 409) {
+    const detail = getApiErrorDetail(error)
+    if (detail.includes('layout') || detail.includes('bố cục')) return 'Mẫu CV đang được sử dụng nên không thể thay đổi bố cục.'
+    if (detail.includes('inactive') || detail.includes('không hoạt động')) return 'Chỉ có thể đánh dấu nổi bật cho mẫu CV đang hoạt động.'
+    return 'Trạng thái mẫu CV đã thay đổi. Vui lòng tải lại dữ liệu.'
+  }
+  if (status === 422) return 'Thông tin mẫu CV không hợp lệ. Vui lòng kiểm tra lại các trường.'
+  if (status >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại.'
+  return context === 'list' ? 'Không thể tải danh sách mẫu CV.' : 'Không thể xử lý yêu cầu mẫu CV.'
+}
+
+export function adminAuditErrorMessage(error: unknown, context: 'list' | 'detail', resource: 'application' | 'cv'): string {
+  const status = getApiErrorStatus(error)
+  const label = resource === 'application' ? 'đơn ứng tuyển' : 'CV ứng viên'
+  if (status === null) return 'Không thể kết nối tới máy chủ. Vui lòng thử lại.'
+  if (status === 401) return 'Phiên đăng nhập đã hết hạn.'
+  if (status === 403) return 'Bạn không có quyền truy cập dữ liệu này.'
+  if (status === 404) return context === 'detail' ? `${label.charAt(0).toUpperCase()}${label.slice(1)} không còn tồn tại.` : `Không tìm thấy ${label}.`
+  if (status >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại.'
+  return context === 'list' ? `Không thể tải danh sách ${label}.` : `Không thể tải thông tin ${label}.`
+}

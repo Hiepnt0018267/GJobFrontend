@@ -47,6 +47,7 @@ export default function CandidateProfileEditPage() {
   const [profile,  setProfile]  = useState<User | null>(null)
   const [loading,  setLoading]  = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [requestVersion, setRequestVersion] = useState(0)
 
   // Fetch full profile on mount (includes phone/address/bio from UserProfile)
   useEffect(() => {
@@ -59,7 +60,7 @@ export default function CandidateProfileEditPage() {
       .finally(() => { if (!cancelled) setLoading(false) })
 
     return () => { cancelled = true }
-  }, [])
+  }, [requestVersion])
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -101,7 +102,11 @@ export default function CandidateProfileEditPage() {
                   <p>{loadError}</p>
                   <button
                     type="button"
-                    onClick={() => window.location.reload()}
+                    onClick={() => {
+                      setLoading(true)
+                      setLoadError(null)
+                      setRequestVersion((version) => version + 1)
+                    }}
                     className="mt-2 text-xs text-red-600 underline hover:no-underline"
                   >
                     Thử lại

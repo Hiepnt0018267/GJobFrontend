@@ -1,8 +1,10 @@
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 
 // Layouts
 import MainLayout from './layouts/MainLayout'
+import WorkspaceLayout from './layouts/WorkspaceLayout'
+import PageTransition from './components/motion/PageTransition'
 
 // Public pages
 import HomePage        from './pages/HomePage'
@@ -31,7 +33,21 @@ import RecruiterJobCreatePage from './pages/recruiter/RecruiterJobCreatePage'
 import RecruiterJobEditPage from './pages/recruiter/RecruiterJobEditPage'
 import RecruiterJobDetailPage from './pages/recruiter/RecruiterJobDetailPage'
 import RecruiterHeader from './components/recruiter/RecruiterHeader'
+import CandidateHeader from './components/candidate/CandidateHeader'
+import AdminHeader from './components/admin/AdminHeader'
 import AdminDashboardPage     from './pages/admin/AdminDashboardPage'
+import AdminJobsPage from './pages/admin/AdminJobsPage'
+import AdminJobDetailPage from './pages/admin/AdminJobDetailPage'
+import AdminUsersPage from './pages/admin/AdminUsersPage'
+import AdminUserDetailPage from './pages/admin/AdminUserDetailPage'
+import AdminCVTemplatesPage from './pages/admin/AdminCVTemplatesPage'
+import AdminCVTemplateCreatePage from './pages/admin/AdminCVTemplateCreatePage'
+import AdminCVTemplateDetailPage from './pages/admin/AdminCVTemplateDetailPage'
+import AdminCVTemplateEditPage from './pages/admin/AdminCVTemplateEditPage'
+import AdminApplicationsPage from './pages/admin/AdminApplicationsPage'
+import AdminApplicationDetailPage from './pages/admin/AdminApplicationDetailPage'
+import AdminCandidateCVsPage from './pages/admin/AdminCandidateCVsPage'
+import AdminCandidateCVDetailPage from './pages/admin/AdminCandidateCVDetailPage'
 
 // Route guards
 import ProtectedRoute from './routes/ProtectedRoute'
@@ -50,10 +66,6 @@ function RedirectIfAuthenticated({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-function RecruiterProfileLayout() {
-  return <><RecruiterHeader /><Outlet /></>
-}
-
 function App() {
   return (
     <Routes>
@@ -69,7 +81,7 @@ function App() {
         path="/login"
         element={
           <RedirectIfAuthenticated>
-            <LoginPage />
+            <PageTransition><LoginPage /></PageTransition>
           </RedirectIfAuthenticated>
         }
       />
@@ -77,44 +89,60 @@ function App() {
         path="/register"
         element={
           <RedirectIfAuthenticated>
-            <RegisterPage />
+            <PageTransition><RegisterPage /></PageTransition>
           </RedirectIfAuthenticated>
         }
       />
 
       {/* ── Error pages ── */}
-      <Route path="/403" element={<ForbiddenPage />} />
+      <Route path="/403" element={<PageTransition><ForbiddenPage /></PageTransition>} />
 
       {/* ── Protected: must be authenticated ── */}
       <Route element={<ProtectedRoute />}>
         {/* CANDIDATE routes */}
         <Route element={<RoleRoute allowedRoles={['CANDIDATE']} />}>
-          <Route path="/candidate"              element={<CandidateDashboardPage />} />
-          <Route path="/candidate/profile"      element={<CandidateProfilePage />} />
-          <Route path="/candidate/profile/edit" element={<CandidateProfileEditPage />} />
-          <Route path="/candidate/cvs" element={<CandidateCVsPage />} />
-          <Route path="/candidate/cvs/templates" element={<CandidateCVTemplatesPage />} />
-          <Route path="/candidate/cvs/create" element={<CandidateCVCreatePage />} />
-          <Route path="/candidate/cvs/:id" element={<CandidateCVDetailPage />} />
-          <Route path="/candidate/cvs/:id/edit" element={<CandidateCVEditPage />} />
+          <Route element={<WorkspaceLayout Header={CandidateHeader} />}>
+            <Route path="/candidate" element={<CandidateDashboardPage />} />
+            <Route path="/candidate/profile" element={<CandidateProfilePage />} />
+            <Route path="/candidate/profile/edit" element={<CandidateProfileEditPage />} />
+            <Route path="/candidate/cvs" element={<CandidateCVsPage />} />
+            <Route path="/candidate/cvs/templates" element={<CandidateCVTemplatesPage />} />
+            <Route path="/candidate/cvs/create" element={<CandidateCVCreatePage />} />
+            <Route path="/candidate/cvs/:id" element={<CandidateCVDetailPage />} />
+            <Route path="/candidate/cvs/:id/edit" element={<CandidateCVEditPage />} />
+          </Route>
         </Route>
 
         {/* RECRUITER dashboard */}
         <Route element={<RoleRoute allowedRoles={['RECRUITER']} />}>
-          <Route path="/recruiter" element={<RecruiterDashboardPage />} />
-          <Route element={<RecruiterProfileLayout />}>
+          <Route element={<WorkspaceLayout Header={RecruiterHeader} />}>
+            <Route path="/recruiter" element={<RecruiterDashboardPage />} />
             <Route path="/recruiter/profile" element={<RecruiterProfilePage />} />
+            <Route path="/recruiter/profile/edit" element={<RecruiterProfileEditPage />} />
+            <Route path="/recruiter/jobs" element={<RecruiterJobsPage />} />
+            <Route path="/recruiter/jobs/create" element={<RecruiterJobCreatePage />} />
+            <Route path="/recruiter/jobs/:id/edit" element={<RecruiterJobEditPage />} />
+            <Route path="/recruiter/jobs/:id" element={<RecruiterJobDetailPage />} />
           </Route>
-          <Route path="/recruiter/profile/edit" element={<RecruiterProfileEditPage />} />
-          <Route path="/recruiter/jobs" element={<RecruiterJobsPage />} />
-          <Route path="/recruiter/jobs/create" element={<RecruiterJobCreatePage />} />
-          <Route path="/recruiter/jobs/:id/edit" element={<RecruiterJobEditPage />} />
-          <Route path="/recruiter/jobs/:id" element={<RecruiterJobDetailPage />} />
         </Route>
 
         {/* ADMIN dashboard */}
         <Route element={<RoleRoute allowedRoles={['ADMIN']} />}>
-          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route element={<WorkspaceLayout Header={AdminHeader} />}>
+            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/jobs" element={<AdminJobsPage />} />
+            <Route path="/admin/jobs/:id" element={<AdminJobDetailPage />} />
+            <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
+            <Route path="/admin/cv-templates" element={<AdminCVTemplatesPage />} />
+            <Route path="/admin/cv-templates/new" element={<AdminCVTemplateCreatePage />} />
+            <Route path="/admin/cv-templates/:id" element={<AdminCVTemplateDetailPage />} />
+            <Route path="/admin/cv-templates/:id/edit" element={<AdminCVTemplateEditPage />} />
+            <Route path="/admin/applications" element={<AdminApplicationsPage />} />
+            <Route path="/admin/applications/:id" element={<AdminApplicationDetailPage />} />
+            <Route path="/admin/cvs" element={<AdminCandidateCVsPage />} />
+            <Route path="/admin/cvs/:id" element={<AdminCandidateCVDetailPage />} />
+          </Route>
         </Route>
       </Route>
 

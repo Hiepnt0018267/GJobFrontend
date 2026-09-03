@@ -2,8 +2,8 @@ import api from './api'
 import type { JobCreateRequest, JobUpdateRequest, RecruiterJob, RecruiterJobListResponse, RecruiterJobSearchParams } from '../types/job'
 
 export const recruiterJobService = {
-  getMyJobs: async (params: RecruiterJobSearchParams = {}): Promise<RecruiterJobListResponse> => {
-    const { data } = await api.get<RecruiterJobListResponse>('/api/v1/recruiters/jobs', { params })
+  getMyJobs: async (params: RecruiterJobSearchParams = {}, signal?: AbortSignal): Promise<RecruiterJobListResponse> => {
+    const { data } = await api.get<RecruiterJobListResponse>('/api/v1/recruiters/jobs', { params, signal })
     return data
   },
   getMyJob: async (id: string): Promise<RecruiterJob> => {

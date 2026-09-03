@@ -2,12 +2,14 @@ import { ArrowLeft, Pencil, Star, Trash2 } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import CandidateHeader from '../../components/candidate/CandidateHeader'
+import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 import CVPreview from '../../components/cv/CVPreview'
 import { cvService } from '../../services/cvService'
 import { cvToEditableData, type CV } from '../../types/cv'
 
 export default function CandidateCVDetailPage() {
   const { id = '' } = useParams()
+  const refreshVersion = useDataRefreshVersion()
   const navigate = useNavigate()
   const [cv, setCV] = useState<CV | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -17,7 +19,7 @@ export default function CandidateCVDetailPage() {
     let cancelled = false
     cvService.getCV(id).then((data) => { if (!cancelled) setCV(data) }).catch(() => { if (!cancelled) setError('Không thể tải CV này.') })
     return () => { cancelled = true }
-  }, [id])
+  }, [id, refreshVersion])
 
   const remove = async () => {
     if (!cv || !window.confirm(cv.is_default ? 'Bạn có chắc muốn xoá CV mặc định này? Một CV khác sẽ được chọn nếu còn.' : 'Bạn có chắc muốn xoá CV này?')) return

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { notifyDataRefresh } from '../utils/dataRefresh'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
 
@@ -29,7 +30,11 @@ api.interceptors.request.use((config) => {
 
 // ─── Response interceptor: handle 401 silently ───────────────────────────────
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const method = response.config.method?.toLowerCase()
+    if (method === 'post' || method === 'put' || method === 'patch' || method === 'delete') notifyDataRefresh()
+    return response
+  },
   (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       // Remove stale token; AuthContext will handle redirect
