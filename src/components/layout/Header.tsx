@@ -1,355 +1,127 @@
-import { useState, useRef, useEffect } from 'react'
-import { NavLink, Link, useNavigate } from 'react-router-dom'
-import { Menu, X, Zap, LogOut, ChevronDown, UserCircle2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { ChevronDown, LogOut, Menu, Sparkles, X, Zap } from 'lucide-react'
+import { candidateAccountItems, candidateNavigationGroups } from '../../config/candidateNavigation'
 import { useAuth } from '../../hooks/useAuth'
 import type { UserRole } from '../../types/auth'
-import { dashboardFor } from '../../utils/dashboardFor'
 
-// ─── Auth skeleton (declared outside component to satisfy ESLint static-components) ─
-function AuthSkeleton() {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="w-20 h-8 bg-slate-100 rounded-lg animate-pulse" />
-      <div className="w-16 h-8 bg-slate-100 rounded-lg animate-pulse" />
-    </div>
-  )
-}
+type PublicNavItem = { to: string; label: string; end: boolean }
 
-const NAV_LINKS = [
+const recruiterNavigation: PublicNavItem[] = [
   { to: '/', label: 'Trang chủ', end: true },
   { to: '/jobs', label: 'Việc làm', end: false },
-]
-
-const RECRUITER_PUBLIC_NAV_LINKS = [
-  ...NAV_LINKS,
   { to: '/recruiter', label: 'Vào Recruiter Center', end: true },
 ]
 
-const ADMIN_PUBLIC_NAV_LINKS = [
-  ...NAV_LINKS,
+const adminNavigation: PublicNavItem[] = [
+  { to: '/', label: 'Trang chủ', end: true },
+  { to: '/jobs', label: 'Việc làm', end: false },
   { to: '/admin', label: 'Trang quản trị', end: true },
 ]
 
-function roleBadgeText(role: UserRole): string {
-  switch (role) {
-    case 'CANDIDATE': return 'Ứng viên'
-    case 'RECRUITER': return 'Nhà tuyển dụng'
-    case 'ADMIN':     return 'Quản trị viên'
-  }
+function AuthSkeleton() {
+  return <div className="flex items-center gap-2" aria-label="Đang tải tài khoản"><div className="h-8 w-20 animate-pulse rounded-lg bg-slate-100" /><div className="h-8 w-16 animate-pulse rounded-lg bg-slate-100" /></div>
 }
 
-function roleBadgeColor(role: UserRole): string {
-  switch (role) {
-    case 'CANDIDATE': return 'bg-blue-50 text-blue-600'
-    case 'RECRUITER': return 'bg-violet-50 text-violet-600'
-    case 'ADMIN':     return 'bg-red-50 text-red-600'
-  }
+function UserAvatar({ name }: { name: string }) {
+  return <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white" aria-hidden="true">{name.charAt(0).toUpperCase()}</div>
 }
 
-function dashboardLabel(role: UserRole): string {
-  switch (role) {
-    case 'CANDIDATE': return 'Dashboard của tôi'
-    case 'RECRUITER': return 'Dashboard tuyển dụng'
-    case 'ADMIN': return 'Trang quản trị'
-  }
+function roleBadgeText(role: UserRole) {
+  if (role === 'CANDIDATE') return 'Ứng viên'
+  if (role === 'RECRUITER') return 'Nhà tuyển dụng'
+  return 'Quản trị viên'
 }
 
-// ─── User avatar / initial ───────────────────────────────────────────────────
-function UserAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' }) {
-  const initial = name.charAt(0).toUpperCase()
-  const cls = size === 'sm'
-    ? 'w-7 h-7 text-xs'
-    : 'w-9 h-9 text-sm'
-  return (
-    <div
-      className={`${cls} rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shrink-0 select-none`}
-      aria-hidden="true"
-    >
-      {initial}
-    </div>
-  )
+function roleBadgeColor(role: UserRole) {
+  if (role === 'CANDIDATE') return 'bg-blue-50 text-blue-700'
+  if (role === 'RECRUITER') return 'bg-violet-50 text-violet-700'
+  return 'bg-red-50 text-red-700'
+}
+
+function CandidateDropdown({ groupIndex, isOpen, onOpen, onToggle, onClose }: { groupIndex: number; isOpen: boolean; onOpen: () => void; onToggle: () => void; onClose: () => void }) {
+  const group = candidateNavigationGroups[groupIndex]
+  const menuId = `candidate-navigation-${groupIndex}`
+
+  return <div className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
+    <button type="button" aria-expanded={isOpen} aria-controls={menuId} onClick={onToggle} className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 transition-colors hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-4">
+      {group.label}<ChevronDown size={15} className={isOpen ? 'rotate-180 text-blue-600 transition-transform' : 'text-slate-400 transition-transform'} aria-hidden="true" />
+    </button>
+    {isOpen && <div className="absolute left-1/2 top-full w-80 -translate-x-1/2 pt-3"><div id={menuId} role="menu" className="motion-dropdown rounded-xl bg-white p-2 shadow-lg shadow-slate-900/10 ring-1 ring-slate-200">
+      {group.items.map(({ to, label, description, icon: Icon }) => <Link key={to} to={to} role="menuitem" onClick={onClose} className="flex items-start gap-3 rounded-lg px-3 py-3 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700"><Icon size={16} aria-hidden="true" /></span>
+        <span><span className="block text-sm font-semibold text-slate-800">{label}</span><span className="mt-0.5 block text-xs leading-5 text-slate-500">{description}</span></span>
+      </Link>)}
+    </div></div>}
+  </div>
+}
+
+function CandidateAccountMenu({ name, email, isOpen, onOpen, onToggle, onClose, onLogout }: { name: string; email: string; isOpen: boolean; onOpen: () => void; onToggle: () => void; onClose: () => void; onLogout: () => void }) {
+  return <div className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
+    <button id="user-menu-button" type="button" aria-expanded={isOpen} aria-controls="candidate-account-menu" onClick={onToggle} className="flex items-center gap-2.5 rounded-xl border border-transparent px-3 py-1.5 transition-colors hover:border-slate-200 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+      <UserAvatar name={name} />
+      <div className="text-left"><p className="max-w-[120px] truncate text-sm font-semibold leading-tight text-slate-800">{name}</p><span className="text-[10px] font-medium text-blue-700">Ứng viên</span></div>
+      <ChevronDown size={15} className={isOpen ? 'rotate-180 text-blue-600 transition-transform' : 'text-slate-400 transition-transform'} aria-hidden="true" />
+    </button>
+    {isOpen && <div className="absolute right-0 top-full w-72 pt-3"><div id="candidate-account-menu" role="menu" aria-labelledby="user-menu-button" className="motion-dropdown overflow-hidden rounded-xl bg-white py-2 shadow-lg shadow-slate-900/10 ring-1 ring-slate-200">
+      <div className="border-b border-slate-100 px-4 py-3"><p className="truncate text-sm font-semibold text-slate-900">{name}</p><p className="mt-0.5 truncate text-xs text-slate-500">{email}</p></div>
+      {candidateAccountItems.map(({ to, label, icon: Icon }) => <Link key={to} to={to} role="menuitem" onClick={onClose} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"><Icon size={16} className="text-slate-400" aria-hidden="true" />{label}</Link>)}
+      <div className="my-2 border-t border-slate-100" />
+      <button id="logout-button" type="button" role="menuitem" onClick={onLogout} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-500"><LogOut size={16} className="text-red-500" aria-hidden="true" />Đăng xuất</button>
+    </div></div>}
+  </div>
+}
+
+function ToolsDropdown({ isOpen, onOpen, onToggle, onClose }: { isOpen: boolean; onOpen: () => void; onToggle: () => void; onClose: () => void }) {
+  return <div className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
+    <button type="button" aria-expanded={isOpen} aria-controls="candidate-tools-menu" onClick={onToggle} className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 transition-colors hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-4"><Sparkles size={15} aria-hidden="true" />Công cụ<ChevronDown size={15} className={isOpen ? 'rotate-180 text-blue-600 transition-transform' : 'text-slate-400 transition-transform'} aria-hidden="true" /></button>
+    {isOpen && <div className="absolute left-1/2 top-full w-72 -translate-x-1/2 pt-3"><div id="candidate-tools-menu" role="menu" className="motion-dropdown rounded-xl bg-white p-2 shadow-lg shadow-slate-900/10 ring-1 ring-slate-200"><div className="flex items-start gap-3 rounded-lg px-3 py-3"><span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-400"><Sparkles size={16} aria-hidden="true" /></span><span><span className="block text-sm font-semibold text-slate-800">Công cụ AI</span><span className="mt-0.5 block text-xs leading-5 text-slate-500">Đang được phát triển và sẽ sớm ra mắt.</span></span></div></div></div>}
+  </div>
+}
+
+function MobileCandidateNavigation({ onNavigate }: { onNavigate: () => void }) {
+  return <div className="space-y-1">
+    {candidateNavigationGroups.map((group) => <details key={group.label} className="group rounded-lg bg-slate-50">
+      <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-semibold text-slate-800 marker:content-none">{group.label}<ChevronDown size={16} className="text-slate-400 transition-transform group-open:rotate-180" aria-hidden="true" /></summary>
+      <div className="border-t border-slate-100 px-2 py-1.5">{group.items.map(({ to, label, icon: Icon }) => <Link key={to} to={to} onClick={onNavigate} className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-white hover:text-blue-700"><Icon size={16} className="text-slate-400" aria-hidden="true" />{label}</Link>)}</div>
+    </details>)}
+    <details className="group rounded-lg bg-slate-50"><summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-semibold text-slate-800 marker:content-none"><span className="flex items-center gap-2"><Sparkles size={16} className="text-slate-400" aria-hidden="true" />Công cụ</span><ChevronDown size={16} className="text-slate-400 transition-transform group-open:rotate-180" aria-hidden="true" /></summary><p className="border-t border-slate-100 px-4 py-3 text-xs leading-5 text-slate-500">Các công cụ AI đang được phát triển.</p></details>
+  </div>
 }
 
 export default function Header() {
   const { user, isAuthenticated, loading, logout } = useAuth()
   const navigate = useNavigate()
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const menuRootRef = useRef<HTMLElement>(null)
+  const isCandidatePlatform = !user || user.role === 'CANDIDATE'
+  const workspaceNavigation = user?.role === 'RECRUITER' ? recruiterNavigation : user?.role === 'ADMIN' ? adminNavigation : []
 
-  const [mobileOpen,   setMobileOpen]   = useState(false)
-  const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-  const navLinks = user?.role === 'RECRUITER'
-    ? RECRUITER_PUBLIC_NAV_LINKS
-    : user?.role === 'ADMIN'
-      ? ADMIN_PUBLIC_NAV_LINKS
-      : NAV_LINKS
-
-  // Close dropdown on outside click
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setUserMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    const closeOnOutsidePointer = (event: MouseEvent) => { if (menuRootRef.current && !menuRootRef.current.contains(event.target as Node)) setOpenMenu(null) }
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpenMenu(null) }
+    document.addEventListener('mousedown', closeOnOutsidePointer)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => { document.removeEventListener('mousedown', closeOnOutsidePointer); document.removeEventListener('keydown', closeOnEscape) }
   }, [])
 
-  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `text-sm font-medium transition-colors duration-200 hover:text-blue-600 ${
-      isActive ? 'text-blue-600' : 'text-slate-600'
-    }`
+  const closeMenus = () => { setOpenMenu(null); setMobileOpen(false) }
+  const handleLogout = () => { logout(); closeMenus(); navigate('/') }
+  const topLinkClass = ({ isActive }: { isActive: boolean }) => `text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-4 ${isActive ? 'text-blue-700' : 'text-slate-700 hover:text-blue-700'}`
 
-  const mobileNavLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `block px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
-      isActive
-        ? 'bg-blue-50 text-blue-600'
-        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-    }`
-
-  function handleLogout() {
-    logout()
-    setUserMenuOpen(false)
-    setMobileOpen(false)
-    navigate('/')
-  }
-
-  return (
-    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-
-          {/* Logo */}
-          <Link
-            to="/"
-            className="flex items-center gap-2 shrink-0"
-            aria-label="GJob - Trang chủ"
-          >
-            <div className="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-lg">
-              <Zap size={18} className="text-white" strokeWidth={2.5} />
-            </div>
-            <span className="text-xl font-bold text-slate-900">
-              G<span className="text-blue-600">Job</span>
-            </span>
-          </Link>
-
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
-            {loading ? <div className="h-5 w-72 animate-pulse rounded bg-slate-100" aria-label="Đang tải điều hướng" /> : navLinks.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.end}
-                className={navLinkClass}
-              >
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
-
-          {/* Desktop Auth area */}
-          <div className="hidden md:flex items-center gap-3">
-            {loading ? (
-              <AuthSkeleton />
-            ) : isAuthenticated && user ? (
-              /* ── Authenticated: user menu ── */
-              <div className="relative" ref={menuRef}>
-                <button
-                  id="user-menu-button"
-                  type="button"
-                  onClick={() => setUserMenuOpen((v) => !v)}
-                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  aria-expanded={userMenuOpen}
-                  aria-haspopup="true"
-                >
-                  <UserAvatar name={user.full_name} size="sm" />
-                  <div className="text-left">
-                    <p className="text-sm font-semibold text-slate-800 leading-tight max-w-[120px] truncate">
-                      {user.full_name}
-                    </p>
-                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${roleBadgeColor(user.role)}`}>
-                      {roleBadgeText(user.role)}
-                    </span>
-                  </div>
-                  <ChevronDown
-                    size={15}
-                    className={`text-slate-400 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`}
-                  />
-                </button>
-
-                {/* Dropdown */}
-                {userMenuOpen && (
-                  <div
-                    className="motion-dropdown absolute right-0 mt-2 w-52 bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/60 overflow-hidden py-1"
-                    role="menu"
-                    aria-orientation="vertical"
-                    aria-labelledby="user-menu-button"
-                  >
-                    {/* User info row */}
-                    <div className="px-4 py-3 border-b border-slate-100">
-                      <p className="text-xs font-semibold text-slate-900 truncate">{user.full_name}</p>
-                      <p className="text-xs text-slate-400 truncate mt-0.5">{user.email}</p>
-                    </div>
-
-                    {user.role === 'CANDIDATE' && (
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={() => { navigate(dashboardFor(user.role)); setUserMenuOpen(false) }}
-                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-                      >
-                        <UserCircle2 size={15} className="text-slate-400" />
-                        {dashboardLabel(user.role)}
-                      </button>
-                    )}
-
-                    {/* Profile link */}
-                    {user.role === 'CANDIDATE' && (
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={() => { navigate('/candidate/profile'); setUserMenuOpen(false) }}
-                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-                      >
-                        <UserCircle2 size={15} className="text-slate-400" />
-                        Hồ sơ cá nhân
-                      </button>
-                    )}
-
-                    {/* Logout */}
-                    <button
-                      id="logout-button"
-                      type="button"
-                      role="menuitem"
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      <LogOut size={15} className="text-red-400" />
-                      Đăng xuất
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* ── Unauthenticated: login / register buttons ── */
-              <>
-                <Link
-                  to="/login"
-                  className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                >
-                  Đăng nhập
-                </Link>
-                <Link
-                  to="/register"
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                >
-                  Đăng ký
-                </Link>
-              </>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            type="button"
-            className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={mobileOpen ? 'Đóng menu' : 'Mở menu'}
-            aria-expanded={mobileOpen}
-          >
-            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
-        </div>
+  return <header ref={menuRootRef} className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-md">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"><div className="flex h-16 items-center gap-5">
+      <Link to="/" className="flex shrink-0 items-center gap-2" aria-label="GJob - Trang chủ"><span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600"><Zap size={18} className="text-white" strokeWidth={2.5} aria-hidden="true" /></span><span className="text-xl font-bold text-slate-900">G<span className="text-blue-600">Job</span></span></Link>
+      <div className="hidden min-w-0 items-center md:ml-6 md:flex lg:ml-10">
+        {loading ? <div className="h-5 w-72 animate-pulse rounded bg-slate-100" aria-label="Đang tải điều hướng" /> : isCandidatePlatform ? <nav className="flex items-center gap-8" aria-label="Điều hướng ứng viên">{candidateNavigationGroups.map((group, index) => <CandidateDropdown key={group.label} groupIndex={index} isOpen={openMenu === `candidate-${index}`} onOpen={() => setOpenMenu(`candidate-${index}`)} onToggle={() => setOpenMenu((current) => current === `candidate-${index}` ? null : `candidate-${index}`)} onClose={() => setOpenMenu(null)} />)}<ToolsDropdown isOpen={openMenu === 'tools'} onOpen={() => setOpenMenu('tools')} onToggle={() => setOpenMenu((current) => current === 'tools' ? null : 'tools')} onClose={() => setOpenMenu(null)} /></nav> : <nav className="flex items-center gap-8" aria-label="Điều hướng chính">{workspaceNavigation.map((link) => <NavLink key={link.to} to={link.to} end={link.end} className={topLinkClass}>{link.label}</NavLink>)}</nav>}
       </div>
-
-      {/* Mobile Menu */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white">
-          <nav className="max-w-7xl mx-auto px-4 py-3 space-y-1" aria-label="Mobile navigation">
-            {loading ? <div className="h-10 animate-pulse rounded-lg bg-slate-100" aria-label="Đang tải điều hướng" /> : navLinks.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.end}
-                className={mobileNavLinkClass}
-                onClick={() => setMobileOpen(false)}
-              >
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
-
-          <div className="max-w-7xl mx-auto px-4 pb-4">
-            {loading ? (
-              <div className="flex gap-2 py-2">
-                <div className="flex-1 h-10 bg-slate-100 rounded-lg animate-pulse" />
-                <div className="flex-1 h-10 bg-slate-100 rounded-lg animate-pulse" />
-              </div>
-            ) : isAuthenticated && user ? (
-              /* ── Mobile authenticated ── */
-              <div className="space-y-2">
-                {/* User info */}
-                <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 rounded-xl">
-                  <UserAvatar name={user.full_name} size="sm" />
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">{user.full_name}</p>
-                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${roleBadgeColor(user.role)}`}>
-                      {roleBadgeText(user.role)}
-                    </span>
-                  </div>
-                </div>
-                {user.role === 'CANDIDATE' && (
-                  <button
-                    type="button"
-                    onClick={() => { navigate(dashboardFor(user.role)); setMobileOpen(false) }}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
-                  >
-                    <UserCircle2 size={16} />
-                    {dashboardLabel(user.role)}
-                  </button>
-                )}
-                {/* Profile link */}
-                {user.role === 'CANDIDATE' && (
-                  <button
-                    type="button"
-                    onClick={() => { navigate('/candidate/profile'); setMobileOpen(false) }}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-                  >
-                    <UserCircle2 size={16} />
-                    Hồ sơ cá nhân
-                  </button>
-                )}
-                {/* Logout */}
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-                >
-                  <LogOut size={16} />
-                  Đăng xuất
-                </button>
-              </div>
-            ) : (
-              /* ── Mobile unauthenticated ── */
-              <div className="flex flex-col gap-2">
-                <Link
-                  to="/login"
-                  className="w-full text-center px-4 py-2.5 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Đăng nhập
-                </Link>
-                <Link
-                  to="/register"
-                  className="w-full text-center px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Đăng ký
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </header>
-  )
+      <div className="ml-auto hidden shrink-0 items-center gap-3 md:flex">{loading ? <AuthSkeleton /> : isAuthenticated && user ? user.role === 'CANDIDATE' ? <CandidateAccountMenu name={user.full_name} email={user.email} isOpen={openMenu === 'account'} onOpen={() => setOpenMenu('account')} onToggle={() => setOpenMenu((current) => current === 'account' ? null : 'account')} onClose={() => setOpenMenu(null)} onLogout={handleLogout} /> : <div className="flex items-center gap-3"><span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${roleBadgeColor(user.role)}`}>{roleBadgeText(user.role)}</span><button type="button" onClick={handleLogout} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"><LogOut size={16} aria-hidden="true" />Đăng xuất</button></div> : <><Link to="/login" className="rounded-lg border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">Đăng nhập</Link><Link to="/register" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">Đăng ký</Link></>}</div>
+      <button type="button" className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 md:hidden" onClick={() => setMobileOpen((open) => !open)} aria-expanded={mobileOpen} aria-label={mobileOpen ? 'Đóng menu' : 'Mở menu'}>{mobileOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}</button>
+    </div></div>
+    {mobileOpen && <div className="border-t border-slate-200 bg-white md:hidden"><div className="mx-auto max-w-7xl space-y-3 px-4 py-3">
+      {loading ? <div className="h-40 animate-pulse rounded-xl bg-slate-100" aria-label="Đang tải điều hướng" /> : isCandidatePlatform ? <MobileCandidateNavigation onNavigate={closeMenus} /> : <nav className="space-y-1" aria-label="Điều hướng chính">{workspaceNavigation.map((link) => <NavLink key={link.to} to={link.to} end={link.end} onClick={closeMenus} className={({ isActive }) => `block rounded-lg px-4 py-3 text-sm font-semibold ${isActive ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50'}`}>{link.label}</NavLink>)}</nav>}
+      {!loading && isAuthenticated && user ? <div className="space-y-2 border-t border-slate-200 pt-3">{user.role === 'CANDIDATE' && <><div className="flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-3"><UserAvatar name={user.full_name} /><div><p className="text-sm font-semibold text-slate-900">{user.full_name}</p><p className="text-xs text-slate-500">Ứng viên</p></div></div>{candidateAccountItems.map(({ to, label, icon: Icon }) => <Link key={to} to={to} onClick={closeMenus} className="flex items-center gap-2.5 rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"><Icon size={16} className="text-slate-400" aria-hidden="true" />{label}</Link>)}</>}<button type="button" onClick={handleLogout} className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50"><LogOut size={16} aria-hidden="true" />Đăng xuất</button></div> : !loading && <div className="flex flex-col gap-2 border-t border-slate-200 pt-3"><Link to="/login" onClick={closeMenus} className="rounded-lg border border-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-blue-700 hover:bg-blue-50">Đăng nhập</Link><Link to="/register" onClick={closeMenus} className="rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-blue-700">Đăng ký</Link></div>}
+    </div></div>}
+  </header>
 }

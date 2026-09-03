@@ -1,12 +1,14 @@
-import type { EmploymentType, ExperienceLevel, Industry, Job, JobLevel, WorkMode } from '../types/job'
+import type { EmploymentType, ExperienceLevel, ExperienceRequirement, Industry, Job, JobLevel, WorkMode } from '../types/job'
 
 const employmentLabels: Record<EmploymentType, string> = { FULL_TIME: 'Toàn thời gian', PART_TIME: 'Bán thời gian', CONTRACT: 'Hợp đồng', INTERNSHIP: 'Thực tập', FREELANCE: 'Tự do' }
 const experienceLabels: Record<ExperienceLevel, string> = { ENTRY: 'Mới bắt đầu', MID: 'Trung cấp', SENIOR: 'Cao cấp', LEAD: 'Trưởng nhóm', MANAGER: 'Quản lý' }
+const experienceRequirementLabels: Record<ExperienceRequirement, string> = { NO_EXPERIENCE: 'Chưa có kinh nghiệm', LESS_THAN_ONE_YEAR: 'Dưới 1 năm', ONE_TO_THREE_YEARS: '1 – 3 năm', THREE_TO_FIVE_YEARS: '3 – 5 năm', MORE_THAN_FIVE_YEARS: 'Trên 5 năm' }
 const industryLabels: Record<Industry, string> = { INFORMATION_TECHNOLOGY: 'Công nghệ thông tin', FINANCE_BANKING: 'Tài chính – Ngân hàng', MARKETING_ADVERTISING: 'Marketing – Quảng cáo', SALES: 'Kinh doanh – Bán hàng', HUMAN_RESOURCES: 'Nhân sự', EDUCATION: 'Giáo dục', HEALTHCARE: 'Y tế', MANUFACTURING: 'Sản xuất', LOGISTICS: 'Logistics', OTHER: 'Khác' }
 const levelLabels: Record<JobLevel, string> = { INTERN: 'Thực tập sinh', JUNIOR: 'Junior', STAFF: 'Nhân viên', SENIOR: 'Senior', LEAD: 'Lead', MANAGER: 'Quản lý' }
 const workModeLabels: Record<WorkMode, string> = { ONSITE: 'Tại văn phòng', HYBRID: 'Hybrid', REMOTE: 'Từ xa' }
 export const employmentLabel = (value: EmploymentType | null) => value ? employmentLabels[value] : 'Không xác định'
 export const experienceLabel = (value: ExperienceLevel | null) => value ? experienceLabels[value] : 'Không yêu cầu'
+export const experienceRequirementLabel = (value: ExperienceRequirement | null) => value ? experienceRequirementLabels[value] : 'Không yêu cầu'
 export const industryLabel = (value: Industry | null) => value ? industryLabels[value] : 'Chưa phân loại'
 export const levelLabel = (value: JobLevel | null) => value ? levelLabels[value] : 'Không yêu cầu'
 export const workModeLabel = (value: WorkMode | null) => value ? workModeLabels[value] : 'Chưa xác định'

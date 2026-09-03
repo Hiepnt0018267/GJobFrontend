@@ -47,7 +47,22 @@ export type Job = {
 }
 
 export type JobListResponse = { items: Job[]; page: number; page_size: number; total: number; total_pages: number }
-export type JobSearchParams = { keyword?: string; location?: string; employment_type?: EmploymentType; experience_level?: ExperienceLevel; salary_min?: number; salary_max?: number; page?: number; page_size?: number; sort?: JobSortOption }
+export type JobSearchParams = {
+  search?: string
+  location?: string
+  employment_type?: EmploymentType
+  experience_level?: ExperienceLevel
+  industry?: Industry
+  experience_requirement?: ExperienceRequirement
+  level?: JobLevel
+  work_mode?: WorkMode
+  salary_type?: SalaryType
+  salary_min?: number
+  salary_max?: number
+  page?: number
+  page_size?: number
+  sort?: JobSortOption
+}
 export type RecruiterJob = Job & { recruiter_id: string }
 export type JobCreateRequest = {
   title: string; description: string; company_name: string; location: string | null

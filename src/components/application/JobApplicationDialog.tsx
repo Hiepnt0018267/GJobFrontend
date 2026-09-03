@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { AlertCircle, CheckCircle2, FilePlus2, Loader2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import type { JobApplication } from '../../types/application'
 import type { CVListItem } from '../../types/cv'
 import { applicationService } from '../../services/applicationService'
 import { cvService } from '../../services/cvService'
@@ -10,7 +11,8 @@ type Props = {
   jobTitle: string
   companyName: string
   onClose: () => void
-  onSuccess: (message: string) => void
+  onSuccess: (application: JobApplication, message: string) => void
+  onDuplicateApplication: () => void
   onCreateCV: () => void
 }
 
@@ -33,7 +35,7 @@ const getSubmissionError = (error: unknown): SubmissionError => {
   return { message: 'Không thể gửi đơn ứng tuyển. Vui lòng thử lại.' }
 }
 
-export default function JobApplicationDialog({ jobId, jobTitle, companyName, onClose, onSuccess, onCreateCV }: Props) {
+export default function JobApplicationDialog({ jobId, jobTitle, companyName, onClose, onSuccess, onDuplicateApplication, onCreateCV }: Props) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const [cvs, setCvs] = useState<CVListItem[]>([])
   const [selectedCvId, setSelectedCvId] = useState<string | null>(null)
@@ -77,8 +79,8 @@ export default function JobApplicationDialog({ jobId, jobTitle, companyName, onC
     setApplicationError(null)
     setIsSubmitting(true)
     try {
-      await applicationService.submitApplication(jobId, { cv_id: selectedCvId })
-      onSuccess('Ứng tuyển thành công. Đơn ứng tuyển của bạn đã được gửi tới nhà tuyển dụng.')
+      const application = await applicationService.submitApplication(jobId, { cv_id: selectedCvId })
+      onSuccess(application, 'Ứng tuyển thành công. Đơn ứng tuyển của bạn đã được gửi tới nhà tuyển dụng.')
     } catch (error: unknown) {
       const mapped = getSubmissionError(error)
       setApplicationError(mapped.message)
@@ -86,7 +88,10 @@ export default function JobApplicationDialog({ jobId, jobTitle, companyName, onC
         setSelectedCvId(null)
         reloadCVs(false)
       }
-      if (mapped.marksAsApplied) onSuccess(mapped.message)
+      if (mapped.marksAsApplied) {
+        onDuplicateApplication()
+        onClose()
+      }
     } finally {
       setIsSubmitting(false)
     }

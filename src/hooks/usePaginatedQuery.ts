@@ -14,6 +14,7 @@ type PaginatedQueryState<T> = {
   isFetching: boolean
   isInitialLoading: boolean
   refetch: () => void
+  replaceData: (data: T) => void
 }
 
 function isAbortedRequest(error: unknown): boolean {
@@ -61,6 +62,12 @@ export function usePaginatedQuery<T>({ queryKey, refreshKey, fetcher }: UsePagin
   }, [fetcher, queryKey, refreshKey, refreshVersion])
 
   const refetch = useCallback(() => setRefreshVersion((version) => version + 1), [])
+  const replaceData = useCallback((nextData: T) => {
+    requestId.current += 1
+    setData(nextData)
+    setError(null)
+    setIsFetching(false)
+  }, [])
 
   return {
     data,
@@ -68,5 +75,6 @@ export function usePaginatedQuery<T>({ queryKey, refreshKey, fetcher }: UsePagin
     isFetching,
     isInitialLoading: data === null && isFetching,
     refetch,
+    replaceData,
   }
 }

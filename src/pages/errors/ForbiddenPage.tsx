@@ -55,7 +55,7 @@ export default function ForbiddenPage() {
               "
             >
               <ArrowLeft size={16} />
-              Về Dashboard của tôi
+              {user.role === 'CANDIDATE' ? 'Về trang chủ' : 'Về Dashboard của tôi'}
             </button>
           )}
         </div>

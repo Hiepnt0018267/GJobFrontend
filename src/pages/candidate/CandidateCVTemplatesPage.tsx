@@ -1,7 +1,6 @@
 import { AlertCircle, ArrowLeft, Check, FileText } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useCallback, useEffect, useState } from 'react'
-import CandidateHeader from '../../components/candidate/CandidateHeader'
 import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 import { isSupportedCVTemplateLayout } from '../../components/cv/cvTemplateRegistry'
 import { cvTemplateService } from '../../services/cvTemplateService'
@@ -27,7 +26,7 @@ export default function CandidateCVTemplatesPage() {
 
   useEffect(() => { void Promise.resolve().then(loadTemplates) }, [loadTemplates, refreshVersion])
 
-  return <div className="min-h-screen bg-slate-50"><CandidateHeader /><main className="mx-auto max-w-7xl px-4 py-8 sm:px-6"><Link to="/candidate/cvs" className="inline-flex items-center gap-1 text-sm font-semibold text-slate-600 hover:text-blue-700"><ArrowLeft size={16} />CV của tôi</Link><h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950">Chọn mẫu CV</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Mọi mẫu dùng cùng một dữ liệu CV. Bạn có thể đổi mẫu khi đang chỉnh sửa mà không mất nội dung.</p>
+  return <div className="min-h-screen bg-slate-50"><main className="mx-auto max-w-7xl px-4 py-8 sm:px-6"><Link to="/candidate/cvs" className="inline-flex items-center gap-1 text-sm font-semibold text-slate-600 hover:text-blue-700"><ArrowLeft size={16} />CV của tôi</Link><h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950">Chọn mẫu CV</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Mọi mẫu dùng cùng một dữ liệu CV. Bạn có thể đổi mẫu khi đang chỉnh sửa mà không mất nội dung.</p>
     {loading && <div className="mt-8 grid gap-6 lg:grid-cols-3">{[0, 1, 2].map((index) => <div key={index} className="h-[488px] animate-pulse rounded-xl bg-slate-200" />)}</div>}
     {error && <div role="alert" className="mt-8 flex max-w-xl items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"><AlertCircle size={18} className="mt-0.5 shrink-0" /><div><p className="font-semibold">Chưa tải được mẫu CV</p><p className="mt-1">{error}</p><button type="button" onClick={() => void loadTemplates()} className="mt-3 font-semibold underline underline-offset-2">Thử lại</button></div></div>}
     {!loading && !error && templates.length === 0 && <div className="mt-8 rounded-xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center"><FileText className="mx-auto text-slate-400" size={32} /><h2 className="mt-4 font-bold text-slate-900">Chưa có mẫu CV khả dụng</h2><p className="mt-2 text-sm text-slate-600">Vui lòng quay lại sau hoặc liên hệ quản trị viên.</p></div>}

@@ -99,3 +99,15 @@ export function adminAuditErrorMessage(error: unknown, context: 'list' | 'detail
   if (status >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại.'
   return context === 'list' ? `Không thể tải danh sách ${label}.` : `Không thể tải thông tin ${label}.`
 }
+
+export function candidateApplicationErrorMessage(error: unknown, context: 'list' | 'detail' | 'withdraw'): string {
+  const requestStatus = getApiErrorStatus(error)
+  if (requestStatus === null) return 'Không thể kết nối tới máy chủ. Vui lòng thử lại.'
+  if (requestStatus === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+  if (requestStatus === 403) return 'Bạn không có quyền truy cập dữ liệu này.'
+  if (requestStatus === 404) return context === 'detail' ? 'Đơn ứng tuyển không còn tồn tại.' : 'Không tìm thấy đơn ứng tuyển.'
+  if (requestStatus === 409) return context === 'withdraw' ? 'Đơn ứng tuyển đã thay đổi trạng thái và không thể rút. Vui lòng tải lại dữ liệu mới nhất.' : 'Dữ liệu đơn ứng tuyển đã thay đổi. Vui lòng thử lại.'
+  if (requestStatus === 422) return 'Yêu cầu không hợp lệ. Vui lòng kiểm tra lại dữ liệu.'
+  if (requestStatus >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại.'
+  return context === 'list' ? 'Không thể tải danh sách đơn ứng tuyển.' : 'Không thể xử lý yêu cầu. Vui lòng thử lại.'
+}

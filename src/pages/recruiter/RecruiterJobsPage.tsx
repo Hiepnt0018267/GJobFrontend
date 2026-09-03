@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import QueryFetchFeedback from '../../components/feedback/QueryFetchFeedback'
 import JobStatusBadge from '../../components/recruiter/JobStatusBadge'
-import RecruiterHeader from '../../components/recruiter/RecruiterHeader'
 import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 import { usePaginatedQuery } from '../../hooks/usePaginatedQuery'
 import { recruiterJobService } from '../../services/recruiterJobService'
@@ -76,7 +75,7 @@ export default function RecruiterJobsPage() {
     }
   }
 
-  return <div className="min-h-screen bg-slate-50"><RecruiterHeader /><main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+  return <div className="min-h-screen bg-slate-50"><main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
     <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><Link to="/recruiter" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-blue-600"><ArrowLeft size={15} />Dashboard</Link><h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">Quản lý tin tuyển dụng</h1><p className="mt-2 text-sm text-slate-600">Theo dõi trạng thái và quản lý toàn bộ tin đã đăng tại một nơi.</p></div><Link to="/recruiter/jobs/create" className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm hover:bg-blue-700"><Plus size={18} />Đăng tin tuyển dụng</Link></div>
     {location.state && typeof location.state === 'object' && 'message' in location.state && <div role="status" className="mt-6 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 ring-1 ring-emerald-200">{String(location.state.message)}</div>}
     <section className="mt-7 flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 md:flex-row"><RecruiterJobSearchInput key={keyword} initialValue={keyword} onSearchChange={setKeyword} /><select aria-label="Lọc trạng thái" value={jobStatus ?? ''} onChange={(event) => updateParams({ status: event.target.value || null })} className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm text-slate-700"><option value="">Tất cả trạng thái</option><option value="PENDING">Chờ duyệt</option><option value="APPROVED">Đã duyệt</option><option value="REJECTED">Bị từ chối</option><option value="CLOSED">Đã đóng</option></select><select aria-label="Sắp xếp" value={sort} onChange={(event) => updateParams({ sort: event.target.value === 'newest' ? null : event.target.value })} className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm text-slate-700"><option value="newest">Mới nhất</option><option value="oldest">Cũ nhất</option><option value="updated">Vừa cập nhật</option></select></section>

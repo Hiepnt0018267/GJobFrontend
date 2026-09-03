@@ -1,4 +1,4 @@
-import { ArrowRight, BriefcaseBusiness, LayoutDashboard, LogIn, MapPin, Plus, Search, UserPlus, UserRound } from 'lucide-react'
+import { ArrowRight, BriefcaseBusiness, FilePlus2, LayoutDashboard, LogIn, MapPin, Plus, Search, UserPlus } from 'lucide-react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import type { User } from '../../types/auth'
@@ -26,8 +26,7 @@ export default function PersonalizedHomeHero({ user, keyword, location, onKeywor
       : user.role === 'CANDIDATE'
         ? [
             { to: '/jobs', label: 'Tìm việc ngay', icon: BriefcaseBusiness, primary: true },
-            { to: '/candidate', label: 'Vào Dashboard', icon: LayoutDashboard, primary: false },
-            { to: '/candidate/profile', label: 'Hồ sơ cá nhân', icon: UserRound, primary: false },
+            { to: '/candidate/cvs/templates', label: 'Tạo CV', icon: FilePlus2, primary: false },
           ]
         : [
             { to: '/admin', label: 'Trang quản trị', icon: LayoutDashboard, primary: true },

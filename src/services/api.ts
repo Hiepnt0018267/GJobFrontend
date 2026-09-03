@@ -1,6 +1,12 @@
 import axios from 'axios'
 import { notifyDataRefresh } from '../utils/dataRefresh'
 
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    gjobSkipDataRefresh?: boolean
+  }
+}
+
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
 
 const TOKEN_KEY = 'gjob_token'
@@ -32,7 +38,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => {
     const method = response.config.method?.toLowerCase()
-    if (method === 'post' || method === 'put' || method === 'patch' || method === 'delete') notifyDataRefresh()
+    if (!response.config.gjobSkipDataRefresh && (method === 'post' || method === 'put' || method === 'patch' || method === 'delete')) notifyDataRefresh()
     return response
   },
   (error) => {

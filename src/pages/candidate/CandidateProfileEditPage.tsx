@@ -5,7 +5,6 @@ import { userService } from '../../services/userService'
 import ProfileForm from '../../components/profile/ProfileForm'
 import type { User } from '../../types/auth'
 import axios from 'axios'
-import CandidateHeader from '../../components/candidate/CandidateHeader'
 
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 function ProfileSkeleton() {
@@ -64,13 +63,12 @@ export default function CandidateProfileEditPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <CandidateHeader />
 
       {/* ── Main content ─────────────────────────────────────────────────── */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-slate-400 mb-6" aria-label="breadcrumb">
-          <Link to="/candidate" className="hover:text-blue-600 transition-colors">Dashboard</Link>
+          <Link to="/" className="hover:text-blue-600 transition-colors">Trang chủ</Link>
           <span>/</span>
           <Link to="/candidate/profile" className="hover:text-blue-600 transition-colors">Hồ sơ cá nhân</Link>
           <span>/</span>

@@ -25,7 +25,7 @@ const RECRUITER_AI_FEATURES = [
 ]
 
 function ctaFor(role: UserRole | undefined) {
-  if (role === 'CANDIDATE') return { title: 'Sẵn sàng cho cơ hội tiếp theo?', description: 'Tiếp tục khám phá những vị trí phù hợp với hành trình của bạn.', primary: { label: 'Vào Dashboard', to: '/candidate' }, secondary: { label: 'Tìm việc', to: '/jobs' } }
+  if (role === 'CANDIDATE') return { title: 'Sẵn sàng cho cơ hội tiếp theo?', description: 'Hoàn thiện CV và khám phá những vị trí phù hợp với hành trình của bạn.', primary: { label: 'Tạo CV ngay', to: '/candidate/cvs/templates' }, secondary: { label: 'Tìm việc', to: '/jobs' } }
   if (role === 'RECRUITER') return { title: 'Xây dựng đội ngũ cùng GJob', description: 'Quay lại khu vực tuyển dụng để đăng tin và quản lý các vị trí của bạn.', primary: { label: 'Vào Dashboard tuyển dụng', to: '/recruiter' }, secondary: { label: 'Đăng tin tuyển dụng', to: '/recruiter/jobs/create' } }
   if (role === 'ADMIN') return { title: 'Quay lại khu vực quản trị', description: 'Các công cụ quản trị của bạn vẫn sẵn sàng trong workspace.', primary: { label: 'Trang quản trị', to: '/admin' }, secondary: { label: 'Khám phá việc làm', to: '/jobs' } }
   return { title: 'Bắt đầu hành trình cùng GJob', description: 'Khám phá cơ hội phù hợp hoặc tạo tài khoản để bắt đầu hành trình của bạn.', primary: { label: 'Tìm việc ngay', to: '/jobs' }, secondary: { label: 'Đăng ký', to: '/register' } }
@@ -65,7 +65,7 @@ export default function HomePage() {
   function handleSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const params = new URLSearchParams()
-    if (keyword.trim()) params.set('keyword', keyword.trim())
+    if (keyword.trim()) params.set('search', keyword.trim())
     if (location.trim()) params.set('location', location.trim())
     navigate(params.size ? `/jobs?${params.toString()}` : '/jobs')
   }

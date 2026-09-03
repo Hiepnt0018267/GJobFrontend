@@ -96,6 +96,10 @@
     animation: gjob-overlay-enter var(--motion-overlay) var(--ease-gjob) both;
   }
 
+  .motion-drawer {
+    animation: gjob-drawer-enter var(--motion-overlay) var(--ease-gjob) both;
+  }
+
   .motion-error {
     animation: gjob-error-enter var(--motion-feedback) var(--ease-gjob) both;
   }
@@ -119,6 +123,11 @@
 @keyframes gjob-error-enter {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gjob-drawer-enter {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 :where(button, [role='button'], a):not([aria-disabled='true']):not(:disabled):active {

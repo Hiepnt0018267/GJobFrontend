@@ -1,9 +1,11 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
+import { canRestorePathForRole, dashboardFor } from './utils/dashboardFor'
 
 // Layouts
 import MainLayout from './layouts/MainLayout'
-import WorkspaceLayout from './layouts/WorkspaceLayout'
+import RecruiterLayout from './layouts/RecruiterLayout'
+import AdminLayout from './layouts/AdminLayout'
 import PageTransition from './components/motion/PageTransition'
 
 // Public pages
@@ -17,7 +19,6 @@ import RegisterPage    from './pages/auth/RegisterPage'
 import ForbiddenPage from './pages/errors/ForbiddenPage'
 
 // Protected / role pages
-import CandidateDashboardPage from './pages/candidate/CandidateDashboardPage'
 import CandidateProfilePage   from './pages/candidate/CandidateProfilePage'
 import CandidateProfileEditPage from './pages/candidate/CandidateProfileEditPage'
 import CandidateCVsPage from './pages/candidate/CandidateCVsPage'
@@ -25,6 +26,8 @@ import CandidateCVCreatePage from './pages/candidate/CandidateCVCreatePage'
 import CandidateCVDetailPage from './pages/candidate/CandidateCVDetailPage'
 import CandidateCVEditPage from './pages/candidate/CandidateCVEditPage'
 import CandidateCVTemplatesPage from './pages/candidate/CandidateCVTemplatesPage'
+import CandidateApplicationsPage from './pages/candidate/CandidateApplicationsPage'
+import CandidateApplicationDetailPage from './pages/candidate/CandidateApplicationDetailPage'
 import RecruiterDashboardPage from './pages/recruiter/RecruiterDashboardPage'
 import RecruiterProfilePage from './pages/recruiter/RecruiterProfilePage'
 import RecruiterProfileEditPage from './pages/recruiter/RecruiterProfileEditPage'
@@ -32,9 +35,6 @@ import RecruiterJobsPage from './pages/recruiter/RecruiterJobsPage'
 import RecruiterJobCreatePage from './pages/recruiter/RecruiterJobCreatePage'
 import RecruiterJobEditPage from './pages/recruiter/RecruiterJobEditPage'
 import RecruiterJobDetailPage from './pages/recruiter/RecruiterJobDetailPage'
-import RecruiterHeader from './components/recruiter/RecruiterHeader'
-import CandidateHeader from './components/candidate/CandidateHeader'
-import AdminHeader from './components/admin/AdminHeader'
 import AdminDashboardPage     from './pages/admin/AdminDashboardPage'
 import AdminJobsPage from './pages/admin/AdminJobsPage'
 import AdminJobDetailPage from './pages/admin/AdminJobDetailPage'
@@ -56,12 +56,17 @@ import RoleRoute      from './routes/RoleRoute'
 // ─── Redirect auth pages when already logged in ───────────────────────────────
 function RedirectIfAuthenticated({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading, user } = useAuth()
+  const location = useLocation()
   if (loading) return null
   if (isAuthenticated && user) {
-    const dest = user.role === 'CANDIDATE' ? '/candidate'
-               : user.role === 'RECRUITER' ? '/recruiter'
-               : '/admin'
-    return <Navigate to={dest} replace />
+    const state = location.state as { from?: { pathname?: string; search?: string; hash?: string }; resumeApplicationJobId?: string } | null
+    const from = state?.from
+    const returnTo = from?.pathname && from.pathname.startsWith('/') && !from.pathname.startsWith('//') && canRestorePathForRole(from.pathname, user.role)
+      ? `${from.pathname}${from.search ?? ''}${from.hash ?? ''}`
+      : null
+    const dest = returnTo ?? dashboardFor(user.role)
+    const resumeApplicationJobId = returnTo ? state?.resumeApplicationJobId : undefined
+    return <Navigate to={dest} state={resumeApplicationJobId ? { resumeApplicationJobId } : null} replace />
   }
   return <>{children}</>
 }
@@ -74,6 +79,20 @@ function App() {
         <Route path="/"         element={<HomePage />} />
         <Route path="/jobs"     element={<JobListPage />} />
         <Route path="/jobs/:id" element={<JobDetailPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<RoleRoute allowedRoles={['CANDIDATE']} />}>
+            <Route path="/candidate" element={<Navigate to="/" replace />} />
+            <Route path="/candidate/profile" element={<CandidateProfilePage />} />
+            <Route path="/candidate/profile/edit" element={<CandidateProfileEditPage />} />
+            <Route path="/candidate/cvs" element={<CandidateCVsPage />} />
+            <Route path="/candidate/cvs/templates" element={<CandidateCVTemplatesPage />} />
+            <Route path="/candidate/cvs/create" element={<CandidateCVCreatePage />} />
+            <Route path="/candidate/cvs/:id" element={<CandidateCVDetailPage />} />
+            <Route path="/candidate/cvs/:id/edit" element={<CandidateCVEditPage />} />
+            <Route path="/candidate/applications" element={<CandidateApplicationsPage />} />
+            <Route path="/candidate/applications/:id" element={<CandidateApplicationDetailPage />} />
+          </Route>
+        </Route>
       </Route>
 
       {/* ── Auth pages (standalone, redirect if already logged in) ── */}
@@ -99,23 +118,9 @@ function App() {
 
       {/* ── Protected: must be authenticated ── */}
       <Route element={<ProtectedRoute />}>
-        {/* CANDIDATE routes */}
-        <Route element={<RoleRoute allowedRoles={['CANDIDATE']} />}>
-          <Route element={<WorkspaceLayout Header={CandidateHeader} />}>
-            <Route path="/candidate" element={<CandidateDashboardPage />} />
-            <Route path="/candidate/profile" element={<CandidateProfilePage />} />
-            <Route path="/candidate/profile/edit" element={<CandidateProfileEditPage />} />
-            <Route path="/candidate/cvs" element={<CandidateCVsPage />} />
-            <Route path="/candidate/cvs/templates" element={<CandidateCVTemplatesPage />} />
-            <Route path="/candidate/cvs/create" element={<CandidateCVCreatePage />} />
-            <Route path="/candidate/cvs/:id" element={<CandidateCVDetailPage />} />
-            <Route path="/candidate/cvs/:id/edit" element={<CandidateCVEditPage />} />
-          </Route>
-        </Route>
-
         {/* RECRUITER dashboard */}
         <Route element={<RoleRoute allowedRoles={['RECRUITER']} />}>
-          <Route element={<WorkspaceLayout Header={RecruiterHeader} />}>
+          <Route element={<RecruiterLayout />}>
             <Route path="/recruiter" element={<RecruiterDashboardPage />} />
             <Route path="/recruiter/profile" element={<RecruiterProfilePage />} />
             <Route path="/recruiter/profile/edit" element={<RecruiterProfileEditPage />} />
@@ -128,7 +133,7 @@ function App() {
 
         {/* ADMIN dashboard */}
         <Route element={<RoleRoute allowedRoles={['ADMIN']} />}>
-          <Route element={<WorkspaceLayout Header={AdminHeader} />}>
+          <Route element={<AdminLayout />}>
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/jobs" element={<AdminJobsPage />} />
             <Route path="/admin/jobs/:id" element={<AdminJobDetailPage />} />
