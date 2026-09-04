@@ -23,6 +23,18 @@ export function recruiterJobErrorMessage(error: unknown): string {
   }
 }
 
+export function recruiterApplicationErrorMessage(error: unknown, context: 'list' | 'detail' | 'action'): string {
+  const requestStatus = getApiErrorStatus(error)
+  if (requestStatus === null) return 'Không thể kết nối tới máy chủ. Vui lòng thử lại.'
+  if (requestStatus === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+  if (requestStatus === 403) return 'Bạn không có quyền truy cập dữ liệu này.'
+  if (requestStatus === 404) return context === 'detail' ? 'Không tìm thấy đơn ứng tuyển hoặc bạn không có quyền truy cập.' : 'Không tìm thấy dữ liệu ứng viên.'
+  if (requestStatus === 409) return 'Trạng thái đơn ứng tuyển đã thay đổi.'
+  if (requestStatus === 422) return 'Yêu cầu không hợp lệ. Vui lòng kiểm tra lại dữ liệu.'
+  if (requestStatus >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại.'
+  return context === 'list' ? 'Không thể tải danh sách ứng viên.' : 'Không thể xử lý yêu cầu. Vui lòng thử lại.'
+}
+
 export function adminDashboardErrorMessage(error: unknown): string {
   if (!axios.isAxiosError(error) || !error.response) return 'Không thể kết nối tới máy chủ.'
   switch (error.response.status) {

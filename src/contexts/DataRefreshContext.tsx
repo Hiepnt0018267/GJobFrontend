@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { DATA_REFRESH_EVENT } from '../utils/dataRefresh'
+import { DATA_REFRESH_EVENT, subscribeToExternalDataRefresh } from '../utils/dataRefresh'
 import { DataRefreshContext } from './dataRefreshState'
 
 const FOCUS_REFRESH_DEDUPLICATION_MS = 250
@@ -22,10 +22,12 @@ export function DataRefreshProvider({ children }: { children: ReactNode }) {
     window.addEventListener(DATA_REFRESH_EVENT, refresh)
     window.addEventListener('focus', refreshAfterActivation)
     document.addEventListener('visibilitychange', refreshAfterActivation)
+    const unsubscribeExternalRefresh = subscribeToExternalDataRefresh(refresh)
     return () => {
       window.removeEventListener(DATA_REFRESH_EVENT, refresh)
       window.removeEventListener('focus', refreshAfterActivation)
       document.removeEventListener('visibilitychange', refreshAfterActivation)
+      unsubscribeExternalRefresh()
     }
   }, [])
 

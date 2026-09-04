@@ -7,7 +7,7 @@ type Props = { initialJob?: RecruiterJob; submitting: boolean; serverError: stri
 type FormState = { title: string; company_name: string; industry: string; level: string; experience_requirement: string; employment_type: string; work_mode: string; vacancies: string; location: string; salary_type: SalaryType; salary_min: string; salary_max: string; salary_fixed: string; description: string; requirements: string; benefits: string; skills: string }
 
 const industryOptions = [['INFORMATION_TECHNOLOGY', 'Công nghệ thông tin'], ['FINANCE_BANKING', 'Tài chính – Ngân hàng'], ['MARKETING_ADVERTISING', 'Marketing – Quảng cáo'], ['SALES', 'Kinh doanh – Bán hàng'], ['HUMAN_RESOURCES', 'Nhân sự'], ['EDUCATION', 'Giáo dục'], ['HEALTHCARE', 'Y tế'], ['MANUFACTURING', 'Sản xuất'], ['LOGISTICS', 'Logistics'], ['OTHER', 'Khác']]
-const levelOptions = [['INTERN', 'Thực tập sinh'], ['JUNIOR', 'Junior'], ['STAFF', 'Nhân viên'], ['SENIOR', 'Senior'], ['LEAD', 'Lead'], ['MANAGER', 'Quản lý']]
+const levelOptions = [['INTERN', 'Thực tập sinh'], ['JUNIOR', 'Mới tốt nghiệp / Junior'], ['STAFF', 'Chuyên viên'], ['SENIOR', 'Chuyên viên cao cấp / Senior'], ['LEAD', 'Trưởng nhóm / Lead'], ['MANAGER', 'Quản lý']]
 const experienceOptions = [['NO_EXPERIENCE', 'Chưa có kinh nghiệm'], ['LESS_THAN_ONE_YEAR', 'Dưới 1 năm'], ['ONE_TO_THREE_YEARS', '1–3 năm'], ['THREE_TO_FIVE_YEARS', '3–5 năm'], ['MORE_THAN_FIVE_YEARS', 'Trên 5 năm']]
 const employmentOptions = [['FULL_TIME', 'Toàn thời gian'], ['PART_TIME', 'Bán thời gian'], ['CONTRACT', 'Hợp đồng'], ['INTERNSHIP', 'Thực tập'], ['FREELANCE', 'Freelance']]
 const workOptions = [['ONSITE', 'Tại văn phòng'], ['HYBRID', 'Hybrid'], ['REMOTE', 'Từ xa']]

@@ -6,8 +6,8 @@ export const recruiterJobService = {
     const { data } = await api.get<RecruiterJobListResponse>('/api/v1/recruiters/jobs', { params, signal })
     return data
   },
-  getMyJob: async (id: string): Promise<RecruiterJob> => {
-    const { data } = await api.get<RecruiterJob>(`/api/v1/recruiters/jobs/${id}`)
+  getMyJob: async (id: string, signal?: AbortSignal): Promise<RecruiterJob> => {
+    const { data } = await api.get<RecruiterJob>(`/api/v1/recruiters/jobs/${id}`, { signal })
     return data
   },
   createJob: async (payload: JobCreateRequest): Promise<RecruiterJob> => {

@@ -35,6 +35,8 @@ import RecruiterJobsPage from './pages/recruiter/RecruiterJobsPage'
 import RecruiterJobCreatePage from './pages/recruiter/RecruiterJobCreatePage'
 import RecruiterJobEditPage from './pages/recruiter/RecruiterJobEditPage'
 import RecruiterJobDetailPage from './pages/recruiter/RecruiterJobDetailPage'
+import RecruiterApplicationsPage from './pages/recruiter/RecruiterApplicationsPage'
+import RecruiterApplicationDetailPage from './pages/recruiter/RecruiterApplicationDetailPage'
 import AdminDashboardPage     from './pages/admin/AdminDashboardPage'
 import AdminJobsPage from './pages/admin/AdminJobsPage'
 import AdminJobDetailPage from './pages/admin/AdminJobDetailPage'
@@ -127,7 +129,10 @@ function App() {
             <Route path="/recruiter/jobs" element={<RecruiterJobsPage />} />
             <Route path="/recruiter/jobs/create" element={<RecruiterJobCreatePage />} />
             <Route path="/recruiter/jobs/:id/edit" element={<RecruiterJobEditPage />} />
+            <Route path="/recruiter/jobs/:jobId/applications" element={<RecruiterApplicationsPage />} />
             <Route path="/recruiter/jobs/:id" element={<RecruiterJobDetailPage />} />
+            <Route path="/recruiter/applications" element={<RecruiterApplicationsPage />} />
+            <Route path="/recruiter/applications/:id" element={<RecruiterApplicationDetailPage />} />
           </Route>
         </Route>
 
