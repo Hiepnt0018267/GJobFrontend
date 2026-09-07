@@ -135,7 +135,7 @@ export default function RecruiterApplicationDetailPage() {
         <section aria-label="CV và thông tin ứng viên">
           <div className="mb-4"><h2 className="text-xl font-bold text-slate-950">CV ứng viên</h2><p className="mt-1 text-sm text-slate-500">Bản xem chỉ đọc của CV được nộp cùng đơn ứng tuyển.</p></div>
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-            <article className="min-w-0"><RecruiterCVPreviewReadOnly cv={application.cv} /></article>
+            <article className="min-w-0"><RecruiterCVPreviewReadOnly applicationId={application.id} cv={application.cv} /></article>
 
           <aside className="order-first space-y-5 lg:order-last">
             <article className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">

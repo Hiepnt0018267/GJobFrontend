@@ -5,8 +5,9 @@ type Props = {
   cv: CVCreateRequest
   template: CVTemplateRenderable
   className?: string
+  photoUrl?: string | null
 }
 
-export default function CVPreview({ cv, template, className }: Props) {
-  return <CVTemplateRenderer cv={cv} template={template} className={className} />
+export default function CVPreview({ cv, template, className, photoUrl }: Props) {
+  return <CVTemplateRenderer cv={cv} template={template} className={className} photoUrl={photoUrl} />
 }

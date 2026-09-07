@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { CVCreateRequest, CVTemplateLayoutKey } from '../../types/cv'
 import type { ResolvedCVTheme } from './cvTheme'
 
-type Props = { cv: CVCreateRequest; layoutKey: CVTemplateLayoutKey; theme: ResolvedCVTheme }
+type Props = { cv: CVCreateRequest; layoutKey: CVTemplateLayoutKey; theme: ResolvedCVTheme; photoUrl?: string | null }
 
 function Avatar({ url, name, rounded }: { url?: string | null; name?: string | null; rounded: boolean }) {
   const [failed, setFailed] = useState(false)
@@ -12,8 +12,8 @@ function Avatar({ url, name, rounded }: { url?: string | null; name?: string | n
 
 const sectionTitle = (value: string, theme: ResolvedCVTheme) => <h2 style={{ color: theme.primary_color, borderColor: theme.primary_color }} className={`${theme.sectionSpacingClass} ${theme.headingClass} text-xs font-bold tracking-[0.08em]`}>{value}</h2>
 
-export default function CVDocumentView({ cv, layoutKey, theme }: Props) {
-  const info = cv.personal_info
+export default function CVDocumentView({ cv, layoutKey, theme, photoUrl }: Props) {
+  const info = { ...cv.personal_info, avatar_url: photoUrl ?? cv.personal_info.avatar_url }
   const contacts = [info.email, info.phone, info.address].filter(Boolean)
   const isClassic = layoutKey === 'CLASSIC'
   const isMinimal = layoutKey === 'MINIMAL'

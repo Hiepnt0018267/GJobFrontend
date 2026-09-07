@@ -12,11 +12,12 @@ export default function AdminCVTemplateCreatePage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = async (payload: AdminCVTemplateCreateRequest | AdminCVTemplateUpdateRequest) => {
+  const handleSubmit = async (payload: AdminCVTemplateCreateRequest | AdminCVTemplateUpdateRequest, thumbnail?: File) => {
     setSubmitting(true)
     setError(null)
     try {
       const created = await adminCVTemplateService.createAdminCVTemplate(payload as AdminCVTemplateCreateRequest)
+      if (thumbnail) await adminCVTemplateService.uploadAdminCVTemplateThumbnail(created.id, thumbnail)
       navigate(`/admin/cv-templates/${created.id}`, { replace: true })
     } catch (requestError) {
       setError(adminCVTemplateErrorMessage(requestError, 'form'))

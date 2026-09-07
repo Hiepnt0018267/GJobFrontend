@@ -8,6 +8,8 @@ export const adminCVTemplateService = {
   async getAdminCVTemplate(id: string): Promise<AdminCVTemplate> { return (await api.get<AdminCVTemplate>(`${basePath}/${id}`)).data },
   async createAdminCVTemplate(payload: AdminCVTemplateCreateRequest): Promise<AdminCVTemplate> { return (await api.post<AdminCVTemplate>(basePath, payload)).data },
   async updateAdminCVTemplate(id: string, payload: AdminCVTemplateUpdateRequest): Promise<AdminCVTemplate> { return (await api.patch<AdminCVTemplate>(`${basePath}/${id}`, payload)).data },
+  async uploadAdminCVTemplateThumbnail(id: string, file: File): Promise<AdminCVTemplate> { const data = new FormData(); data.append('file', file); return (await api.post<AdminCVTemplate>(`${basePath}/${id}/thumbnail`, data, { gjobSkipDataRefresh: true })).data },
+  async deleteAdminCVTemplateThumbnail(id: string): Promise<AdminCVTemplate> { return (await api.delete<AdminCVTemplate>(`${basePath}/${id}/thumbnail`, { gjobSkipDataRefresh: true })).data },
   async activateAdminCVTemplate(id: string): Promise<AdminCVTemplate> { return (await api.patch<AdminCVTemplate>(`${basePath}/${id}/activate`)).data },
   async deactivateAdminCVTemplate(id: string): Promise<AdminCVTemplate> { return (await api.patch<AdminCVTemplate>(`${basePath}/${id}/deactivate`)).data },
   async featureAdminCVTemplate(id: string): Promise<AdminCVTemplate> { return (await api.patch<AdminCVTemplate>(`${basePath}/${id}/feature`)).data },

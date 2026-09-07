@@ -9,11 +9,11 @@ export type CVTemplateRenderable = {
   theme_config?: Partial<CVTemplateThemeConfig> | null
 }
 
-type Props = { cv: CVCreateRequest; template: CVTemplateRenderable; mode?: CVTemplateMode; className?: string; children?: ReactNode }
+type Props = { cv: CVCreateRequest; template: CVTemplateRenderable; mode?: CVTemplateMode; className?: string; photoUrl?: string | null; children?: ReactNode }
 
-export default function CVTemplateRenderer({ cv, template, mode = 'view', className, children }: Props) {
+export default function CVTemplateRenderer({ cv, template, mode = 'view', className, photoUrl, children }: Props) {
   const renderTemplate = getCVTemplateRenderer(template.layout_key)
   if (!renderTemplate) return <div role="alert" className={`rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800 ${className ?? ''}`}>Mẫu CV này chưa được phiên bản GJob hiện tại hỗ trợ hiển thị.</div>
   const theme = resolveCVTheme(template.layout_key, template.theme_config)
-  return <>{renderTemplate({ data: cv, mode, theme, className, children })}</>
+  return <>{renderTemplate({ data: cv, mode, theme, className, photoUrl, children })}</>
 }

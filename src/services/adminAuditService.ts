@@ -24,4 +24,5 @@ export const adminAuditService = {
   async getCandidateCV(id: string): Promise<AdminAuditCVDetail> {
     return (await api.get<AdminAuditCVDetail>(`${cvsPath}/${id}`)).data
   },
+  async getCandidateCVPhoto(id: string) { return api.get<Blob>(`${cvsPath}/${id}/photo`, { responseType: 'blob' }) },
 }

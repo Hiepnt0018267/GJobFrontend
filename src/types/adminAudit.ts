@@ -9,6 +9,7 @@ import type {
   CVSkillItem,
   CVTemplateLayoutKey,
   CVTemplateThemeConfig,
+  CVSourceType,
 } from './cv'
 import type { JobStatus } from './job'
 
@@ -32,9 +33,15 @@ export type AdminAuditCVListItem = {
   title: string
   is_default: boolean
   candidate_id: string
-  template_id: string
+  source_type: CVSourceType
+  template_id: string | null
   candidate: AdminAuditCandidate
-  template: AdminAuditCVTemplate
+  template: AdminAuditCVTemplate | null
+  original_filename: string | null
+  mime_type: string | null
+  file_size: number | null
+  uploaded_at: string | null
+  has_managed_photo: boolean
   created_at: string
   updated_at: string
 }
@@ -77,7 +84,11 @@ export type AdminAuditApplicationJob = {
 export type AdminAuditApplicationCV = {
   id: string
   title: string
-  template: AdminAuditCVTemplate
+  source_type: CVSourceType
+  template: AdminAuditCVTemplate | null
+  original_filename: string | null
+  mime_type: string | null
+  file_size: number | null
 }
 
 export type AdminAuditApplicationListItem = {

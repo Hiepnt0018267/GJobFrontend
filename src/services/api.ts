@@ -8,6 +8,7 @@ declare module 'axios' {
 }
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
+export const resolveApiAssetUrl = (url: string | null | undefined): string | undefined => !url ? undefined : url.startsWith('/') ? `${BASE_URL}${url}` : url
 
 const TOKEN_KEY = 'gjob_token'
 
@@ -27,6 +28,10 @@ const api = axios.create({
 
 // ─── Request interceptor: attach Bearer token ─────────────────────────────────
 api.interceptors.request.use((config) => {
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+    // Let the browser generate the multipart boundary; the JSON default is invalid for file uploads.
+    config.headers.setContentType(false)
+  }
   const token = tokenStorage.get()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`

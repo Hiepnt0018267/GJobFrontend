@@ -1,4 +1,4 @@
-import type { CV, CVTemplateSummary } from './cv'
+import type { CV, CVSourceType, CVTemplateSummary } from './cv'
 import type { Job, JobStatus } from './job'
 
 export const RECRUITER_APPLICATION_STATUSES = [
@@ -33,7 +33,12 @@ export type RecruiterApplicationJobSummary = {
 export type RecruiterApplicationCVSummary = {
   id: string
   title: string
-  template: CVTemplateSummary
+  source_type: CVSourceType
+  template: CVTemplateSummary | null
+  original_filename: string | null
+  mime_type: string | null
+  file_size: number | null
+  has_managed_photo: boolean
 }
 
 export type RecruiterApplicationListItem = {

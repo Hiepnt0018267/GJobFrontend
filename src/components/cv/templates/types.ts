@@ -9,5 +9,6 @@ export type CVTemplateComponentProps = {
   mode: CVTemplateMode
   theme: ResolvedCVTheme
   className?: string
+  photoUrl?: string | null
   children?: ReactNode
 }

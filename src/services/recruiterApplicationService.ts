@@ -1,4 +1,5 @@
 import api from './api'
+import type { AxiosResponse } from 'axios'
 import type {
   RecruiterApplicationDetail,
   RecruiterApplicationListParams,
@@ -17,6 +18,10 @@ export const recruiterApplicationService = {
   async getApplicationById(id: string, signal?: AbortSignal): Promise<RecruiterApplicationDetail> {
     return (await api.get<RecruiterApplicationDetail>(`${applicationsPath}/${id}`, { signal })).data
   },
+  async getApplicationCVFile(id: string): Promise<AxiosResponse<Blob>> {
+    return api.get<Blob>(`${applicationsPath}/${id}/cv-file`, { responseType: 'blob' })
+  },
+  async getApplicationCVPhoto(id: string): Promise<AxiosResponse<Blob>> { return api.get<Blob>(`${applicationsPath}/${id}/cv-photo`, { responseType: 'blob' }) },
   async reviewApplication(id: string): Promise<RecruiterApplicationDetail> {
     return (await api.patch<RecruiterApplicationDetail>(`${applicationsPath}/${id}/review`, undefined, { gjobSkipDataRefresh: true })).data
   },

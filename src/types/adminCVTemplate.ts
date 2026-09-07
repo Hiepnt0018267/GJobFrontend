@@ -7,6 +7,7 @@ export type AdminCVTemplate = {
   layout_key: CVTemplateLayoutKey
   theme_config: CVTemplateThemeConfig
   thumbnail_url: string | null
+  thumbnail_original_filename: string | null
   is_active: boolean
   is_featured: boolean
   sort_order: number

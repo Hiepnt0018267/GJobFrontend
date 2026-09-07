@@ -1,35 +1,18 @@
-import { ArrowLeft, Pencil, Star, Trash2 } from 'lucide-react'
+import { ArrowLeft, Download, Eye, FileText, Pencil, Star, Trash2 } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
-import CVPreview from '../../components/cv/CVPreview'
+import CVBuilderPreview from '../../components/cv/CVBuilderPreview'
+import { cvFileTypeLabel, formatFileSize, isBuilderCV, type CV } from '../../types/cv'
 import { cvService } from '../../services/cvService'
-import { cvToEditableData, type CV } from '../../types/cv'
 
 export default function CandidateCVDetailPage() {
-  const { id = '' } = useParams()
-  const refreshVersion = useDataRefreshVersion()
-  const navigate = useNavigate()
-  const [cv, setCV] = useState<CV | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-
-  useEffect(() => {
-    let cancelled = false
-    cvService.getCV(id).then((data) => { if (!cancelled) setCV(data) }).catch(() => { if (!cancelled) setError('Không thể tải CV này.') })
-    return () => { cancelled = true }
-  }, [id, refreshVersion])
-
-  const remove = async () => {
-    if (!cv || !window.confirm(cv.is_default ? 'Bạn có chắc muốn xoá CV mặc định này? Một CV khác sẽ được chọn nếu còn.' : 'Bạn có chắc muốn xoá CV này?')) return
-    setBusy(true)
-    try { await cvService.deleteCV(cv.id); navigate('/candidate/cvs') } catch { setError('Không thể xoá CV. Vui lòng thử lại.') } finally { setBusy(false) }
-  }
-  const setDefault = async () => {
-    if (!cv) return
-    setBusy(true)
-    try { setCV(await cvService.setDefaultCV(cv.id)) } catch { setError('Không thể đặt CV mặc định.') } finally { setBusy(false) }
-  }
-
-  return <div className="min-h-screen bg-slate-50"><main className="mx-auto max-w-4xl px-4 py-8 sm:px-6"><Link to="/candidate/cvs" className="inline-flex items-center gap-1 text-sm font-semibold text-slate-600 hover:text-blue-700"><ArrowLeft size={16} />CV của tôi</Link>{error && <p role="alert" className="mt-5 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}{!cv && !error && <div className="mt-6 h-96 animate-pulse rounded-xl bg-slate-200" />}{cv && <><div className="mt-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-slate-950">{cv.title}</h1>{cv.is_default && <span className="rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">Mặc định</span>}</div><p className="mt-1 text-sm text-slate-600">Bản xem trước chỉ đọc · {cv.template.name}</p></div><div className="flex flex-wrap gap-2"><Link to={`/candidate/cvs/${cv.id}/edit`} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"><Pencil size={15} />Chỉnh sửa</Link>{!cv.is_default && <button disabled={busy} onClick={() => void setDefault()} className="inline-flex items-center gap-2 rounded-lg border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"><Star size={15} />Đặt mặc định</button>}<button disabled={busy} onClick={() => void remove()} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"><Trash2 size={15} />Xoá</button></div></div><CVPreview cv={cvToEditableData(cv)} template={cv.template} className="mt-7 rounded-xl" /></>}</main></div>
+  const { id = '' } = useParams(); const navigate = useNavigate(); const [cv, setCV] = useState<CV | null>(null); const [error, setError] = useState<string | null>(null); const [busy, setBusy] = useState(false)
+  useEffect(() => { cvService.getCV(id).then(setCV).catch(() => setError('Không thể tải CV này.')) }, [id])
+  const remove = async () => { if (!cv || !window.confirm('Xóa CV này?')) return; setBusy(true); try { await cvService.deleteCV(cv.id); navigate('/candidate/cvs') } catch { setError('Không thể xóa CV vì CV này có thể đã được dùng để ứng tuyển.') } finally { setBusy(false) } }
+  const setDefault = async () => { if (!cv) return; setBusy(true); try { setCV(await cvService.setDefaultCV(cv.id)) } catch { setError('Không thể đặt CV mặc định.') } finally { setBusy(false) } }
+  const download = async (view = false) => { if (!cv) return; try { const response = await cvService.getCVFile(cv.id); const url = URL.createObjectURL(response.data); if (view && cv.mime_type === 'application/pdf') window.open(url, '_blank', 'noopener,noreferrer'); else { const anchor = document.createElement('a'); anchor.href = url; anchor.download = cv.original_filename ?? cv.title; anchor.click() } window.setTimeout(() => URL.revokeObjectURL(url), 60_000) } catch { setError('Không thể mở file CV. Vui lòng thử lại.') } }
+  if (!cv && !error) return <div className="min-h-screen bg-slate-50"><div className="mx-auto mt-8 h-96 max-w-4xl animate-pulse rounded-xl bg-slate-200" /></div>
+  if (!cv) return <p role="alert" className="m-8 text-red-700">{error}</p>
+  const previewData = { title: cv.title, template_id: cv.template_id ?? '', personal_info: cv.personal_info, career_objective: cv.career_objective, educations: cv.educations, experiences: cv.experiences, skills: cv.skills, projects: cv.projects, certificates: cv.certificates, languages: cv.languages }
+  return <div className="min-h-screen bg-slate-50"><main className="mx-auto max-w-4xl px-4 py-8 sm:px-6"><Link to="/candidate/cvs" className="inline-flex items-center gap-1 text-sm font-semibold text-slate-600"><ArrowLeft size={16} />CV của tôi</Link>{error && <p role="alert" className="mt-5 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}<div className="mt-5 flex flex-col justify-between gap-4 sm:flex-row"><div><div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-slate-950">{cv.title}</h1>{cv.is_default && <span className="rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">Mặc định</span>}</div><p className="mt-1 text-sm text-slate-600">{isBuilderCV(cv) ? `CV GJob · ${cv.template.name}` : `${cvFileTypeLabel(cv.mime_type)} · ${formatFileSize(cv.file_size)}`}</p></div><div className="flex flex-wrap gap-2">{isBuilderCV(cv) ? <Link to={`/candidate/cvs/${cv.id}/edit`} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white"><Pencil size={15} />Chỉnh sửa</Link> : <><button onClick={() => void download(true)} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white"><Eye size={15} />Xem CV</button><button onClick={() => void download()} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold"><Download size={15} />Tải xuống</button></>}{!cv.is_default && <button disabled={busy} onClick={() => void setDefault()} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold text-blue-700"><Star size={15} />Đặt mặc định</button>}<button disabled={busy} onClick={() => void remove()} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-red-600"><Trash2 size={15} />Xóa</button></div></div>{isBuilderCV(cv) ? <CVBuilderPreview cv={previewData} template={cv.template} hasManagedPhoto={cv.has_managed_photo} photoEndpoint={`/api/v1/candidate/cvs/${cv.id}/photo`} photoVersion={cv.updated_at} className="mt-7 rounded-xl" /> : <section className="mt-7 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"><FileText className="text-blue-600" /><h2 className="mt-3 font-bold text-slate-950">CV được tải lên</h2><p className="mt-1 text-sm text-slate-600">{cv.original_filename}</p></section>}</main></div>
 }
