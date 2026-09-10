@@ -46,6 +46,18 @@ export type Job = {
   updated_at: string
 }
 
+export type PublicCompanySummary = {
+  name: string
+  logo_url: string | null
+  description: string | null
+  website: string | null
+  industry: string | null
+  address: string | null
+  size: number | null
+}
+
+export type JobDetail = Job & { company: PublicCompanySummary | null }
+
 export type JobListResponse = { items: Job[]; page: number; page_size: number; total: number; total_pages: number }
 export type JobSearchParams = {
   search?: string

@@ -123,3 +123,16 @@ export function candidateApplicationErrorMessage(error: unknown, context: 'list'
   if (requestStatus >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại.'
   return context === 'list' ? 'Không thể tải danh sách đơn ứng tuyển.' : 'Không thể xử lý yêu cầu. Vui lòng thử lại.'
 }
+
+export function savedJobErrorMessage(error: unknown, context: 'list' | 'status' | 'save' | 'unsave'): string {
+  const status = getApiErrorStatus(error)
+  if (status === null) return 'Không thể kết nối tới máy chủ. Vui lòng thử lại.'
+  if (status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+  if (status === 403) return 'Chỉ ứng viên mới có thể lưu việc làm.'
+  if (status === 404) return 'Tin tuyển dụng không còn tồn tại.'
+  if (status === 409) return 'Tin tuyển dụng này hiện không thể lưu.'
+  if (status >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại.'
+  if (context === 'list') return 'Không thể tải danh sách việc làm đã lưu.'
+  if (context === 'status') return 'Không thể kiểm tra trạng thái lưu.'
+  return context === 'save' ? 'Không thể lưu việc làm.' : 'Không thể bỏ lưu việc làm.'
+}
