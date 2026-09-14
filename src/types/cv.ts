@@ -23,13 +23,37 @@ type CVBase = { id: string; title: string; is_default: boolean; has_managed_phot
 export type BuilderCVListItem = CVBase & { source_type: 'BUILDER'; template_id: string; template: CVTemplateSummary; original_filename: null; mime_type: null; file_size: null; uploaded_at: null }
 export type UploadedCVListItem = CVBase & { source_type: 'UPLOADED'; template_id: null; template: null; original_filename: string; mime_type: string; file_size: number; uploaded_at: string }
 export type CVListItem = BuilderCVListItem | UploadedCVListItem
-type CVSections = { personal_info: CVPersonalInfo; career_objective?: string | null; educations: CVEducationItem[]; experiences: CVExperienceItem[]; skills: CVSkillItem[]; projects: CVProjectItem[]; certificates: CVCertificateItem[]; languages: CVLanguageItem[] }
+export type CVStructuredData = { personal_info: CVPersonalInfo; career_objective?: string | null; educations: CVEducationItem[]; experiences: CVExperienceItem[]; skills: CVSkillItem[]; projects: CVProjectItem[]; certificates: CVCertificateItem[]; languages: CVLanguageItem[] }
+type CVSections = CVStructuredData
 export type BuilderCV = BuilderCVListItem & CVSections
 export type UploadedCV = UploadedCVListItem & CVSections
 export type CV = BuilderCV | UploadedCV
 export interface CVListResponse { items: CVListItem[]; total: number }
 export interface CVCreateRequest { title: string; template_id: string; personal_info: CVPersonalInfo; career_objective?: string | null; educations: CVEducationItem[]; experiences: CVExperienceItem[]; skills: CVSkillItem[]; projects: CVProjectItem[]; certificates: CVCertificateItem[]; languages: CVLanguageItem[] }
 export type CVUpdateRequest = Partial<CVCreateRequest>
+
+export type CVExtractionStatus = 'PROCESSING' | 'SUCCEEDED' | 'FAILED'
+export interface CVExtraction {
+  id: string
+  cv_id: string
+  status: CVExtractionStatus
+  provider: string
+  model: string
+  result: CVStructuredData | null
+  error_code: string | null
+  failure_reason: string | null
+  started_at: string
+  completed_at: string | null
+  confirmed_at: string | null
+  created_at: string
+  updated_at: string
+}
+export interface CVExtractionConfirmationResponse {
+  cv_id: string
+  extraction_id: string
+  confirmed_at: string
+  cv: CV
+}
 
 export function isBuilderCV(cv: CVListItem): cv is BuilderCVListItem
 export function isBuilderCV(cv: CV): cv is BuilderCV

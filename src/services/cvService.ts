@@ -1,12 +1,12 @@
 import api from './api'
 import type { AxiosResponse } from 'axios'
-import type { CV, CVCreateRequest, CVListResponse, CVUpdateRequest } from '../types/cv'
+import type { CV, CVCreateRequest, CVExtraction, CVExtractionConfirmationResponse, CVListResponse, CVStructuredData, CVUpdateRequest } from '../types/cv'
 
 const BASE = '/api/v1/candidate/cvs'
 
 export const cvService = {
   async getCVs(): Promise<CVListResponse> { return (await api.get<CVListResponse>(BASE)).data },
-  async getCV(id: string): Promise<CV> { return (await api.get<CV>(`${BASE}/${id}`)).data },
+  async getCV(id: string, signal?: AbortSignal): Promise<CV> { return (await api.get<CV>(`${BASE}/${id}`, { signal })).data },
   async createCV(data: CVCreateRequest): Promise<CV> { return (await api.post<CV>(BASE, data)).data },
   async uploadCV(title: string, file: File): Promise<CV> {
     const data = new FormData()
@@ -24,4 +24,13 @@ export const cvService = {
     return (await api.post<CV>(`${BASE}/${id}/photo`, data, { gjobSkipDataRefresh: true })).data
   },
   async deleteCVPhoto(id: string): Promise<CV> { return (await api.delete<CV>(`${BASE}/${id}/photo`, { gjobSkipDataRefresh: true })).data },
+  async triggerExtraction(id: string, signal?: AbortSignal): Promise<CVExtraction> {
+    return (await api.post<CVExtraction>(`${BASE}/${id}/extractions`, undefined, { signal, timeout: 60_000 })).data
+  },
+  async getLatestExtraction(id: string, signal?: AbortSignal): Promise<CVExtraction> {
+    return (await api.get<CVExtraction>(`${BASE}/${id}/extractions/latest`, { signal })).data
+  },
+  async confirmExtraction(id: string, extractionId: string, payload: CVStructuredData, signal?: AbortSignal): Promise<CVExtractionConfirmationResponse> {
+    return (await api.post<CVExtractionConfirmationResponse>(`${BASE}/${id}/extractions/${extractionId}/confirm`, payload, { signal })).data
+  },
 }

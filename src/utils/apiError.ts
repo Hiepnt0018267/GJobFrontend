@@ -136,3 +136,21 @@ export function savedJobErrorMessage(error: unknown, context: 'list' | 'status' 
   if (context === 'status') return 'Không thể kiểm tra trạng thái lưu.'
   return context === 'save' ? 'Không thể lưu việc làm.' : 'Không thể bỏ lưu việc làm.'
 }
+
+export type CVExtractionErrorKind = 'not-found' | 'conflict' | 'invalid' | 'document' | 'provider' | 'network' | 'unknown'
+
+export function cvExtractionError(error: unknown): { kind: CVExtractionErrorKind; message: string } {
+  const status = getApiErrorStatus(error)
+  const detail = getApiErrorDetail(error)
+  if (status === 404) return { kind: 'not-found', message: 'Chưa có bản phân tích cho CV này.' }
+  if (status === 409) return { kind: 'conflict', message: 'Đã có bản phân tích mới hơn. Hãy tải bản mới trước khi xác nhận.' }
+  if (status === 422) {
+    const isDocumentError = detail.includes('document') || detail.includes('extract') || detail.includes('tệp') || detail.includes('file')
+    return isDocumentError
+      ? { kind: 'document', message: 'CV có thể là file scan hoặc không chứa văn bản có thể đọc được. Hiện tại GJob chưa hỗ trợ OCR.' }
+      : { kind: 'invalid', message: 'Một số thông tin chưa hợp lệ. Hãy kiểm tra các phần được đánh dấu.' }
+  }
+  if (status === 502 || status === 503) return { kind: 'provider', message: 'Dịch vụ phân tích CV đang tạm thời gián đoạn. Bạn có thể thử lại sau.' }
+  if (status === null) return { kind: 'network', message: 'Không thể kết nối tới máy chủ. Nội dung đang hiển thị vẫn được giữ nguyên.' }
+  return { kind: 'unknown', message: status >= 500 ? 'Máy chủ đang gặp sự cố. Vui lòng thử lại.' : 'Không thể xử lý yêu cầu lúc này.' }
+}
