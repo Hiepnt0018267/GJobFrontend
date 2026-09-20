@@ -5,6 +5,7 @@ import { Link, useLocation, useParams } from 'react-router-dom'
 import JobApplyAction from '../../components/application/JobApplyAction'
 import CompanyInformationCard from '../../components/jobs/CompanyInformationCard'
 import SavedJobButton from '../../components/jobs/SavedJobButton'
+import CandidateJobMatchPanel from '../../components/matching/CandidateJobMatchPanel'
 import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 import { jobService } from '../../services/jobService'
 import type { JobDetail } from '../../types/job'
@@ -146,6 +147,7 @@ export default function JobDetailPage() {
                 <p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-600">{job.requirements}</p>
               </section>
             )}
+            <CandidateJobMatchPanel jobId={job.id} jobStatus={job.status} />
             {job.benefits && (
               <section className="mt-8">
                 <h2 className="text-lg font-semibold text-slate-900">Quyền lợi</h2>

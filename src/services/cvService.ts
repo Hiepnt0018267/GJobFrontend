@@ -3,9 +3,10 @@ import type { AxiosResponse } from 'axios'
 import type { CV, CVCreateRequest, CVExtraction, CVExtractionConfirmationResponse, CVListResponse, CVStructuredData, CVUpdateRequest } from '../types/cv'
 
 const BASE = '/api/v1/candidate/cvs'
+const CV_EXTRACTION_TIMEOUT_MS = 120_000
 
 export const cvService = {
-  async getCVs(): Promise<CVListResponse> { return (await api.get<CVListResponse>(BASE)).data },
+  async getCVs(signal?: AbortSignal): Promise<CVListResponse> { return (await api.get<CVListResponse>(BASE, { signal })).data },
   async getCV(id: string, signal?: AbortSignal): Promise<CV> { return (await api.get<CV>(`${BASE}/${id}`, { signal })).data },
   async createCV(data: CVCreateRequest): Promise<CV> { return (await api.post<CV>(BASE, data)).data },
   async uploadCV(title: string, file: File): Promise<CV> {
@@ -25,7 +26,7 @@ export const cvService = {
   },
   async deleteCVPhoto(id: string): Promise<CV> { return (await api.delete<CV>(`${BASE}/${id}/photo`, { gjobSkipDataRefresh: true })).data },
   async triggerExtraction(id: string, signal?: AbortSignal): Promise<CVExtraction> {
-    return (await api.post<CVExtraction>(`${BASE}/${id}/extractions`, undefined, { signal, timeout: 60_000 })).data
+    return (await api.post<CVExtraction>(`${BASE}/${id}/extractions`, undefined, { signal, timeout: CV_EXTRACTION_TIMEOUT_MS })).data
   },
   async getLatestExtraction(id: string, signal?: AbortSignal): Promise<CVExtraction> {
     return (await api.get<CVExtraction>(`${BASE}/${id}/extractions/latest`, { signal })).data

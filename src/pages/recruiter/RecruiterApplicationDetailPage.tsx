@@ -2,6 +2,7 @@ import { AlertCircle, ArrowLeft, BriefcaseBusiness, CalendarClock, Mail, MapPin,
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import QueryFetchFeedback from '../../components/feedback/QueryFetchFeedback'
+import RecruiterApplicationMatchPanel from '../../components/matching/RecruiterApplicationMatchPanel'
 import RecruiterApplicationActionDialog from '../../components/recruiter/RecruiterApplicationActionDialog'
 import RecruiterApplicationAvatar from '../../components/recruiter/RecruiterApplicationAvatar'
 import RecruiterApplicationStatusBadge from '../../components/recruiter/RecruiterApplicationStatusBadge'
@@ -131,6 +132,8 @@ export default function RecruiterApplicationDetailPage() {
 
         {notice && <p role="status" className={`motion-error rounded-xl px-4 py-3 text-sm font-medium ring-1 ${noticeClass}`}>{notice.message}</p>}
         <QueryFetchFeedback isFetching={isFetching} errorMessage={errorMessage} onRetry={refetch} />
+
+        <RecruiterApplicationMatchPanel applicationId={application.id} candidateName={application.candidate.full_name} jobTitle={application.job.title} />
 
         <section aria-label="CV và thông tin ứng viên">
           <div className="mb-4"><h2 className="text-xl font-bold text-slate-950">CV ứng viên</h2><p className="mt-1 text-sm text-slate-500">Bản xem chỉ đọc của CV được nộp cùng đơn ứng tuyển.</p></div>

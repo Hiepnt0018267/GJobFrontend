@@ -51,7 +51,16 @@ export function getApiErrorStatus(error: unknown): number | null {
 function getApiErrorDetail(error: unknown): string {
   if (!axios.isAxiosError(error) || !error.response?.data || typeof error.response.data !== 'object') return ''
   const detail = 'detail' in error.response.data ? error.response.data.detail : ''
-  return typeof detail === 'string' ? detail.toLowerCase() : ''
+  if (typeof detail === 'string') return detail.toLowerCase()
+  if (detail && typeof detail === 'object' && 'message' in detail && typeof detail.message === 'string') return detail.message.toLowerCase()
+  return ''
+}
+
+function getApiErrorCode(error: unknown): string {
+  if (!axios.isAxiosError(error) || !error.response?.data || typeof error.response.data !== 'object') return ''
+  const detail = 'detail' in error.response.data ? error.response.data.detail : null
+  if (!detail || typeof detail !== 'object' || !('code' in detail)) return ''
+  return typeof detail.code === 'string' ? detail.code : ''
 }
 
 export function adminJobErrorMessage(error: unknown, context: 'list' | 'detail' | 'action'): string {
@@ -137,11 +146,16 @@ export function savedJobErrorMessage(error: unknown, context: 'list' | 'status' 
   return context === 'save' ? 'Không thể lưu việc làm.' : 'Không thể bỏ lưu việc làm.'
 }
 
-export type CVExtractionErrorKind = 'not-found' | 'conflict' | 'invalid' | 'document' | 'provider' | 'network' | 'unknown'
+export type CVExtractionErrorKind = 'not-found' | 'conflict' | 'invalid' | 'document' | 'rate-limit' | 'provider' | 'network' | 'unknown'
 
 export function cvExtractionError(error: unknown): { kind: CVExtractionErrorKind; message: string } {
+  if (axios.isAxiosError(error) && error.code === 'ECONNABORTED') {
+    return { kind: 'network', message: 'Hệ thống vẫn có thể đang xử lý CV. Hãy mở lại CV để kiểm tra trạng thái mới nhất.' }
+  }
   const status = getApiErrorStatus(error)
   const detail = getApiErrorDetail(error)
+  const code = getApiErrorCode(error)
+  if (code === 'AI_RATE_LIMITED' || (status === 503 && detail.includes('rate limited'))) return { kind: 'rate-limit', message: 'Hệ thống AI đang giới hạn lượt xử lý. Bạn có thể thử lại sau.' }
   if (status === 404) return { kind: 'not-found', message: 'Chưa có bản phân tích cho CV này.' }
   if (status === 409) return { kind: 'conflict', message: 'Đã có bản phân tích mới hơn. Hãy tải bản mới trước khi xác nhận.' }
   if (status === 422) {

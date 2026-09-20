@@ -6,6 +6,7 @@ export type CVFontScale = 'SMALL' | 'NORMAL' | 'LARGE'
 export type CVSectionSpacing = 'COMPACT' | 'NORMAL' | 'RELAXED'
 export type CVHeadingStyle = 'SOLID' | 'UNDERLINE' | 'MINIMAL'
 export type CVSourceType = 'BUILDER' | 'UPLOADED'
+export type CVExtractionStatus = 'PROCESSING' | 'SUCCEEDED' | 'FAILED'
 
 export interface CVTemplateThemeConfig { primary_color: string; font_family: CVFontFamily; font_scale: CVFontScale; section_spacing: CVSectionSpacing; heading_style: CVHeadingStyle }
 export interface CVTemplateSummary { id: string; name: string; layout_key: CVTemplateLayoutKey; theme_config?: Partial<CVTemplateThemeConfig> | null; is_featured: boolean; sort_order: number }
@@ -19,7 +20,7 @@ export interface CVProjectItem { name: string; role?: string | null; start_date?
 export interface CVCertificateItem { name: string; organization?: string | null; issue_date?: string | null; expiration_date?: string | null; credential_url?: string | null }
 export interface CVLanguageItem { name: string; proficiency?: CVLanguageProficiency | null }
 
-type CVBase = { id: string; title: string; is_default: boolean; has_managed_photo: boolean; created_at: string; updated_at: string }
+type CVBase = { id: string; title: string; is_default: boolean; has_managed_photo: boolean; created_at: string; updated_at: string; extraction_status?: CVExtractionStatus | null; extraction_error_code?: string | null; is_matchable?: boolean | null; is_verified?: boolean | null }
 export type BuilderCVListItem = CVBase & { source_type: 'BUILDER'; template_id: string; template: CVTemplateSummary; original_filename: null; mime_type: null; file_size: null; uploaded_at: null }
 export type UploadedCVListItem = CVBase & { source_type: 'UPLOADED'; template_id: null; template: null; original_filename: string; mime_type: string; file_size: number; uploaded_at: string }
 export type CVListItem = BuilderCVListItem | UploadedCVListItem
@@ -32,7 +33,6 @@ export interface CVListResponse { items: CVListItem[]; total: number }
 export interface CVCreateRequest { title: string; template_id: string; personal_info: CVPersonalInfo; career_objective?: string | null; educations: CVEducationItem[]; experiences: CVExperienceItem[]; skills: CVSkillItem[]; projects: CVProjectItem[]; certificates: CVCertificateItem[]; languages: CVLanguageItem[] }
 export type CVUpdateRequest = Partial<CVCreateRequest>
 
-export type CVExtractionStatus = 'PROCESSING' | 'SUCCEEDED' | 'FAILED'
 export interface CVExtraction {
   id: string
   cv_id: string

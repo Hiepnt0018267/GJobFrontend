@@ -1,5 +1,6 @@
 import { Banknote, BriefcaseBusiness, Building2, CalendarDays, MapPin, UsersRound } from 'lucide-react'
 import AdminJobModerationActions from './AdminJobModerationActions'
+import AdminJobPublisherInfo from './AdminJobPublisherInfo'
 import AdminJobStatusBadge from './AdminJobStatusBadge'
 import type { AdminJob } from '../../../types/adminJob'
 import { employmentLabel, formatJobTimestamp, formatSalary, industryLabel, levelLabel, workModeLabel } from '../../../utils/jobDisplay'
@@ -38,7 +39,7 @@ export default function AdminJobReviewContent({ job, onUpdated, onConflict }: Ad
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <article className="space-y-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
           <section>
             <h2 className="text-lg font-bold text-slate-950">Mô tả công việc</h2>
@@ -60,17 +61,19 @@ export default function AdminJobReviewContent({ job, onUpdated, onConflict }: Ad
           </section>}
         </article>
 
-        <aside className="h-fit rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          <h2 className="text-lg font-bold text-slate-950">Thông tin review</h2>
-          <dl className="mt-5 space-y-4 text-sm">
-            <div><dt className="text-slate-500">Ngành nghề</dt><dd className="mt-1 font-semibold text-slate-900">{industryLabel(job.industry)}</dd></div>
-            <div><dt className="text-slate-500">Cấp bậc</dt><dd className="mt-1 font-semibold text-slate-900">{levelLabel(job.level)}</dd></div>
-            <div><dt className="text-slate-500">Cách thức làm việc</dt><dd className="mt-1 font-semibold text-slate-900">{workModeLabel(job.work_mode)}</dd></div>
-            <div><dt className="flex items-center gap-1.5 text-slate-500"><Banknote size={15} aria-hidden="true" />Mức lương</dt><dd className="mt-1 font-semibold text-emerald-700">{formatSalary(job)}</dd></div>
-            <div><dt className="text-slate-500">Cập nhật lần cuối</dt><dd className="mt-1 font-semibold text-slate-900">{formatJobTimestamp(job.updated_at)}</dd></div>
-            <div><dt className="text-slate-500">Mã người đăng</dt><dd className="mt-1 break-all font-medium text-slate-700">{job.recruiter_id || 'Không có dữ liệu'}</dd></div>
-          </dl>
-        </aside>
+        <div className="h-fit space-y-5">
+          <AdminJobPublisherInfo job={job} />
+          <aside className="rounded-2xl bg-white p-6 ring-1 ring-slate-200">
+            <h2 className="text-lg font-bold text-slate-950">Thông tin kiểm duyệt</h2>
+            <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-1">
+              <div><dt className="text-slate-500">Ngành nghề trên tin</dt><dd className="mt-1 font-semibold text-slate-900">{industryLabel(job.industry)}</dd></div>
+              <div><dt className="text-slate-500">Cấp bậc</dt><dd className="mt-1 font-semibold text-slate-900">{levelLabel(job.level)}</dd></div>
+              <div><dt className="text-slate-500">Cách thức làm việc</dt><dd className="mt-1 font-semibold text-slate-900">{workModeLabel(job.work_mode)}</dd></div>
+              <div><dt className="flex items-center gap-1.5 text-slate-500"><Banknote size={15} aria-hidden="true" />Mức lương</dt><dd className="mt-1 font-semibold text-emerald-700">{formatSalary(job)}</dd></div>
+              <div><dt className="text-slate-500">Cập nhật lần cuối</dt><dd className="mt-1 font-semibold text-slate-900">{formatJobTimestamp(job.updated_at)}</dd></div>
+            </dl>
+          </aside>
+        </div>
       </section>
     </div>
   )
