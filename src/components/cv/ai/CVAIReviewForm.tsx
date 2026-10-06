@@ -80,7 +80,7 @@ export default function CVAIReviewForm({ draft, submitting, submitError, onChang
       <Field label="Mục tiêu"><textarea className={`${fieldClass} min-h-32 resize-y leading-6`} value={draft.career_objective} maxLength={5000} onChange={(event) => onChange({ ...draft, career_objective: event.target.value })} /></Field>
     </Section>
 
-    <Section title="Học vấn" description="Bổ sung trường học, bằng cấp và thời gian nếu AI nhận diện còn thiếu.">
+    <Section title="Học vấn" description="Bổ sung trường học, bằng cấp và thời gian nếu thông tin còn thiếu.">
       <div className="space-y-3">{draft.educations.length === 0 && <EmptyHint label="học vấn" />}{draft.educations.map(({ key, value }, index) => <ItemCard key={key} label={`học vấn ${index + 1}`} onRemove={() => onChange({ ...draft, educations: removeRow(draft.educations, key) })}>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Trường học" required><input required className={fieldClass} value={value.school_name} maxLength={255} onChange={(event) => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { school_name: event.target.value }) })} /></Field>
@@ -95,7 +95,7 @@ export default function CVAIReviewForm({ draft, submitting, submitError, onChang
       <AddButton onClick={() => onChange({ ...draft, educations: [...draft.educations, newReviewRow({ school_name: '', is_current: false })] })}>Thêm học vấn</AddButton>
     </Section>
 
-    <Section title="Kinh nghiệm" description="Mỗi mục cần có công ty và vị trí để có thể xác nhận.">
+    <Section title="Kinh nghiệm" description="Mỗi mục cần có công ty và vị trí để lưu chính xác.">
       <div className="space-y-3">{draft.experiences.length === 0 && <EmptyHint label="kinh nghiệm" />}{draft.experiences.map(({ key, value }, index) => <ItemCard key={key} label={`kinh nghiệm ${index + 1}`} onRemove={() => onChange({ ...draft, experiences: removeRow(draft.experiences, key) })}>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Vị trí" required><input required className={fieldClass} value={value.position} maxLength={255} onChange={(event) => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { position: event.target.value }) })} /></Field>
@@ -144,7 +144,7 @@ export default function CVAIReviewForm({ draft, submitting, submitError, onChang
       <AddButton onClick={() => onChange({ ...draft, certificates: [...draft.certificates, newReviewRow({ name: '' })] })}>Thêm chứng chỉ</AddButton>
     </Section>
 
-    <Section title="Ngoại ngữ" description="Bạn có thể nhập trình độ theo cách quen thuộc; hệ thống sẽ chuẩn hóa khi xác nhận.">
+    <Section title="Ngoại ngữ" description="Bạn có thể nhập trình độ theo cách quen thuộc.">
       <datalist id="cv-language-levels"><option value="Cơ bản" /><option value="Giao tiếp" /><option value="Chuyên nghiệp" /><option value="Thành thạo" /><option value="Bản ngữ" /></datalist>
       <div className="space-y-3">{draft.languages.length === 0 && <EmptyHint label="ngoại ngữ" />}{draft.languages.map(({ key, value }, index) => <ItemCard key={key} label={`ngoại ngữ ${index + 1}`} onRemove={() => onChange({ ...draft, languages: removeRow(draft.languages, key) })}>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -156,9 +156,9 @@ export default function CVAIReviewForm({ draft, submitting, submitError, onChang
     </Section>
 
     <section className="rounded-2xl bg-slate-950 p-5 text-white shadow-lg shadow-slate-950/10 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-6">
-      <div><h3 className="font-bold">Sẵn sàng áp dụng thông tin?</h3><p className="mt-1 max-w-xl text-sm leading-6 text-slate-300">Dữ liệu bạn đã kiểm tra sẽ trở thành thông tin có cấu trúc chính thức của CV này.</p></div>
+      <div><h3 className="font-bold">Lưu thông tin đã kiểm tra?</h3><p className="mt-1 max-w-xl text-sm leading-6 text-slate-300">Các chỉnh sửa của bạn sẽ được dùng làm thông tin chính thức cho CV này.</p></div>
       <button type="submit" disabled={submitting} className="mt-4 inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-xl bg-blue-500 px-5 py-2.5 text-sm font-bold text-white transition-[background-color,transform] duration-[var(--motion-feedback)] ease-[var(--ease-gjob)] hover:bg-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-wait disabled:opacity-60 sm:mt-0 sm:w-auto">
-        {submitting ? 'Đang áp dụng…' : 'Xác nhận và áp dụng'}
+        {submitting ? 'Đang lưu…' : 'Lưu thông tin CV'}
       </button>
     </section>
     {submitError && <p role="alert" className="motion-error rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-800 ring-1 ring-red-100">{submitError}</p>}

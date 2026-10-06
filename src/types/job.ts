@@ -25,6 +25,7 @@ export type Job = {
   title: string
   description: string
   company_name: string
+  company_logo_url?: string | null
   location: string | null
   salary_min: number | null
   salary_max: number | null

@@ -121,9 +121,9 @@ export default function MatchResultPanel({ baseline, semantic, computedAt, isFet
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
         <Clock3 size={15} aria-hidden="true" />
-        <span>Phân tích lúc {dateFormat.format(new Date(computedAt))}</span>
+        <span>So khớp lúc {dateFormat.format(new Date(computedAt))}</span>
       </div>
-      {isFetching && <span role="status" aria-live="polite" className="inline-flex items-center gap-2 text-xs font-semibold text-blue-700"><RefreshCw size={14} className="animate-spin" aria-hidden="true" />Đang cập nhật phân tích…</span>}
+      {isFetching && <span role="status" aria-live="polite" className="inline-flex items-center gap-2 text-xs font-semibold text-blue-700"><RefreshCw size={14} className="animate-spin" aria-hidden="true" />Đang cập nhật kết quả…</span>}
     </div>
 
     <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(16rem,5fr)]">

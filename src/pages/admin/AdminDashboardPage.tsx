@@ -13,24 +13,24 @@ function DashboardSkeleton() {
   return (
     <div className="space-y-6" aria-label="Đang tải dữ liệu tổng quan" aria-busy="true">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }, (_, index) => <div key={index} className="h-36 animate-pulse rounded-2xl bg-slate-200" />)}
+        {Array.from({ length: 4 }, (_, index) => <div key={index} className="h-36 rounded-2xl skeleton-shimmer" />)}
       </div>
       <div className="grid gap-6 xl:grid-cols-2">
-        <div className="h-72 animate-pulse rounded-2xl bg-slate-200" />
-        <div className="h-72 animate-pulse rounded-2xl bg-slate-200" />
+        <div className="h-72 rounded-2xl skeleton-shimmer" />
+        <div className="h-72 rounded-2xl skeleton-shimmer" />
       </div>
-      <div className="h-52 animate-pulse rounded-2xl bg-slate-200" />
+      <div className="h-52 rounded-2xl skeleton-shimmer" />
     </div>
   )
 }
 
 function DashboardError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <section role="alert" className="rounded-2xl bg-white px-6 py-12 text-center shadow-sm ring-1 ring-slate-200">
-      <AlertCircle className="mx-auto text-red-600" size={32} aria-hidden="true" />
-      <h2 className="mt-4 text-lg font-bold text-slate-950">Không thể tải dữ liệu tổng quan.</h2>
+    <section role="alert" className="rounded-2xl bg-white px-6 py-12 text-center shadow-premium border border-slate-200/80">
+      <AlertCircle className="mx-auto text-red-600" size={36} aria-hidden="true" />
+      <h2 className="mt-4 text-lg font-bold text-slate-950 font-[Plus_Jakarta_Sans,sans-serif]">Không thể tải dữ liệu tổng quan.</h2>
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{message}</p>
-      <button type="button" onClick={onRetry} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+      <button type="button" onClick={onRetry} className="btn-press mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
         <RefreshCw size={16} aria-hidden="true" />
         Thử lại
       </button>
@@ -106,16 +106,25 @@ export default function AdminDashboardPage() {
   const templateMetrics = dashboard ? getTemplateMetrics(dashboard) : []
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50/70">
       <AdminHeader />
 
       <main className="mx-auto max-w-7xl space-y-7 px-4 py-8 sm:px-6 lg:px-8">
-        <header className="flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end">
+        <header className="flex flex-col justify-between gap-4 border-b border-slate-200/80 pb-6 sm:flex-row sm:items-end">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Tổng quan hệ thống</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Theo dõi hoạt động và dữ liệu chính của GJob.</p>
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl font-[Plus_Jakarta_Sans,sans-serif]">
+              Tổng quan hệ thống
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Theo dõi hoạt động, trạng thái tài khoản và dữ liệu toàn sàn GJob.
+            </p>
           </div>
-          <button type="button" onClick={refreshDashboard} disabled={!dashboard} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+          <button
+            type="button"
+            onClick={refreshDashboard}
+            disabled={!dashboard}
+            className="btn-press inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200/90 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-xs transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          >
             <RefreshCw size={16} aria-hidden="true" />
             Làm mới
           </button>
@@ -144,12 +153,20 @@ export default function AdminDashboardPage() {
             </section>
 
             {dashboard.jobs.pending > 0 && (
-              <aside className="flex flex-col gap-3 rounded-2xl bg-amber-50 px-5 py-4 text-sm text-amber-950 ring-1 ring-amber-200 sm:flex-row sm:items-start sm:justify-between">
+              <aside className="flex flex-col gap-3 rounded-2xl border border-amber-200/80 bg-amber-50/80 p-5 text-sm text-amber-950 shadow-xs sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-start gap-3">
-                <Clock3 size={19} className="mt-0.5 shrink-0 text-amber-700" aria-hidden="true" />
-                <p><span className="font-semibold">{dashboard.jobs.pending.toLocaleString('vi-VN')} tin đang chờ duyệt.</span> Các tin này cần được xem xét trước khi được công khai cho ứng viên.</p>
+                  <Clock3 size={20} className="mt-0.5 shrink-0 text-amber-700" aria-hidden="true" />
+                  <p>
+                    <span className="font-bold text-amber-950">{dashboard.jobs.pending.toLocaleString('vi-VN')} tin đang chờ duyệt.</span>{' '}
+                    Các tin này cần được xem xét và phê duyệt trước khi công khai cho ứng viên trên sàn.
+                  </p>
                 </div>
-                <Link to="/admin/jobs?status=PENDING" className="shrink-0 font-semibold text-amber-900 underline decoration-amber-400 underline-offset-4 hover:text-amber-950">Quản lý tin tuyển dụng</Link>
+                <Link
+                  to="/admin/jobs?status=PENDING"
+                  className="btn-press shrink-0 inline-flex items-center gap-1 rounded-xl bg-amber-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-amber-700"
+                >
+                  Xử lý ngay →
+                </Link>
               </aside>
             )}
           </div>

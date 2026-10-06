@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { AlertCircle, Edit2, MapPin, Phone, Mail, FileText } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Edit2, FileText, Mail, MapPin, Phone, Sparkles } from 'lucide-react'
 import { userService } from '../../services/userService'
 import type { User } from '../../types/auth'
 import axios from 'axios'
@@ -79,6 +79,23 @@ export default function CandidateProfilePage() {
     return () => { cancelled = true }
   }, [refreshVersion, requestVersion])
 
+  const completeness = useMemo(() => {
+    if (!profile) return { percent: 0, filledCount: 0, total: 5 }
+    const fields = [
+      Boolean(profile.full_name?.trim()),
+      Boolean(profile.email?.trim()),
+      Boolean(profile.phone?.trim()),
+      Boolean(profile.address?.trim()),
+      Boolean(profile.bio?.trim()),
+    ]
+    const filledCount = fields.filter(Boolean).length
+    return {
+      percent: Math.round((filledCount / fields.length) * 100),
+      filledCount,
+      total: fields.length,
+    }
+  }, [profile])
+
   return (
     <div className="min-h-screen bg-slate-50">
 
@@ -91,14 +108,73 @@ export default function CandidateProfilePage() {
           <span className="text-slate-600 font-medium">Hồ sơ cá nhân</span>
         </nav>
 
+        {/* Profile Completeness Card */}
+        {!loading && !loadError && profile && (
+          <div className="mb-6 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3.5">
+                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl font-bold text-sm ${
+                  completeness.percent === 100 ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'
+                }`}>
+                  {completeness.percent === 100 ? (
+                    <Sparkles size={20} className="text-emerald-500" />
+                  ) : (
+                    `${completeness.percent}%`
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-sm font-bold text-slate-900">Độ hoàn thiện hồ sơ</h2>
+                    {completeness.percent === 100 ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                        <CheckCircle2 size={12} /> Hoàn hảo
+                      </span>
+                    ) : (
+                      <span className="text-xs font-medium text-slate-500">({completeness.filledCount}/{completeness.total} mục đã điền)</span>
+                    )}
+                  </div>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    {completeness.percent === 100
+                      ? 'Hồ sơ của bạn đã sẵn sàng và tạo ấn tượng tốt nhất với các nhà tuyển dụng!'
+                      : 'Hoàn thiện đầy đủ thông tin để tăng 70% cơ hội kết nối với công việc mơ ước.'}
+                  </p>
+                </div>
+              </div>
+              {completeness.percent < 100 && (
+                <button
+                  onClick={() => navigate('/candidate/profile/edit')}
+                  className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50/50 px-3.5 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 hover:text-blue-800"
+                >
+                  <Edit2 size={13} />
+                  Hoàn thiện ngay
+                </button>
+              )}
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mt-3.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  completeness.percent === 100
+                    ? 'bg-emerald-500'
+                    : completeness.percent >= 60
+                    ? 'bg-blue-600'
+                    : 'bg-amber-500'
+                }`}
+                style={{ width: `${completeness.percent}%` }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Card */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm shadow-slate-200/50">
           {/* Card header */}
           <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
             <div>
-              <h1 className="text-lg font-bold text-slate-900">Hồ sơ cá nhân</h1>
+              <h1 className="text-lg font-bold text-slate-900">Thông tin chi tiết</h1>
               <p className="text-sm text-slate-500 mt-0.5">
-                Quản lý thông tin cá nhân của bạn
+                Quản lý thông tin tài khoản và lý lịch
               </p>
             </div>
             {!loading && !loadError && profile && (
@@ -165,7 +241,13 @@ export default function CandidateProfilePage() {
                       <Phone size={14} className="text-slate-400" /> Số điện thoại
                     </h3>
                     <p className="text-slate-900 text-base">
-                      {profile.phone || <span className="text-slate-400 italic">Chưa cập nhật</span>}
+                      {profile.phone ? (
+                        profile.phone
+                      ) : (
+                        <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                          Chưa cập nhật
+                        </span>
+                      )}
                     </p>
                   </div>
 
@@ -175,7 +257,13 @@ export default function CandidateProfilePage() {
                       <MapPin size={14} className="text-slate-400" /> Địa chỉ
                     </h3>
                     <p className="text-slate-900 text-base">
-                      {profile.address || <span className="text-slate-400 italic">Chưa cập nhật</span>}
+                      {profile.address ? (
+                        profile.address
+                      ) : (
+                        <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                          Chưa cập nhật
+                        </span>
+                      )}
                     </p>
                   </div>
 
@@ -185,7 +273,13 @@ export default function CandidateProfilePage() {
                       <FileText size={14} className="text-slate-400" /> Giới thiệu bản thân
                     </h3>
                     <p className="text-slate-900 text-base whitespace-pre-wrap leading-relaxed">
-                      {profile.bio || <span className="text-slate-400 italic">Chưa cập nhật</span>}
+                      {profile.bio ? (
+                        profile.bio
+                      ) : (
+                        <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                          Chưa có giới thiệu bản thân
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>

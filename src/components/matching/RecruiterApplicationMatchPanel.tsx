@@ -18,12 +18,12 @@ export default function RecruiterApplicationMatchPanel({ applicationId, candidat
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700"><ScanSearch size={20} aria-hidden="true" /></span>
         <div className="min-w-0">
           <h2 id="recruiter-match-title" className="text-lg font-bold text-slate-950">Đối chiếu CV và công việc</h2>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">Phân tích CV của <span className="font-semibold text-slate-800">{candidateName}</span> với vị trí <span className="font-semibold text-slate-800">{jobTitle}</span>. Hai tín hiệu không thay thế đánh giá tuyển dụng.</p>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">So khớp CV của <span className="font-semibold text-slate-800">{candidateName}</span> với vị trí <span className="font-semibold text-slate-800">{jobTitle}</span>. Các chỉ số không thay thế đánh giá tuyển dụng.</p>
         </div>
       </div>
       <button type="button" onClick={() => void run()} disabled={isFetching} className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-[background-color,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-blue-700 disabled:cursor-wait disabled:bg-slate-300 sm:w-auto">
         {isFetching ? <Loader2 size={17} className="animate-spin" aria-hidden="true" /> : <ScanSearch size={17} aria-hidden="true" />}
-        {isFetching ? 'Đang phân tích…' : result ? 'Phân tích lại' : 'Phân tích mức độ khớp'}
+        {isFetching ? 'Đang so khớp…' : result ? 'So khớp lại' : 'So khớp CV'}
       </button>
     </div>
 
@@ -32,7 +32,7 @@ export default function RecruiterApplicationMatchPanel({ applicationId, candidat
       <button type="button" onClick={() => void run()} disabled={isFetching} className="inline-flex min-h-11 shrink-0 items-center self-start rounded-lg px-2 font-semibold underline underline-offset-4 disabled:opacity-60 sm:self-auto">Thử lại</button>
     </div>}
 
-    {result && !isFetching && <p role="status" className="sr-only">Phân tích CV ứng viên và công việc đã hoàn tất.</p>}
+    {result && !isFetching && <p role="status" className="sr-only">So khớp CV ứng viên và công việc đã hoàn tất.</p>}
     {result && <MatchResultPanel baseline={result.baseline} semantic={result.semantic} computedAt={result.computed_at} isFetching={isFetching} onRetry={() => void run()} />}
   </section>
 }

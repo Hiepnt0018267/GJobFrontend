@@ -69,5 +69,3 @@ export type CVJobMatchResponse = {
   computed_at: string
   cached: boolean
 }
-
-export type CandidateMatchRequest = { cv_id: string }

@@ -56,16 +56,55 @@ export default function AdminUserFilters({ role, activeStatus, search, onSearchC
   }
 
   return (
-    <section className="mt-6 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-5" aria-label="Tìm kiếm và lọc người dùng">
+    <section className="mt-6 rounded-2xl bg-white p-4 shadow-premium border border-slate-200/80 sm:p-5" aria-label="Tìm kiếm và lọc người dùng">
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_220px]">
         <label className="relative block">
           <span className="sr-only">Tìm người dùng</span>
           <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
-          <input ref={inputRef} defaultValue={search} onChange={(event) => scheduleSearch(event.target.value)} placeholder="Tìm theo họ tên hoặc email..." className="peer w-full rounded-xl border border-slate-300 py-3 pl-11 pr-11 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
-          <button type="button" onClick={clearSearch} className="pointer-events-auto absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 rounded-lg p-1.5 text-slate-400 transition-[color,opacity] hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 peer-placeholder-shown:pointer-events-none peer-placeholder-shown:opacity-0" aria-label="Xóa từ khóa tìm kiếm"><X size={16} aria-hidden="true" /></button>
+          <input
+            ref={inputRef}
+            defaultValue={search}
+            onChange={(event) => scheduleSearch(event.target.value)}
+            placeholder="Tìm theo họ tên hoặc email..."
+            className="peer w-full rounded-xl border border-slate-200/90 bg-white py-3 pl-11 pr-11 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-150 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+          />
+          <button
+            type="button"
+            onClick={clearSearch}
+            className="pointer-events-auto absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 rounded-lg p-1.5 text-slate-400 transition-[color,opacity] hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 peer-placeholder-shown:pointer-events-none peer-placeholder-shown:opacity-0"
+            aria-label="Xóa từ khóa tìm kiếm"
+          >
+            <X size={16} aria-hidden="true" />
+          </button>
         </label>
-        <label className="block text-sm font-semibold text-slate-700"><span className="sr-only">Lọc theo vai trò</span><select value={role} onChange={(event) => onRoleChange(event.target.value as AdminUserRoleFilter)} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100">{roleFilters.map((filter) => <option key={filter.value} value={filter.value}>{filter.label}</option>)}</select></label>
-        <label className="block text-sm font-semibold text-slate-700"><span className="sr-only">Lọc theo trạng thái tài khoản</span><select value={activeStatus} onChange={(event) => onActiveStatusChange(event.target.value as AdminUserActiveFilter)} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100">{activeFilters.map((filter) => <option key={filter.value} value={filter.value}>{filter.label}</option>)}</select></label>
+        <label className="block text-sm font-semibold text-slate-700">
+          <span className="sr-only">Lọc theo vai trò</span>
+          <select
+            value={role}
+            onChange={(event) => onRoleChange(event.target.value as AdminUserRoleFilter)}
+            className="w-full rounded-xl border border-slate-200/90 bg-white px-3.5 py-3 text-sm font-medium text-slate-700 outline-none transition-all duration-150 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+          >
+            {roleFilters.map((filter) => (
+              <option key={filter.value} value={filter.value}>
+                {filter.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block text-sm font-semibold text-slate-700">
+          <span className="sr-only">Lọc theo trạng thái tài khoản</span>
+          <select
+            value={activeStatus}
+            onChange={(event) => onActiveStatusChange(event.target.value as AdminUserActiveFilter)}
+            className="w-full rounded-xl border border-slate-200/90 bg-white px-3.5 py-3 text-sm font-medium text-slate-700 outline-none transition-all duration-150 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+          >
+            {activeFilters.map((filter) => (
+              <option key={filter.value} value={filter.value}>
+                {filter.label}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
     </section>
   )

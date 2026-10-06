@@ -107,7 +107,7 @@ export default function CandidateCVDetailPage() {
     </header>
 
     {isBuilderCV(activeCV) ? <CVBuilderPreview cv={previewData} template={activeCV.template} hasManagedPhoto={activeCV.has_managed_photo} photoEndpoint={`/api/v1/candidate/cvs/${activeCV.id}/photo`} photoVersion={activeCV.updated_at} className="mt-7 rounded-xl" /> : <>
-      <section className="mt-5 flex items-start gap-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-blue-600"><FileText size={21} aria-hidden="true" /></span><div className="min-w-0"><h2 className="font-bold text-slate-950">Tệp CV đã tải lên</h2><p className="mt-1 break-words text-sm text-slate-600">{activeCV.original_filename}</p><p className="mt-2 text-xs text-slate-500">File gốc vẫn được giữ nguyên khi bạn phân tích hoặc xác nhận thông tin.</p></div></section>
+      <section className="mt-5 flex items-start gap-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-blue-600"><FileText size={21} aria-hidden="true" /></span><div className="min-w-0"><h2 className="font-bold text-slate-950">Tệp CV đã tải lên</h2><p className="mt-1 break-words text-sm text-slate-600">{activeCV.original_filename}</p><p className="mt-2 text-xs text-slate-500">Tệp gốc luôn được giữ nguyên khi bạn kiểm tra hoặc chỉnh sửa thông tin CV.</p></div></section>
       {isUploadedCV(activeCV) && <CVAIReviewPanel key={activeCV.id} cv={activeCV} onDirtyChange={handleReviewDirtyChange} onCVConfirmed={(updated) => { if (routeId.current === updated.id) setCV(updated) }} />}
     </>}
   </main></div>
