@@ -8,16 +8,21 @@ export type CVHeadingStyle = 'SOLID' | 'UNDERLINE' | 'MINIMAL'
 export type CVSourceType = 'BUILDER' | 'UPLOADED'
 export type CVExtractionStatus = 'PROCESSING' | 'SUCCEEDED' | 'FAILED'
 
+export type CVPartialDatePrecision = 'year' | 'month' | 'day' | 'ambiguous'
+export interface CVPartialDate { year: number; month?: number | null; day?: number | null; precision: CVPartialDatePrecision }
+export interface CVOpenEndedDate { state: 'current' }
+export type CVDateValue = string | CVPartialDate | CVOpenEndedDate
+
 export interface CVTemplateThemeConfig { primary_color: string; font_family: CVFontFamily; font_scale: CVFontScale; section_spacing: CVSectionSpacing; heading_style: CVHeadingStyle }
 export interface CVTemplateSummary { id: string; name: string; layout_key: CVTemplateLayoutKey; theme_config?: Partial<CVTemplateThemeConfig> | null; is_featured: boolean; sort_order: number }
 export interface CVTemplate extends CVTemplateSummary { description: string | null; thumbnail_url: string | null }
 export interface CVTemplateCatalogResponse { items: CVTemplate[] }
 export interface CVPersonalInfo { full_name?: string | null; email?: string | null; phone?: string | null; address?: string | null; avatar_url?: string | null; date_of_birth?: string | null; linkedin_url?: string | null; github_url?: string | null; portfolio_url?: string | null }
-export interface CVEducationItem { school_name: string; degree?: string | null; field_of_study?: string | null; start_date?: string | null; end_date?: string | null; is_current: boolean; description?: string | null }
-export interface CVExperienceItem { company_name: string; position: string; start_date?: string | null; end_date?: string | null; is_current: boolean; description?: string | null }
+export interface CVEducationItem { school_name: string; degree?: string | null; field_of_study?: string | null; start_date?: CVDateValue | null; end_date?: CVDateValue | null; is_current: boolean; description?: string | null }
+export interface CVExperienceItem { company_name: string; position: string; start_date?: CVDateValue | null; end_date?: CVDateValue | null; is_current: boolean; description?: string | null }
 export interface CVSkillItem { name: string; level?: CVSkillLevel | null }
-export interface CVProjectItem { name: string; role?: string | null; start_date?: string | null; end_date?: string | null; description?: string | null; technologies: string[]; project_url?: string | null }
-export interface CVCertificateItem { name: string; organization?: string | null; issue_date?: string | null; expiration_date?: string | null; credential_url?: string | null }
+export interface CVProjectItem { name: string; role?: string | null; start_date?: CVDateValue | null; end_date?: CVDateValue | null; description?: string | null; technologies: string[]; project_url?: string | null }
+export interface CVCertificateItem { name: string; organization?: string | null; issue_date?: CVDateValue | null; expiration_date?: CVDateValue | null; credential_url?: string | null }
 export interface CVLanguageItem { name: string; proficiency?: CVLanguageProficiency | null }
 
 type CVBase = { id: string; title: string; is_default: boolean; has_managed_photo: boolean; created_at: string; updated_at: string; extraction_status?: CVExtractionStatus | null; extraction_error_code?: string | null; is_matchable?: boolean | null; is_verified?: boolean | null }

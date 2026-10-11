@@ -1,5 +1,5 @@
 import { AlertCircle, Eye, FilePlus2, FileText, LoaderCircle, Pencil, RefreshCw, Star, Trash2, Upload } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import CVUploadDialog from '../../components/cv/CVUploadDialog'
 import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
@@ -9,6 +9,7 @@ import { cvService } from '../../services/cvService'
 import { cvFileTypeLabel, cvSourceLabel, formatFileSize, isBuilderCV, type CV, type CVListItem, type CVListResponse } from '../../types/cv'
 import { notifyDataRefresh } from '../../utils/dataRefresh'
 import { cvExtractionError } from '../../utils/apiError'
+import { runExtractionExclusive } from '../../utils/extractionOperation'
 import { candidateCVReadinessMeta, getCandidateCVReadiness } from '../../utils/cvReadiness'
 
 const formatDate = (value: string) => new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium' }).format(new Date(value))
@@ -20,12 +21,13 @@ export default function CandidateCVsPage() {
   const { success: toastSuccess, info: toastInfo, error: toastError } = useToast()
   const [busy, setBusy] = useState<string | null>(null)
   const [extractionBusy, setExtractionBusy] = useState<string | null>(null)
+  const extractionLock = useRef(false)
   const [uploadOpen, setUploadOpen] = useState(false)
   const { data, error, isInitialLoading, isFetching, refetch, replaceData } = usePaginatedQuery<CVListResponse>({ queryKey: 'candidate-cvs', refreshKey: refreshVersion, fetcher: useCallback(() => cvService.getCVs(), []) })
   const items = data?.items ?? []
   const replace = (updated: CV) => replaceData({ items: items.map((item) => item.id === updated.id ? updated : { ...item, is_default: updated.is_default }), total: data?.total ?? items.length })
 
-  const processExtraction = async (id: string, updateExisting = true) => {
+  const processExtraction = (id: string, updateExisting = true) => runExtractionExclusive(extractionLock, async () => {
     if (extractionBusy !== null) return
     setExtractionBusy(id)
     if (updateExisting) {
@@ -48,7 +50,7 @@ export default function CandidateCVsPage() {
       refetch()
       notifyDataRefresh({ local: false })
     }
-  }
+  })
 
   const upload = async (title: string, file: File) => {
     const created = await cvService.uploadCV(title, file)

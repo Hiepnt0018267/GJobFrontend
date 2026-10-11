@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { CVDateValidationError } from './cvDate'
 
 export function recruiterErrorMessage(error: unknown): string {
   if (!axios.isAxiosError(error) || !error.response) return 'Không thể kết nối tới máy chủ.'
@@ -149,12 +150,21 @@ export function savedJobErrorMessage(error: unknown, context: 'list' | 'status' 
 export type CVExtractionErrorKind = 'not-found' | 'conflict' | 'invalid' | 'document' | 'rate-limit' | 'provider' | 'network' | 'unknown'
 
 export function cvExtractionError(error: unknown): { kind: CVExtractionErrorKind; message: string } {
+  if (error instanceof CVDateValidationError || error instanceof TypeError) {
+    return { kind: 'invalid', message: 'Một số trường ngày tháng chưa đúng định dạng. Vui lòng kiểm tra lại.' }
+  }
+  if (!axios.isAxiosError(error)) {
+    return { kind: 'unknown', message: 'Không thể chuẩn bị dữ liệu CV để lưu. Nội dung bạn đang chỉnh sửa vẫn được giữ nguyên.' }
+  }
   if (axios.isAxiosError(error) && error.code === 'ECONNABORTED') {
     return { kind: 'network', message: 'Hệ thống vẫn có thể đang xử lý CV. Hãy mở lại CV để kiểm tra trạng thái mới nhất.' }
   }
   const status = getApiErrorStatus(error)
   const detail = getApiErrorDetail(error)
   const code = getApiErrorCode(error)
+  const extractionMessage = cvExtractionFailureMessage(code)
+  if (extractionMessage) return { kind: 'provider', message: extractionMessage }
+  if (status === 504) return { kind: 'provider', message: 'Quá trình phân tích CV mất quá nhiều thời gian. Tệp của bạn vẫn được lưu; hãy kiểm tra trạng thái trước khi thử lại.' }
   if (code === 'AI_RATE_LIMITED' || (status === 503 && detail.includes('rate limited'))) return { kind: 'rate-limit', message: 'Chưa thể xử lý CV lúc này. Bạn có thể thử lại sau.' }
   if (status === 404) return { kind: 'not-found', message: 'CV chưa có thông tin sẵn sàng.' }
   if (status === 409) return { kind: 'conflict', message: 'Thông tin CV đã thay đổi. Hãy tải bản mới nhất trước khi lưu.' }
@@ -167,4 +177,13 @@ export function cvExtractionError(error: unknown): { kind: CVExtractionErrorKind
   if (status === 502 || status === 503) return { kind: 'provider', message: 'Chưa thể xử lý CV lúc này. Bạn có thể thử lại sau.' }
   if (status === null) return { kind: 'network', message: 'Không thể kết nối tới máy chủ. Nội dung đang hiển thị vẫn được giữ nguyên.' }
   return { kind: 'unknown', message: status >= 500 ? 'Máy chủ đang gặp sự cố. Vui lòng thử lại.' : 'Không thể xử lý yêu cầu lúc này.' }
+}
+
+export function cvExtractionFailureMessage(code: string | null | undefined): string | undefined {
+  if (code === 'AI_CONTEXT_BUDGET_EXCEEDED' || code === 'AI_CONTEXT_LIMIT_EXCEEDED') return 'Nội dung CV vượt quá phạm vi xử lý an toàn hiện tại. Tệp của bạn vẫn được lưu.'
+  if (code === 'AI_PROVIDER_TIMEOUT' || code === 'AI_OPERATION_DEADLINE_EXCEEDED') return 'Quá trình phân tích CV mất quá nhiều thời gian. Tệp của bạn vẫn được lưu; hãy kiểm tra trạng thái trước khi thử lại.'
+  if (code === 'AI_OUTPUT_BUDGET_EXCEEDED') return 'AI chưa tạo được kết quả CV hoàn chỉnh trong giới hạn xử lý. Không có dữ liệu phân tích dở dang được sử dụng.'
+  if (['AI_JSON_INVALID', 'AI_SCHEMA_INVALID', 'AI_CORRECTION_FAILED'].includes(code ?? '')) return 'AI trả về dữ liệu CV chưa hợp lệ. Tệp của bạn vẫn được lưu an toàn.'
+  if (code === 'AI_TOKEN_ACCOUNTING_UNAVAILABLE') return 'Dịch vụ phân tích CV chưa sẵn sàng để xử lý an toàn. Vui lòng thử lại sau.'
+  return undefined
 }

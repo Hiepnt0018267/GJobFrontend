@@ -28,3 +28,6 @@ dist-ssr
 .env.local
 .env.development.local
 .env.production.local
+
+# Private manual E2E screenshots containing existing applicant profile data
+.impeccable/review/recruiter-ranking-*.jpg

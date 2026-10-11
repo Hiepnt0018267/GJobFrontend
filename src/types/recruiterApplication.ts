@@ -12,6 +12,10 @@ export const RECRUITER_APPLICATION_STATUSES = [
 
 export type RecruiterApplicationStatus = (typeof RECRUITER_APPLICATION_STATUSES)[number]
 
+export type RecruiterApplicationSort = 'newest' | 'ai_match'
+export type ApplicantRankingStatus = 'ranked' | 'pending' | 'unavailable' | 'error'
+export type ApplicantRankingMode = 'all' | 'top_n'
+
 export type RecruiterApplicationCandidateSummary = {
   id: string
   full_name: string
@@ -42,6 +46,9 @@ export type RecruiterApplicationCVSummary = {
 }
 
 export type RecruiterApplicationListItem = {
+  ai_rank?: number | null
+  ranking_status?: ApplicantRankingStatus | null
+  semantic_match_score?: number | null
   id: string
   candidate_id: string
   job_id: string
@@ -61,6 +68,12 @@ export type RecruiterApplicationDetail = Omit<RecruiterApplicationListItem, 'can
 }
 
 export type RecruiterApplicationListResponse = {
+  ranking_mode?: ApplicantRankingMode | null
+  requested_top_n?: number | null
+  ranked_available_count?: number | null
+  returned_ranked_count?: number | null
+  unranked_count?: number | null
+  ranking_snapshot?: string | null
   items: RecruiterApplicationListItem[]
   page: number
   page_size: number
@@ -69,6 +82,10 @@ export type RecruiterApplicationListResponse = {
 }
 
 export type RecruiterApplicationListParams = {
+  ranking_mode?: ApplicantRankingMode
+  top_n?: number
+  sort?: RecruiterApplicationSort
+  ranking_snapshot?: string
   search?: string
   status?: RecruiterApplicationStatus
   job_id?: string

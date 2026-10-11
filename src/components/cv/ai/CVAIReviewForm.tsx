@@ -1,14 +1,16 @@
 import { Plus, Trash2 } from 'lucide-react'
-import { useId, type FormEvent, type ReactNode } from 'react'
+import { useId, useState, type FormEvent, type ReactNode } from 'react'
 import type {
   CVCertificateItem,
+  CVDateValue,
   CVEducationItem,
   CVExperienceItem,
   CVPersonalInfo,
   CVProjectItem,
   CVSkillItem,
 } from '../../../types/cv'
-import { newReviewRow, type CVReviewDraft, type ReviewLanguageItem, type ReviewRow } from './cvReviewDraft'
+import { CV_DATE_FORMAT_ERROR, CV_DATE_FORMAT_HINT, formatCVDateForEditor, isCVOpenEndedDate } from '../../../utils/cvDate'
+import { cvReviewDateErrors, newReviewRow, type CVReviewDraft, type ReviewLanguageItem, type ReviewRow } from './cvReviewDraft'
 
 type Props = {
   draft: CVReviewDraft
@@ -42,7 +44,7 @@ function Section({ title, description, children }: { title: string; description:
 
 function ItemCard({ label, onRemove, children }: { label: string; onRemove: () => void; children: ReactNode }) {
   return <article className="relative rounded-xl bg-slate-50 p-4 ring-1 ring-inset ring-slate-200">
-    <button type="button" onClick={onRemove} aria-label={`Xóa ${label}`} className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+    <button type="button" onClick={onRemove} aria-label={`Xóa ${label}`} className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-lg text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
       <Trash2 size={16} aria-hidden="true" />
     </button>
     <div className="pr-12">{children}</div>
@@ -55,12 +57,61 @@ function AddButton({ children, onClick }: { children: ReactNode; onClick: () => 
   </button>
 }
 
+function CVDateField({
+  label,
+  value,
+  disabled = false,
+  invalid = false,
+  onChange,
+}: {
+  label: string
+  value: CVDateValue | null | undefined
+  disabled?: boolean
+  invalid?: boolean
+  onChange: (value: string) => void
+}) {
+  const descriptionId = useId()
+  return <Field label={label}>
+    <input
+      className={`${fieldClass} tabular-nums ${invalid ? 'ring-red-300 focus:ring-red-500' : ''}`}
+      type="text"
+      inputMode="numeric"
+      value={formatCVDateForEditor(value)}
+      placeholder="2022, 2022-08 hoặc 2022-08-15"
+      maxLength={10}
+      disabled={disabled}
+      aria-invalid={invalid || undefined}
+      aria-describedby={descriptionId}
+      onChange={(event) => onChange(event.target.value)}
+    />
+    <span id={descriptionId} className={`mt-1.5 block text-xs leading-5 ${invalid ? 'font-medium text-red-700' : 'text-slate-500'}`}>
+      {invalid ? CV_DATE_FORMAT_ERROR : disabled ? 'Đang được đánh dấu là hiện tại.' : CV_DATE_FORMAT_HINT}
+    </span>
+  </Field>
+}
+
 const updateRow = <T,>(rows: ReviewRow<T>[], key: string, changes: Partial<T>): ReviewRow<T>[] => rows.map((row) => row.key === key ? { ...row, value: { ...row.value, ...changes } } : row)
 const removeRow = <T,>(rows: ReviewRow<T>[], key: string): ReviewRow<T>[] => rows.filter((row) => row.key !== key)
 
 export default function CVAIReviewForm({ draft, submitting, submitError, onChange, onSubmit }: Props) {
+  const [invalidDatePaths, setInvalidDatePaths] = useState<ReadonlySet<string>>(new Set())
   const changePersonalInfo = (changes: Partial<CVPersonalInfo>) => onChange({ ...draft, personal_info: { ...draft.personal_info, ...changes } })
-  const submit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); onSubmit() }
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const errors = new Set(cvReviewDateErrors(draft))
+    setInvalidDatePaths(errors)
+    if (errors.size === 0) onSubmit()
+  }
+  const changeDate = (path: string, apply: () => void) => {
+    if (invalidDatePaths.has(path)) {
+      setInvalidDatePaths((current) => {
+        const next = new Set(current)
+        next.delete(path)
+        return next
+      })
+    }
+    apply()
+  }
 
   return <form onSubmit={submit} className="space-y-4" noValidate={false}>
     <Section title="Thông tin cá nhân" description="Kiểm tra kỹ thông tin liên hệ vì dữ liệu này sẽ được dùng trong hồ sơ của bạn.">
@@ -86,9 +137,9 @@ export default function CVAIReviewForm({ draft, submitting, submitError, onChang
           <Field label="Trường học" required><input required className={fieldClass} value={value.school_name} maxLength={255} onChange={(event) => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { school_name: event.target.value }) })} /></Field>
           <Field label="Bằng cấp"><input className={fieldClass} value={value.degree ?? ''} maxLength={255} onChange={(event) => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { degree: event.target.value }) })} /></Field>
           <Field label="Chuyên ngành" className="sm:col-span-2"><input className={fieldClass} value={value.field_of_study ?? ''} maxLength={255} onChange={(event) => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { field_of_study: event.target.value }) })} /></Field>
-          <Field label="Bắt đầu"><input className={fieldClass} type="date" value={value.start_date ?? ''} onChange={(event) => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { start_date: event.target.value }) })} /></Field>
-          <Field label="Kết thúc"><input className={fieldClass} type="date" min={value.start_date ?? undefined} disabled={value.is_current} value={value.is_current ? '' : value.end_date ?? ''} onChange={(event) => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { end_date: event.target.value }) })} /></Field>
-          <label className="flex items-center gap-2 text-sm font-medium text-slate-700 sm:col-span-2"><input type="checkbox" checked={value.is_current} onChange={(event) => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { is_current: event.target.checked }) })} className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />Đang theo học</label>
+          <CVDateField label="Bắt đầu" value={value.start_date} invalid={invalidDatePaths.has(`educations.${index}.start_date`)} onChange={(next) => changeDate(`educations.${index}.start_date`, () => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { start_date: next }) }))} />
+          <CVDateField label="Kết thúc" value={value.is_current ? { state: 'current' } : value.end_date} disabled={value.is_current} invalid={invalidDatePaths.has(`educations.${index}.end_date`)} onChange={(next) => changeDate(`educations.${index}.end_date`, () => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { end_date: next }) }))} />
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-700 sm:col-span-2"><input type="checkbox" checked={value.is_current} onChange={(event) => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { is_current: event.target.checked, end_date: event.target.checked ? { state: 'current' } : isCVOpenEndedDate(value.end_date) ? null : value.end_date }) })} className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />Đang theo học</label>
           <Field label="Mô tả" className="sm:col-span-2"><textarea className={`${fieldClass} min-h-24 resize-y leading-6`} value={value.description ?? ''} maxLength={5000} onChange={(event) => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { description: event.target.value }) })} /></Field>
         </div>
       </ItemCard>)}</div>
@@ -100,9 +151,9 @@ export default function CVAIReviewForm({ draft, submitting, submitError, onChang
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Vị trí" required><input required className={fieldClass} value={value.position} maxLength={255} onChange={(event) => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { position: event.target.value }) })} /></Field>
           <Field label="Công ty" required><input required className={fieldClass} value={value.company_name} maxLength={255} onChange={(event) => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { company_name: event.target.value }) })} /></Field>
-          <Field label="Bắt đầu"><input className={fieldClass} type="date" value={value.start_date ?? ''} onChange={(event) => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { start_date: event.target.value }) })} /></Field>
-          <Field label="Kết thúc"><input className={fieldClass} type="date" min={value.start_date ?? undefined} disabled={value.is_current} value={value.is_current ? '' : value.end_date ?? ''} onChange={(event) => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { end_date: event.target.value }) })} /></Field>
-          <label className="flex items-center gap-2 text-sm font-medium text-slate-700 sm:col-span-2"><input type="checkbox" checked={value.is_current} onChange={(event) => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { is_current: event.target.checked }) })} className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />Đang làm việc tại đây</label>
+          <CVDateField label="Bắt đầu" value={value.start_date} invalid={invalidDatePaths.has(`experiences.${index}.start_date`)} onChange={(next) => changeDate(`experiences.${index}.start_date`, () => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { start_date: next }) }))} />
+          <CVDateField label="Kết thúc" value={value.is_current ? { state: 'current' } : value.end_date} disabled={value.is_current} invalid={invalidDatePaths.has(`experiences.${index}.end_date`)} onChange={(next) => changeDate(`experiences.${index}.end_date`, () => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { end_date: next }) }))} />
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-700 sm:col-span-2"><input type="checkbox" checked={value.is_current} onChange={(event) => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { is_current: event.target.checked, end_date: event.target.checked ? { state: 'current' } : isCVOpenEndedDate(value.end_date) ? null : value.end_date }) })} className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />Đang làm việc tại đây</label>
           <Field label="Mô tả công việc" className="sm:col-span-2"><textarea className={`${fieldClass} min-h-28 resize-y leading-6`} value={value.description ?? ''} maxLength={10000} onChange={(event) => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { description: event.target.value }) })} /></Field>
         </div>
       </ItemCard>)}</div>
@@ -121,8 +172,8 @@ export default function CVAIReviewForm({ draft, submitting, submitError, onChang
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Tên dự án" required><input required className={fieldClass} value={value.name} maxLength={255} onChange={(event) => onChange({ ...draft, projects: updateRow<CVProjectItem>(draft.projects, key, { name: event.target.value }) })} /></Field>
           <Field label="Vai trò"><input className={fieldClass} value={value.role ?? ''} maxLength={255} onChange={(event) => onChange({ ...draft, projects: updateRow<CVProjectItem>(draft.projects, key, { role: event.target.value }) })} /></Field>
-          <Field label="Bắt đầu"><input className={fieldClass} type="date" value={value.start_date ?? ''} onChange={(event) => onChange({ ...draft, projects: updateRow<CVProjectItem>(draft.projects, key, { start_date: event.target.value }) })} /></Field>
-          <Field label="Kết thúc"><input className={fieldClass} type="date" min={value.start_date ?? undefined} value={value.end_date ?? ''} onChange={(event) => onChange({ ...draft, projects: updateRow<CVProjectItem>(draft.projects, key, { end_date: event.target.value }) })} /></Field>
+          <CVDateField label="Bắt đầu" value={value.start_date} invalid={invalidDatePaths.has(`projects.${index}.start_date`)} onChange={(next) => changeDate(`projects.${index}.start_date`, () => onChange({ ...draft, projects: updateRow<CVProjectItem>(draft.projects, key, { start_date: next }) }))} />
+          <CVDateField label="Kết thúc" value={value.end_date} invalid={invalidDatePaths.has(`projects.${index}.end_date`)} onChange={(next) => changeDate(`projects.${index}.end_date`, () => onChange({ ...draft, projects: updateRow<CVProjectItem>(draft.projects, key, { end_date: next }) }))} />
           <Field label="Công nghệ" className="sm:col-span-2"><textarea className={`${fieldClass} min-h-20 resize-y leading-6`} value={value.technologies.join('\n')} placeholder="Mỗi công nghệ một dòng" onChange={(event) => onChange({ ...draft, projects: updateRow<CVProjectItem>(draft.projects, key, { technologies: event.target.value.split('\n') }) })} /></Field>
           <Field label="Liên kết dự án" className="sm:col-span-2"><input className={fieldClass} type="url" value={value.project_url ?? ''} placeholder="https://..." onChange={(event) => onChange({ ...draft, projects: updateRow<CVProjectItem>(draft.projects, key, { project_url: event.target.value }) })} /></Field>
           <Field label="Mô tả" className="sm:col-span-2"><textarea className={`${fieldClass} min-h-28 resize-y leading-6`} value={value.description ?? ''} maxLength={10000} onChange={(event) => onChange({ ...draft, projects: updateRow<CVProjectItem>(draft.projects, key, { description: event.target.value }) })} /></Field>
@@ -136,8 +187,8 @@ export default function CVAIReviewForm({ draft, submitting, submitError, onChang
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Tên chứng chỉ" required><input required className={fieldClass} value={value.name} maxLength={255} onChange={(event) => onChange({ ...draft, certificates: updateRow<CVCertificateItem>(draft.certificates, key, { name: event.target.value }) })} /></Field>
           <Field label="Tổ chức cấp"><input className={fieldClass} value={value.organization ?? ''} maxLength={255} onChange={(event) => onChange({ ...draft, certificates: updateRow<CVCertificateItem>(draft.certificates, key, { organization: event.target.value }) })} /></Field>
-          <Field label="Ngày cấp"><input className={fieldClass} type="date" value={value.issue_date ?? ''} onChange={(event) => onChange({ ...draft, certificates: updateRow<CVCertificateItem>(draft.certificates, key, { issue_date: event.target.value }) })} /></Field>
-          <Field label="Ngày hết hạn"><input className={fieldClass} type="date" min={value.issue_date ?? undefined} value={value.expiration_date ?? ''} onChange={(event) => onChange({ ...draft, certificates: updateRow<CVCertificateItem>(draft.certificates, key, { expiration_date: event.target.value }) })} /></Field>
+          <CVDateField label="Ngày cấp" value={value.issue_date} invalid={invalidDatePaths.has(`certificates.${index}.issue_date`)} onChange={(next) => changeDate(`certificates.${index}.issue_date`, () => onChange({ ...draft, certificates: updateRow<CVCertificateItem>(draft.certificates, key, { issue_date: next }) }))} />
+          <CVDateField label="Ngày hết hạn" value={value.expiration_date} invalid={invalidDatePaths.has(`certificates.${index}.expiration_date`)} onChange={(next) => changeDate(`certificates.${index}.expiration_date`, () => onChange({ ...draft, certificates: updateRow<CVCertificateItem>(draft.certificates, key, { expiration_date: next }) }))} />
           <Field label="Liên kết xác thực" className="sm:col-span-2"><input className={fieldClass} type="url" value={value.credential_url ?? ''} placeholder="https://..." onChange={(event) => onChange({ ...draft, certificates: updateRow<CVCertificateItem>(draft.certificates, key, { credential_url: event.target.value }) })} /></Field>
         </div>
       </ItemCard>)}</div>

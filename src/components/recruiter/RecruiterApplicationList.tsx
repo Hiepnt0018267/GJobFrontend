@@ -5,11 +5,12 @@ import { cvFileTypeLabel, formatFileSize } from '../../types/cv'
 import { formatJobTimestamp } from '../../utils/jobDisplay'
 import RecruiterApplicationAvatar from './RecruiterApplicationAvatar'
 import RecruiterApplicationStatusBadge from './RecruiterApplicationStatusBadge'
+import RecruiterApplicationRanking from './RecruiterApplicationRanking'
 
-type Props = { applications: RecruiterApplicationListItem[]; returnTo: string }
+type Props = { applications: RecruiterApplicationListItem[]; returnTo: string; showRanking?: boolean }
 const cvMeta = (application: RecruiterApplicationListItem) => application.cv.source_type === 'UPLOADED' || !application.cv.template ? `CV tải lên · ${cvFileTypeLabel(application.cv.mime_type)} · ${formatFileSize(application.cv.file_size)}` : application.cv.template.name
 
-export default function RecruiterApplicationList({ applications, returnTo }: Props) {
+export default function RecruiterApplicationList({ applications, returnTo, showRanking = false }: Props) {
   return (
     <section className="mt-6" aria-label="Danh sách ứng viên">
       <div className="hidden overflow-hidden rounded-2xl bg-white shadow-premium border border-slate-200/80 lg:block">
@@ -34,6 +35,7 @@ export default function RecruiterApplicationList({ applications, returnTo }: Pro
                       <p className="mt-0.5 truncate text-xs text-slate-500">{application.candidate.email}</p>
                     </div>
                   </div>
+                  {showRanking && <div className="mt-3"><RecruiterApplicationRanking application={application} /></div>}
                 </td>
                 <td className="px-4 py-4">
                   <p className="truncate font-semibold text-slate-900">{application.job.title}</p>
@@ -92,6 +94,7 @@ export default function RecruiterApplicationList({ applications, returnTo }: Pro
                 </p>
               </div>
             </div>
+            {showRanking && <div className="mt-4"><RecruiterApplicationRanking application={application} /></div>}
             <p className="mt-4 truncate text-sm text-slate-600">
               <FileText size={15} className="mr-1 inline text-slate-400" aria-hidden="true" />
               {application.cv.title} · {cvMeta(application)}

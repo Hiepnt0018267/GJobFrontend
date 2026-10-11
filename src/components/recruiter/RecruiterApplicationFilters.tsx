@@ -45,7 +45,7 @@ export default function RecruiterApplicationFilters({ search, status, jobId, job
 
   return (
     <section className="mt-6 rounded-2xl bg-white p-4 shadow-premium border border-slate-200/80 sm:p-5" aria-label="Tìm kiếm và lọc ứng viên">
-      <div className={`grid gap-3 ${showJobFilter ? 'xl:grid-cols-[minmax(0,1fr)_220px_280px]' : 'lg:grid-cols-[minmax(0,1fr)_240px]'}`}>
+      <div className={`grid items-end gap-3 ${showJobFilter ? 'lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)]' : 'sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]'}`}>
         <label className="relative block">
           <span className="sr-only">Tìm theo ứng viên, email, công việc hoặc CV</span>
           <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />

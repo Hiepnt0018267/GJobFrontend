@@ -4,7 +4,8 @@ import { useBeforeUnload } from 'react-router-dom'
 import { useDataRefreshVersion } from '../../../hooks/useDataRefreshVersion'
 import { cvService } from '../../../services/cvService'
 import type { CV, CVExtraction, UploadedCV } from '../../../types/cv'
-import { cvExtractionError } from '../../../utils/apiError'
+import { cvExtractionError, cvExtractionFailureMessage } from '../../../utils/apiError'
+import { runExtractionExclusive } from '../../../utils/extractionOperation'
 import CVAIReviewForm from './CVAIReviewForm'
 import { createCVReviewDraft, toCVStructuredData, type CVReviewDraft } from './cvReviewDraft'
 
@@ -24,6 +25,8 @@ function stateOf(extraction: CVExtraction | null, initialLoading: boolean, isMat
 
 function failureMessage(extraction: CVExtraction): string {
   if (extraction.error_code === 'DOCUMENT_EXTRACTION_FAILED') return 'Không thể đọc nội dung CV. Vui lòng kiểm tra tệp và thử lại.'
+  const specific = cvExtractionFailureMessage(extraction.error_code)
+  if (specific) return specific
   return 'Chưa thể xử lý CV lúc này. Bạn có thể thử lại.'
 }
 
@@ -43,6 +46,7 @@ export default function CVAIReviewPanel({ cv, onCVConfirmed, onDirtyChange }: Pr
   const dirtyRef = useRef(false)
   const manualRequest = useRef<AbortController | null>(null)
   const mutationRequest = useRef<AbortController | null>(null)
+  const triggerLock = useRef(false)
 
   useEffect(() => { extractionRef.current = extraction }, [extraction])
   useEffect(() => () => { manualRequest.current?.abort(); mutationRequest.current?.abort() }, [])
@@ -137,7 +141,7 @@ export default function CVAIReviewPanel({ cv, onCVConfirmed, onDirtyChange }: Pr
     return () => { controller.abort(); if (requestId.current === activeRequest) requestId.current += 1 }
   }, [applyExtraction, cv.id, refreshVersion])
 
-  const trigger = async () => {
+  const trigger = () => runExtractionExclusive(triggerLock, async () => {
     if (triggering) return
     mutationRequest.current?.abort()
     const controller = new AbortController()
@@ -150,7 +154,7 @@ export default function CVAIReviewPanel({ cv, onCVConfirmed, onDirtyChange }: Pr
       setMessage(cvExtractionError(error).message)
       await loadLatest({ quiet: true })
     } finally { if (!controller.signal.aborted) { setTriggering(false); setInitialLoading(false) } }
-  }
+  })
 
   const confirm = async () => {
     if (!draft || !extraction || confirming) return
