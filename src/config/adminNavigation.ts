@@ -38,6 +38,7 @@ export type AdminPageMeta = { title: string; context: string }
 
 const pageMeta: Array<{ matches: (pathname: string) => boolean; meta: AdminPageMeta }> = [
   { matches: exact('/admin'), meta: { title: 'Tổng quan hệ thống', context: 'Quản trị GJob' } },
+  { matches: exact('/admin/notifications'), meta: { title: 'Thông báo', context: 'Quản trị GJob' } },
   { matches: exact('/admin/jobs'), meta: { title: 'Tin tuyển dụng', context: 'Tuyển dụng' } },
   { matches: within('/admin/jobs'), meta: { title: 'Chi tiết tin tuyển dụng', context: 'Tuyển dụng' } },
   { matches: exact('/admin/applications'), meta: { title: 'Đơn ứng tuyển', context: 'Tuyển dụng' } },

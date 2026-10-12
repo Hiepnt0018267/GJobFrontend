@@ -27,6 +27,7 @@ export type RecruiterPageMeta = { title: string; context: string }
 
 const pageMeta: Array<{ matches: (pathname: string) => boolean; meta: RecruiterPageMeta }> = [
   { matches: exact('/recruiter'), meta: { title: 'Tổng quan', context: 'Khu vực nhà tuyển dụng' } },
+  { matches: exact('/recruiter/notifications'), meta: { title: 'Thông báo', context: 'Khu vực nhà tuyển dụng' } },
   { matches: exact('/recruiter/jobs/create'), meta: { title: 'Đăng tin tuyển dụng', context: 'Tuyển dụng' } },
   { matches: (pathname) => /^\/recruiter\/jobs\/[^/]+\/edit$/.test(pathname), meta: { title: 'Chỉnh sửa tin tuyển dụng', context: 'Tuyển dụng' } },
   { matches: exact('/recruiter/jobs'), meta: { title: 'Tin tuyển dụng', context: 'Tuyển dụng' } },

@@ -3,10 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { getRecruiterPageMeta } from '../../../config/recruiterNavigation'
 import { useAuth } from '../../../hooks/useAuth'
 import RecruiterAccountMenu from './RecruiterAccountMenu'
+import NotificationBell from '../../notification/NotificationBell'
 
-type Props = { drawerOpen: boolean; accountOpen: boolean; onToggleDrawer: () => void; onToggleAccount: () => void; onCloseAccount: () => void }
+type Props = { drawerOpen: boolean; accountOpen: boolean; notificationOpen: boolean; onToggleDrawer: () => void; onToggleAccount: () => void; onCloseAccount: () => void; onNotificationOpenChange: (open: boolean) => void }
 
-export default function RecruiterTopbar({ drawerOpen, accountOpen, onToggleDrawer, onToggleAccount, onCloseAccount }: Props) {
+export default function RecruiterTopbar({ drawerOpen, accountOpen, notificationOpen, onToggleDrawer, onToggleAccount, onCloseAccount, onNotificationOpenChange }: Props) {
   const { pathname } = useLocation()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -30,7 +31,8 @@ export default function RecruiterTopbar({ drawerOpen, accountOpen, onToggleDrawe
           <p className="truncate text-xs font-semibold uppercase tracking-wider text-slate-400 font-[Plus_Jakarta_Sans,sans-serif]">{meta.context}</p>
           <p className="truncate text-base font-bold tracking-tight text-slate-950 sm:text-lg font-[Plus_Jakarta_Sans,sans-serif]">{meta.title}</p>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-3">
+          <NotificationBell open={notificationOpen} onOpenChange={onNotificationOpenChange} />
           {user && (
             <RecruiterAccountMenu
               name={user.full_name}

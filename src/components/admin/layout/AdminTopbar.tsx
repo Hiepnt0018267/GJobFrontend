@@ -3,10 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { getAdminPageMeta } from '../../../config/adminNavigation'
 import { useAuth } from '../../../hooks/useAuth'
 import AdminAccountMenu from './AdminAccountMenu'
+import NotificationBell from '../../notification/NotificationBell'
 
-type Props = { drawerOpen: boolean; accountOpen: boolean; onToggleDrawer: () => void; onToggleAccount: () => void; onCloseAccount: () => void }
+type Props = { drawerOpen: boolean; accountOpen: boolean; notificationOpen: boolean; onToggleDrawer: () => void; onToggleAccount: () => void; onCloseAccount: () => void; onNotificationOpenChange: (open: boolean) => void }
 
-export default function AdminTopbar({ drawerOpen, accountOpen, onToggleDrawer, onToggleAccount, onCloseAccount }: Props) {
+export default function AdminTopbar({ drawerOpen, accountOpen, notificationOpen, onToggleDrawer, onToggleAccount, onCloseAccount, onNotificationOpenChange }: Props) {
   const { pathname } = useLocation()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -31,6 +32,7 @@ export default function AdminTopbar({ drawerOpen, accountOpen, onToggleDrawer, o
           <p className="truncate text-base font-bold tracking-tight text-slate-950 sm:text-lg font-[Plus_Jakarta_Sans,sans-serif]">{meta.title}</p>
         </div>
         <div className="ml-auto flex items-center gap-3">
+          <NotificationBell open={notificationOpen} onOpenChange={onNotificationOpenChange} />
           {user && (
             <AdminAccountMenu
               name={user.full_name}

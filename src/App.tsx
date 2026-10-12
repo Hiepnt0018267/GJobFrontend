@@ -52,6 +52,7 @@ import AdminApplicationsPage from './pages/admin/AdminApplicationsPage'
 import AdminApplicationDetailPage from './pages/admin/AdminApplicationDetailPage'
 import AdminCandidateCVsPage from './pages/admin/AdminCandidateCVsPage'
 import AdminCandidateCVDetailPage from './pages/admin/AdminCandidateCVDetailPage'
+import NotificationCenterPage from './pages/notifications/NotificationCenterPage'
 
 // Route guards
 import ProtectedRoute from './routes/ProtectedRoute'
@@ -97,6 +98,7 @@ function App() {
             <Route path="/candidate/applications/:id" element={<CandidateApplicationDetailPage />} />
             <Route path="/candidate/saved-jobs" element={<SavedJobsPage />} />
             <Route path="/candidate/job-recommendations" element={<CandidateJobRecommendationsPage />} />
+            <Route path="/candidate/notifications" element={<NotificationCenterPage />} />
           </Route>
         </Route>
       </Route>
@@ -137,6 +139,7 @@ function App() {
             <Route path="/recruiter/jobs/:id" element={<RecruiterJobDetailPage />} />
             <Route path="/recruiter/applications" element={<RecruiterApplicationsPage />} />
             <Route path="/recruiter/applications/:id" element={<RecruiterApplicationDetailPage />} />
+            <Route path="/recruiter/notifications" element={<NotificationCenterPage />} />
           </Route>
         </Route>
 
@@ -156,6 +159,7 @@ function App() {
             <Route path="/admin/applications/:id" element={<AdminApplicationDetailPage />} />
             <Route path="/admin/cvs" element={<AdminCandidateCVsPage />} />
             <Route path="/admin/cvs/:id" element={<AdminCandidateCVDetailPage />} />
+            <Route path="/admin/notifications" element={<NotificationCenterPage />} />
           </Route>
         </Route>
       </Route>

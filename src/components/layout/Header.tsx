@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { ChevronDown, LogOut, Menu, Sparkles, X, Zap } from 'lucide-react'
 import { candidateAccountItems, candidateNavigationGroups, candidateToolsGroup } from '../../config/candidateNavigation'
 import { useAuth } from '../../hooks/useAuth'
 import type { UserRole } from '../../types/auth'
+import NotificationBell from '../notification/NotificationBell'
 
 type PublicNavItem = { to: string; label: string; end: boolean }
 
@@ -313,6 +314,7 @@ function MobileCandidateNavigation({ onNavigate }: { onNavigate: () => void }) {
 export default function Header() {
   const { user, isAuthenticated, loading, logout } = useAuth()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const menuRootRef = useRef<HTMLElement>(null)
@@ -336,6 +338,14 @@ export default function Header() {
       document.removeEventListener('keydown', closeOnEscape)
     }
   }, [])
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setOpenMenu(null)
+      setMobileOpen(false)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [pathname])
 
   const closeMenus = () => {
     setOpenMenu(null)
@@ -406,8 +416,20 @@ export default function Header() {
             )}
           </div>
 
+          {!loading && isAuthenticated && user?.role === 'CANDIDATE' && (
+            <div className="ml-auto">
+              <NotificationBell
+                open={openMenu === 'notifications'}
+                onOpenChange={(open) => {
+                  setOpenMenu(open ? 'notifications' : null)
+                  if (open) setMobileOpen(false)
+                }}
+              />
+            </div>
+          )}
+
           {/* Auth Actions / User Menu */}
-          <div className="ml-auto hidden shrink-0 items-center gap-3 md:flex">
+          <div className={`${!isAuthenticated || user?.role !== 'CANDIDATE' ? 'ml-auto' : ''} hidden shrink-0 items-center gap-3 md:flex`}>
             {loading ? (
               <AuthSkeleton />
             ) : isAuthenticated && user ? (
@@ -458,7 +480,7 @@ export default function Header() {
           <button
             type="button"
             className="btn-press flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 md:hidden"
-            onClick={() => setMobileOpen((open) => !open)}
+            onClick={() => { setOpenMenu(null); setMobileOpen((open) => !open) }}
             aria-expanded={mobileOpen}
             aria-label={mobileOpen ? 'Đóng menu' : 'Mở menu'}
           >

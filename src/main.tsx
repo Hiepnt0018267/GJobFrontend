@@ -5,6 +5,7 @@ import './index.css'
 import { AuthProvider } from './contexts/AuthContext'
 import { DataRefreshProvider } from './contexts/DataRefreshContext'
 import { ToastProvider } from './contexts/ToastContext'
+import { NotificationProvider } from './contexts/NotificationContext'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(
@@ -13,7 +14,9 @@ createRoot(document.getElementById('root')!).render(
       <DataRefreshProvider>
         <AuthProvider>
           <ToastProvider>
-            <App />
+            <NotificationProvider>
+              <App />
+            </NotificationProvider>
           </ToastProvider>
         </AuthProvider>
       </DataRefreshProvider>
