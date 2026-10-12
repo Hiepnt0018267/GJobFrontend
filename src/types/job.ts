@@ -60,6 +60,31 @@ export type PublicCompanySummary = {
 export type JobDetail = Job & { company: PublicCompanySummary | null }
 
 export type JobListResponse = { items: Job[]; page: number; page_size: number; total: number; total_pages: number }
+export type JobRecommendationStatus = 'ranked' | 'pending' | 'unavailable' | 'error'
+export type JobRecommendationReason = {
+  code: 'shared_skill'
+  message: string
+  evidence: string[]
+}
+export type CandidateJobRecommendation = Job & {
+  recommendation_rank: number | null
+  recommendation_status: JobRecommendationStatus
+  reasons: JobRecommendationReason[]
+}
+export type CandidateJobRecommendationListResponse = {
+  items: CandidateJobRecommendation[]
+  page: number
+  page_size: number
+  total: number
+  total_pages: number
+  ranking_snapshot: string
+  selected_cv_id: string | null
+  candidate_signal_status: JobRecommendationStatus
+  ranked_count: number
+  pending_count: number
+  unavailable_count: number
+  error_count: number
+}
 export type JobSearchParams = {
   search?: string
   location?: string
@@ -75,6 +100,11 @@ export type JobSearchParams = {
   page?: number
   page_size?: number
   sort?: JobSortOption
+}
+export type CandidateJobRecommendationParams = Omit<JobSearchParams, 'sort'> & {
+  cv_id?: string
+  skill?: string
+  ranking_snapshot?: string
 }
 export type RecruiterJob = Job & { recruiter_id: string }
 export type JobCreateRequest = {

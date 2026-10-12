@@ -13,7 +13,7 @@ const candidateApplicationsPath = '/api/v1/candidate/applications'
 
 export const applicationService = {
   async submitApplication(jobId: string, payload: SubmitApplicationRequest): Promise<JobApplication> {
-    return (await api.post<JobApplication>(jobApplicationsPath(jobId), payload, { gjobSkipDataRefresh: true })).data
+    return (await api.post<JobApplication>(jobApplicationsPath(jobId), payload)).data
   },
   async getApplications(params: CandidateApplicationListParams, signal?: AbortSignal): Promise<CandidateApplicationListResponse> {
     return (await api.get<CandidateApplicationListResponse>(candidateApplicationsPath, { params, signal })).data

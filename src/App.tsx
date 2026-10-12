@@ -29,6 +29,7 @@ import CandidateCVTemplatesPage from './pages/candidate/CandidateCVTemplatesPage
 import CandidateApplicationsPage from './pages/candidate/CandidateApplicationsPage'
 import CandidateApplicationDetailPage from './pages/candidate/CandidateApplicationDetailPage'
 import SavedJobsPage from './pages/candidate/SavedJobsPage'
+import CandidateJobRecommendationsPage from './pages/candidate/CandidateJobRecommendationsPage'
 import RecruiterDashboardPage from './pages/recruiter/RecruiterDashboardPage'
 import RecruiterProfilePage from './pages/recruiter/RecruiterProfilePage'
 import RecruiterProfileEditPage from './pages/recruiter/RecruiterProfileEditPage'
@@ -95,6 +96,7 @@ function App() {
             <Route path="/candidate/applications" element={<CandidateApplicationsPage />} />
             <Route path="/candidate/applications/:id" element={<CandidateApplicationDetailPage />} />
             <Route path="/candidate/saved-jobs" element={<SavedJobsPage />} />
+            <Route path="/candidate/job-recommendations" element={<CandidateJobRecommendationsPage />} />
           </Route>
         </Route>
       </Route>

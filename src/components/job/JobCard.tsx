@@ -1,14 +1,34 @@
-import { ArrowRight, Bookmark, BookmarkCheck, BriefcaseBusiness, CalendarDays, MapPin, Wallet } from 'lucide-react'
+import { AlertTriangle, ArrowRight, Bookmark, BookmarkCheck, BriefcaseBusiness, CalendarDays, CircleDashed, ListChecks, MapPin, Wallet } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
 import { savedJobService } from '../../services/savedJobService'
-import type { Job } from '../../types/job'
+import type { Job, JobRecommendationReason, JobRecommendationStatus } from '../../types/job'
 import { experienceRequirementLabel, formatSalary, industryLabel, levelLabel, postedDate, workModeLabel } from '../../utils/jobDisplay'
+import { recommendationStatusCopy } from '../../utils/jobRecommendation'
 import { safeImageUrl } from '../../utils/publicUrl'
 
-export default function JobCard({ job }: { job: Job }) {
+type JobCardRecommendation = {
+  rank: number | null
+  status: JobRecommendationStatus
+  reasons: JobRecommendationReason[]
+}
+
+const recommendationTone: Record<JobRecommendationStatus, string> = {
+  ranked: 'bg-indigo-50 text-indigo-700 ring-indigo-200',
+  pending: 'bg-amber-50 text-amber-800 ring-amber-200',
+  unavailable: 'bg-slate-100 text-slate-700 ring-slate-200',
+  error: 'bg-rose-50 text-rose-700 ring-rose-200',
+}
+
+const RecommendationIcon = ({ status }: { status: JobRecommendationStatus }) =>
+  status === 'ranked' ? <ListChecks size={14} aria-hidden="true" />
+    : status === 'pending' ? <CircleDashed size={14} aria-hidden="true" />
+      : status === 'error' ? <AlertTriangle size={14} aria-hidden="true" />
+        : <CircleDashed size={14} aria-hidden="true" />
+
+export default function JobCard({ job, recommendation, returnTo }: { job: Job; recommendation?: JobCardRecommendation; returnTo?: string }) {
   const { user, isAuthenticated } = useAuth()
   const { success, info, error: toastError } = useToast()
   const navigate = useNavigate()
@@ -63,6 +83,17 @@ export default function JobCard({ job }: { job: Job }) {
   return (
     <article className="group relative flex h-full flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs transition-[box-shadow,border-color,transform] duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-premium">
       <div>
+        {recommendation && (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <span className={`inline-flex min-h-7 items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-bold ring-1 ${recommendationTone[recommendation.status]}`}>
+              <RecommendationIcon status={recommendation.status} />
+              {recommendation.status === 'ranked' && recommendation.rank ? `Xếp hạng #${recommendation.rank}` : recommendationStatusCopy[recommendation.status]}
+            </span>
+            {recommendation.status === 'ranked' && recommendation.rank && (
+              <span className="text-[11px] font-semibold text-slate-500">{recommendationStatusCopy.ranked}</span>
+            )}
+          </div>
+        )}
         {/* Header: Company Avatar + Info + Bookmark */}
         <div className="flex items-start gap-3.5">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200/80 transition-transform group-hover:scale-105">
@@ -82,7 +113,7 @@ export default function JobCard({ job }: { job: Job }) {
 
           <div className="min-w-0 flex-1 pr-9">
             <h3 className="line-clamp-2 text-base font-bold leading-snug text-slate-900 transition-colors group-hover:text-blue-600">
-              <Link to={`/jobs/${job.id}`} className="focus:outline-none focus:underline">
+              <Link to={`/jobs/${job.id}`} state={returnTo ? { returnTo } : undefined} className="focus:outline-none focus:underline">
                 {job.title}
               </Link>
             </h3>
@@ -158,6 +189,20 @@ export default function JobCard({ job }: { job: Job }) {
             )}
           </div>
         )}
+
+        {recommendation?.status === 'ranked' && recommendation.reasons.length > 0 && (
+          <section className="mt-4 rounded-xl bg-indigo-50/70 px-3.5 py-3 ring-1 ring-indigo-100" aria-label="Lý do gợi ý">
+            <h4 className="text-xs font-bold text-indigo-700">Thông tin liên quan trong CV</h4>
+            <ul className="mt-2 space-y-1.5 text-xs leading-5 text-slate-700">
+              {recommendation.reasons.map((reason, index) => (
+                <li key={`${reason.code}-${reason.message}-${index}`} className="flex items-start gap-2">
+                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-indigo-500" aria-hidden="true" />
+                  <span>{reason.message}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
 
       {/* Footer: Date + View Details */}
@@ -168,6 +213,7 @@ export default function JobCard({ job }: { job: Job }) {
         </span>
         <Link
           to={`/jobs/${job.id}`}
+          state={returnTo ? { returnTo } : undefined}
           className="inline-flex items-center gap-1 font-bold text-blue-600 transition-colors hover:text-blue-700 focus:outline-none focus:underline"
         >
           Xem chi tiết

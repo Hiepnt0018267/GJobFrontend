@@ -31,3 +31,6 @@ dist-ssr
 
 # Private manual E2E screenshots containing existing applicant profile data
 .impeccable/review/recruiter-ranking-*.jpg
+
+# Private Task 15C browser captures from the existing candidate account
+.impeccable/review/job-recommendation-*.png

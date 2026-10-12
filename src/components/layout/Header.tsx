@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { ChevronDown, LogOut, Menu, Sparkles, X, Zap } from 'lucide-react'
-import { candidateAccountItems, candidateNavigationGroups } from '../../config/candidateNavigation'
+import { candidateAccountItems, candidateNavigationGroups, candidateToolsGroup } from '../../config/candidateNavigation'
 import { useAuth } from '../../hooks/useAuth'
 import type { UserRole } from '../../types/auth'
 
@@ -235,19 +235,27 @@ function ToolsDropdown({
           <div
             id="candidate-tools-menu"
             role="menu"
-            className="motion-dropdown rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-premium backdrop-blur-md ring-1 ring-slate-900/5"
+            className="motion-dropdown overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 p-2 shadow-premium backdrop-blur-md ring-1 ring-slate-900/5"
           >
-            <div className="flex items-start gap-3 rounded-xl bg-slate-50/80 p-3">
-              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-                <Sparkles size={16} aria-hidden="true" />
-              </span>
-              <div>
-                <span className="block text-sm font-bold text-slate-900">Công cụ AI Thông minh</span>
-                <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">
-                  Phân tích CV, so khớp năng lực và tối ưu hóa hồ sơ đang được tích cực phát triển.
+            {candidateToolsGroup.items.map(({ to, label, description, icon: Icon }) => (
+              <Link
+                key={to}
+                to={to}
+                role="menuitem"
+                onClick={onClose}
+                className="group flex items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+              >
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50/80 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
+                  <Icon size={16} aria-hidden="true" />
                 </span>
-              </div>
-            </div>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold text-slate-800 transition-colors group-hover:text-blue-600">
+                    {label}
+                  </span>
+                  <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">{description}</span>
+                </span>
+              </Link>
+            ))}
           </div>
         </div>
       )}
@@ -257,16 +265,20 @@ function ToolsDropdown({
 
 function MobileCandidateNavigation({ onNavigate }: { onNavigate: () => void }) {
   const [openSection, setOpenSection] = useState<number | null>(null)
+  const mobileGroups = [...candidateNavigationGroups, candidateToolsGroup]
 
   return (
     <div className="space-y-1">
-      {candidateNavigationGroups.map((group, index) => {
+      {mobileGroups.map((group, index) => {
         const isOpen = openSection === index
+        const panelId = `mobile-candidate-navigation-${index}`
         return (
           <div key={group.label} className="overflow-hidden rounded-xl border border-slate-100 bg-slate-50/80">
             <button
               type="button"
               onClick={() => setOpenSection(isOpen ? null : index)}
+              aria-expanded={isOpen}
+              aria-controls={panelId}
               className="flex min-h-[44px] w-full items-center justify-between px-4 py-2.5 text-left text-sm font-bold text-slate-800"
             >
               <span>{group.label}</span>
@@ -277,7 +289,7 @@ function MobileCandidateNavigation({ onNavigate }: { onNavigate: () => void }) {
               />
             </button>
             {isOpen && (
-              <div className="border-t border-slate-200/60 bg-white px-2 py-1.5">
+              <div id={panelId} className="border-t border-slate-200/60 bg-white px-2 py-1.5">
                 {group.items.map(({ to, label, icon: Icon }) => (
                   <Link
                     key={to}

@@ -1,4 +1,4 @@
-import { Bookmark, BriefcaseBusiness, FilePlus2, FileText, type LucideIcon } from 'lucide-react'
+import { Bookmark, BriefcaseBusiness, FilePlus2, FileText, ListOrdered, type LucideIcon } from 'lucide-react'
 
 export type CandidateNavigationItem = {
   to: string
@@ -54,6 +54,18 @@ export const candidateNavigationGroups: CandidateNavigationGroup[] = [
     ],
   },
 ]
+
+export const candidateToolsGroup: CandidateNavigationGroup = {
+  label: 'Công cụ',
+  items: [
+    {
+      to: '/candidate/job-recommendations',
+      label: 'Gợi ý việc làm theo CV',
+      description: 'Khám phá việc làm liên quan dựa trên CV đang dùng',
+      icon: ListOrdered,
+    },
+  ],
+}
 
 export const candidateAccountItems: CandidateNavigationItem[] = [
   {

@@ -90,8 +90,11 @@ export default function JobDetailPage() {
   }
 
   const requestedReturnTo = (location.state as { returnTo?: string } | null)?.returnTo
-  const backTo = requestedReturnTo?.startsWith('/candidate/saved-jobs') ? requestedReturnTo : '/jobs'
-  const backLabel = backTo === '/jobs' ? 'Quay lại danh sách' : 'Quay lại việc làm đã lưu'
+  const validReturnTo = requestedReturnTo?.startsWith('/candidate/saved-jobs') || requestedReturnTo?.startsWith('/candidate/job-recommendations')
+  const backTo = validReturnTo && requestedReturnTo ? requestedReturnTo : '/jobs'
+  const backLabel = backTo?.startsWith('/candidate/job-recommendations')
+    ? 'Quay lại gợi ý việc làm'
+    : backTo === '/jobs' ? 'Quay lại danh sách' : 'Quay lại việc làm đã lưu'
 
   return (
     <div className="min-h-screen bg-slate-50">

@@ -1,8 +1,9 @@
 import { Briefcase, ChevronDown, Clock, DollarSign, Eye, GraduationCap, Layers, SlidersHorizontal, X } from 'lucide-react'
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { jobSortLabels, salaryFilterOptions, type SalaryFilter } from '../../config/jobSearchFilters'
 import { EMPLOYMENT_TYPES, EXPERIENCE_REQUIREMENTS, INDUSTRIES, JOB_LEVELS, JOB_SORT_OPTIONS, WORK_MODES } from '../../types/job'
 import type { EmploymentType, ExperienceRequirement, Industry, JobLevel, JobSortOption, WorkMode } from '../../types/job'
+import { trapDialogFocus } from '../../utils/dialogFocus'
 import { employmentLabel, experienceRequirementLabel, industryLabel, levelLabel, workModeLabel } from '../../utils/jobDisplay'
 
 export type JobFilterValues = {
@@ -19,6 +20,7 @@ type Props = {
   values: JobFilterValues
   onChange: (values: JobFilterValues) => void
   onClear: () => void
+  showSort?: boolean
 }
 
 const selectFieldClass =
@@ -28,7 +30,8 @@ function Controls({
   values,
   onChange,
   sidebar = false,
-}: Pick<Props, 'values' | 'onChange'> & { sidebar?: boolean }) {
+  showSort = true,
+}: Pick<Props, 'values' | 'onChange' | 'showSort'> & { sidebar?: boolean }) {
   const update = <K extends keyof JobFilterValues>(key: K, value: JobFilterValues[K]) =>
     onChange({ ...values, [key]: value })
 
@@ -187,7 +190,7 @@ function Controls({
       </div>
 
       {/* Sắp xếp (Dành cho Mobile Sheet hoặc Sidebar Fallback) */}
-      {!sidebar && (
+      {!sidebar && showSort && (
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">Sắp xếp theo</label>
           <div className="relative mt-1.5">
@@ -212,13 +215,21 @@ function Controls({
   )
 }
 
-export default function JobFilters({ values, onChange, onClear }: Props) {
+export default function JobFilters({ values, onChange, onClear, showSort = true }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
   const headingId = useId()
   const activeCount = Object.entries(values).filter(
-    ([key, value]) => (key !== 'sort' && value !== '') || (key === 'sort' && value !== 'newest')
+    ([key, value]) => (key !== 'sort' && value !== '') || (showSort && key === 'sort' && value !== 'newest')
   ).length
   const hasFilters = activeCount > 0
+
+  useEffect(() => {
+    if (!mobileOpen) return
+    const previouslyFocused = document.activeElement as HTMLElement | null
+    closeButtonRef.current?.focus()
+    return () => previouslyFocused?.focus()
+  }, [mobileOpen])
 
   return (
     <>
@@ -249,7 +260,7 @@ export default function JobFilters({ values, onChange, onClear }: Props) {
             </button>
           )}
         </div>
-        <Controls values={values} onChange={onChange} sidebar />
+        <Controls values={values} onChange={onChange} showSort={showSort} sidebar />
       </section>
 
       {/* Mobile Open Filter Trigger */}
@@ -289,6 +300,15 @@ export default function JobFilters({ values, onChange, onClear }: Props) {
             role="dialog"
             aria-modal="true"
             aria-labelledby={`${headingId}-mobile`}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                event.preventDefault()
+                event.stopPropagation()
+                setMobileOpen(false)
+                return
+              }
+              trapDialogFocus(event)
+            }}
             className="motion-dialog relative max-h-[min(46rem,calc(100dvh-2rem))] w-full max-w-lg overflow-y-auto rounded-3xl border border-slate-200/80 bg-white p-6 shadow-2xl"
           >
             <div className="mb-5 flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
@@ -299,6 +319,7 @@ export default function JobFilters({ values, onChange, onClear }: Props) {
                 <p className="mt-0.5 text-xs text-slate-500">Tùy chỉnh tiêu chí để tìm cơ hội phù hợp nhất</p>
               </div>
               <button
+                ref={closeButtonRef}
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 className="btn-press flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
@@ -308,7 +329,7 @@ export default function JobFilters({ values, onChange, onClear }: Props) {
               </button>
             </div>
 
-            <Controls values={values} onChange={onChange} />
+            <Controls values={values} onChange={onChange} showSort={showSort} />
 
             <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
               <button
