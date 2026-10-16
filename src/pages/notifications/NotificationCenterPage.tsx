@@ -10,6 +10,7 @@ import { useToast } from '../../hooks/useToast'
 import { notificationService } from '../../services/notificationService'
 import type { NotificationItem as NotificationItemType, NotificationListResponse } from '../../types/notification'
 import {
+  createReadNotificationPage,
   createNotificationListParams,
   getNotificationTargetPath,
   notificationPageFromSearch,
@@ -18,6 +19,7 @@ import {
 } from '../../utils/notification'
 
 const PAGE_SIZE = 20
+const READ_SOURCE_PAGE_SIZE = 100
 
 type IdentityBoundResponse = {
   identityId: string
@@ -36,6 +38,25 @@ function errorMessage(error: unknown): string {
   return 'Không thể tải danh sách thông báo. Vui lòng thử lại.'
 }
 
+async function fetchReadNotifications(page: number, signal: AbortSignal): Promise<NotificationListResponse> {
+  const sourceItems: NotificationItemType[] = []
+  let sourcePage = 1
+  let sourceTotalPages = 1
+
+  while (sourcePage <= sourceTotalPages) {
+    if (signal.aborted) throw new DOMException('Notification request was cancelled', 'AbortError')
+    const response = await notificationService.getNotifications(
+      createNotificationListParams({ page: sourcePage, pageSize: READ_SOURCE_PAGE_SIZE, unreadOnly: false }),
+      signal,
+    )
+    sourceItems.push(...response.items)
+    sourceTotalPages = response.total_pages
+    sourcePage += 1
+  }
+
+  return createReadNotificationPage(sourceItems, page, PAGE_SIZE)
+}
+
 export default function NotificationCenterPage() {
   const { user } = useAuth()
   const notifications = useNotifications()
@@ -43,18 +64,24 @@ export default function NotificationCenterPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const dataRefreshVersion = useDataRefreshVersion()
-  const { page, unreadOnly } = notificationPageFromSearch(searchParams)
+  const { page, filter } = notificationPageFromSearch(searchParams)
+  const readOnly = filter === 'read'
   const identityId = user?.id ?? null
   const activeIdentityRef = useRef(identityId)
   const queryKey = identityId
-    ? notificationRequestKey({ userId: identityId, generation: notifications.identityGeneration, page, pageSize: PAGE_SIZE, unreadOnly })
+    ? notificationRequestKey({ userId: identityId, generation: notifications.identityGeneration, page, pageSize: PAGE_SIZE, filter })
     : 'anonymous'
 
   const fetcher = useCallback(async (signal: AbortSignal): Promise<IdentityBoundResponse> => {
     if (!identityId) throw new Error('Notification identity is unavailable')
-    const result = await notificationService.getNotifications(createNotificationListParams({ page, pageSize: PAGE_SIZE, unreadOnly }), signal)
+    const result = readOnly
+      ? await fetchReadNotifications(page, signal)
+      : await notificationService.getNotifications(
+        createNotificationListParams({ page, pageSize: PAGE_SIZE, unreadOnly: true }),
+        signal,
+      )
     return { identityId, result }
-  }, [identityId, page, unreadOnly])
+  }, [identityId, page, readOnly])
 
   const { data: boundData, error, isFetching, isInitialLoading, refetch, replaceData } = usePaginatedQuery({
     queryKey,
@@ -72,8 +99,8 @@ export default function NotificationCenterPage() {
     setSearchParams(updateNotificationSearch(searchParams, { page: data.total_pages }), { replace: true })
   }, [data, isFetching, page, searchParams, setSearchParams])
 
-  const setUnreadOnly = (value: boolean) => {
-    setSearchParams(updateNotificationSearch(searchParams, { unreadOnly: value }))
+  const setFilter = (value: 'unread' | 'read') => {
+    setSearchParams(updateNotificationSearch(searchParams, { filter: value }))
   }
 
   const setPage = (value: number) => {
@@ -88,21 +115,20 @@ export default function NotificationCenterPage() {
       try {
         const updated = await notifications.markOne(item)
         if (activeIdentityRef.current !== requestIdentity || !data) return
-        if (unreadOnly) {
-          const nextItems = data.items.filter((entry) => entry.id !== item.id)
+        if (readOnly) {
+          replaceData({ identityId: requestIdentity, result: { ...data, items: data.items.map((entry) => entry.id === updated.id ? updated : entry) } })
+        } else {
           const nextTotal = Math.max(0, data.total - 1)
           replaceData({
             identityId: requestIdentity,
             result: {
               ...data,
-              items: nextItems,
+              items: data.items.filter((entry) => entry.id !== updated.id),
               total: nextTotal,
               total_pages: nextTotal === 0 ? 0 : Math.ceil(nextTotal / data.page_size),
             },
           })
           refetch()
-        } else {
-          replaceData({ identityId: requestIdentity, result: { ...data, items: data.items.map((entry) => entry.id === updated.id ? updated : entry) } })
         }
       } catch (requestError) {
         if (!isAbortError(requestError)) toast.error('Chưa thể đánh dấu thông báo đã đọc. Vui lòng thử lại.')
@@ -120,10 +146,11 @@ export default function NotificationCenterPage() {
       if (activeIdentityRef.current !== requestIdentity || !data) return
       replaceData({
         identityId: requestIdentity,
-        result: unreadOnly
-          ? { ...data, items: [], total: 0, total_pages: 0, page: 1 }
-          : { ...data, items: data.items.map((item) => ({ ...item, is_read: true })) },
+        result: readOnly
+          ? data
+          : { ...data, items: [], total: 0, total_pages: 0, page: 1 },
       })
+      if (readOnly) refetch()
       toast.success('Đã đánh dấu tất cả thông báo là đã đọc.')
     } catch (requestError) {
       if (!isAbortError(requestError)) toast.error('Chưa thể cập nhật thông báo. Vui lòng thử lại.')
@@ -136,29 +163,29 @@ export default function NotificationCenterPage() {
     <main className="mx-auto min-h-[calc(100vh-4rem)] max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <header className="flex flex-col gap-5 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-blue-700">Trung tâm cập nhật</p>
-          <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">{pageTitle}</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 font-[Inter,sans-serif]">Trung tâm cập nhật</p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1C1C1C] sm:text-3xl font-[Inter,sans-serif]">{pageTitle}</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Theo dõi những thay đổi liên quan đến hồ sơ, ứng tuyển và hoạt động trên GJob.</p>
         </div>
         <button
           type="button"
           disabled={notifications.markAllPending || notifications.unreadCount === 0}
           onClick={() => void handleMarkAll()}
-          className="btn-press inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-blue-700 shadow-xs transition-colors hover:border-blue-200 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-45 sm:self-auto"
+          className="btn-press inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-xl border border-black/[0.08] bg-white px-4 text-sm font-semibold text-[#1C1C1C] shadow-2xs transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45 sm:self-auto"
         >
-          {notifications.markAllPending ? <LoaderCircle size={17} className="animate-spin" aria-hidden="true" /> : <CheckCheck size={17} aria-hidden="true" />}
+          {notifications.markAllPending ? <LoaderCircle size={17} className="animate-spin text-[#1C1C1C]" aria-hidden="true" /> : <CheckCheck size={17} aria-hidden="true" />}
           Đánh dấu tất cả đã đọc
         </button>
       </header>
 
       <section className="mt-6" aria-label="Bộ lọc thông báo">
         <div className="inline-flex rounded-xl bg-slate-100 p-1" role="group" aria-label="Trạng thái đọc">
-          <button type="button" aria-pressed={!unreadOnly} onClick={() => setUnreadOnly(false)} className={`min-h-10 rounded-lg px-4 text-sm font-bold transition-colors ${!unreadOnly ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}>Tất cả</button>
-          <button type="button" aria-pressed={unreadOnly} onClick={() => setUnreadOnly(true)} className={`min-h-10 rounded-lg px-4 text-sm font-bold transition-colors ${unreadOnly ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}>Chưa đọc</button>
+          <button type="button" aria-pressed={!readOnly} onClick={() => setFilter('unread')} className={`min-h-10 rounded-lg px-4 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] focus-visible:ring-offset-2 ${!readOnly ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}>Chưa đọc</button>
+          <button type="button" aria-pressed={readOnly} onClick={() => setFilter('read')} className={`min-h-10 rounded-lg px-4 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] focus-visible:ring-offset-2 ${readOnly ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}>Đã đọc</button>
         </div>
       </section>
 
-      {isFetching && data && <div className="mt-4 h-0.5 overflow-hidden rounded-full bg-blue-100" role="status" aria-label="Đang cập nhật thông báo"><div className="h-full w-2/5 animate-pulse rounded-full bg-blue-600" /></div>}
+      {isFetching && data && <div className="mt-4 h-0.5 overflow-hidden rounded-full bg-black/10" role="status" aria-label="Đang cập nhật thông báo"><div className="h-full w-2/5 animate-pulse rounded-full bg-[#1C1C1C]" /></div>}
 
       {isInitialLoading || (!data && !error) ? (
         <section className="mt-6 space-y-3" aria-label="Đang tải danh sách thông báo">
@@ -167,15 +194,15 @@ export default function NotificationCenterPage() {
       ) : !data && error ? (
         <section className="mt-6 rounded-2xl bg-white px-6 py-14 text-center shadow-sm ring-1 ring-slate-200" role="alert">
           <Bell size={30} className="mx-auto text-slate-400" aria-hidden="true" />
-          <h2 className="mt-4 text-lg font-extrabold text-slate-950">Không thể tải thông báo</h2>
+          <h2 className="mt-4 text-lg font-bold text-slate-950">Không thể tải thông báo</h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">{errorMessage(error)}</p>
-          <button type="button" onClick={refetch} className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-bold text-white hover:bg-blue-700"><RefreshCw size={15} aria-hidden="true" /> Thử lại</button>
+          <button type="button" onClick={refetch} className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#1C1C1C] px-4 text-sm font-semibold text-white hover:bg-black"><RefreshCw size={15} aria-hidden="true" /> Thử lại</button>
         </section>
       ) : data?.items.length === 0 ? (
         <section className="mt-6 rounded-2xl bg-white px-6 py-16 text-center shadow-sm ring-1 ring-slate-200">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-700"><Bell size={26} aria-hidden="true" /></span>
-          <h2 className="mt-5 text-xl font-extrabold text-slate-950">{unreadOnly ? 'Bạn đã đọc hết thông báo.' : 'Chưa có thông báo nào.'}</h2>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{unreadOnly ? 'Các thông báo chưa đọc mới sẽ xuất hiện tại đây.' : 'Những cập nhật liên quan đến tài khoản sẽ xuất hiện tại đây.'}</p>
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-[#1C1C1C]"><Bell size={26} aria-hidden="true" /></span>
+          <h2 className="mt-5 text-xl font-bold text-slate-950">{readOnly ? 'Chưa có thông báo đã đọc.' : 'Không còn thông báo chưa đọc.'}</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{readOnly ? 'Thông báo bạn mở hoặc đánh dấu đã đọc sẽ xuất hiện tại đây.' : 'Thông báo mới chưa đọc sẽ xuất hiện tại đây.'}</p>
         </section>
       ) : data ? (
         <>

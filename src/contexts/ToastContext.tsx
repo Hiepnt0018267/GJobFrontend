@@ -39,15 +39,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               role="status"
               className={`pointer-events-auto flex items-start gap-3 rounded-2xl p-4 shadow-xl ring-1 backdrop-blur-md transition-all duration-300 ${
                 isSuccess
-                  ? 'bg-slate-900/95 text-emerald-300 ring-emerald-500/40'
+                  ? 'bg-[#1C1C1C] text-white ring-black/10 shadow-2xl'
                   : isError
                     ? 'bg-slate-900/95 text-red-300 ring-red-500/40'
-                    : 'bg-slate-900/95 text-slate-100 ring-slate-700/50'
+                    : 'bg-[#1C1C1C] text-slate-100 ring-black/10'
               }`}
             >
-              {isSuccess && <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-400" aria-hidden="true" />}
+              {isSuccess && <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-white" aria-hidden="true" />}
               {isError && <AlertCircle size={18} className="mt-0.5 shrink-0 text-red-400" aria-hidden="true" />}
-              {!isSuccess && !isError && <Info size={18} className="mt-0.5 shrink-0 text-blue-400" aria-hidden="true" />}
+              {!isSuccess && !isError && <Info size={18} className="mt-0.5 shrink-0 text-slate-300" aria-hidden="true" />}
 
               <p className="text-sm font-medium leading-5 text-white">{toast.message}</p>
 

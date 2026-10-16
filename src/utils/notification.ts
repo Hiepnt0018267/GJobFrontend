@@ -156,7 +156,9 @@ export function notificationStateReducer(
     case 'mark-one/success':
       return {
         ...state,
-        previewItems: state.previewItems.map((item) => (item.id === action.item.id ? action.item : item)),
+        previewItems: action.wasUnread
+          ? state.previewItems.filter((item) => item.id !== action.item.id)
+          : state.previewItems,
         unreadCount: action.wasUnread && state.unreadCount !== null ? Math.max(0, state.unreadCount - 1) : state.unreadCount,
       }
     case 'mark-one/finish':
@@ -167,18 +169,20 @@ export function notificationStateReducer(
       return {
         ...state,
         unreadCount: 0,
-        previewItems: state.previewItems.map((item) => ({ ...item, is_read: true })),
+        previewItems: [],
       }
     case 'mark-all/finish':
       return { ...state, markAllPending: false }
   }
 }
 
-export function notificationPageFromSearch(params: URLSearchParams): { page: number; unreadOnly: boolean } {
+export type NotificationCenterFilter = 'unread' | 'read'
+
+export function notificationPageFromSearch(params: URLSearchParams): { page: number; filter: NotificationCenterFilter } {
   const pageValue = Number(params.get('page'))
   return {
     page: Number.isInteger(pageValue) && pageValue > 0 ? pageValue : 1,
-    unreadOnly: params.get('filter') === 'unread',
+    filter: params.get('filter') === 'read' ? 'read' : 'unread',
   }
 }
 
@@ -199,24 +203,24 @@ export function notificationRequestKey({
   generation,
   page,
   pageSize,
-  unreadOnly,
+  filter,
 }: {
   userId: string
   generation: number
   page: number
   pageSize: number
-  unreadOnly: boolean
+  filter: NotificationCenterFilter
 }): string {
-  return `${userId}:${generation}:${unreadOnly ? 'unread' : 'all'}:${page}:${pageSize}`
+  return `${userId}:${generation}:${filter}:${page}:${pageSize}`
 }
 
 export function updateNotificationSearch(
   current: URLSearchParams,
-  update: { page?: number; unreadOnly?: boolean },
+  update: { page?: number; filter?: NotificationCenterFilter },
 ): URLSearchParams {
   const next = new URLSearchParams(current)
-  if (update.unreadOnly !== undefined) {
-    if (update.unreadOnly) next.set('filter', 'unread')
+  if (update.filter !== undefined) {
+    if (update.filter === 'read') next.set('filter', 'read')
     else next.delete('filter')
     next.delete('page')
   }
@@ -225,4 +229,23 @@ export function updateNotificationSearch(
     else next.set('page', String(update.page))
   }
   return next
+}
+
+export function createReadNotificationPage(
+  items: NotificationItem[],
+  page: number,
+  pageSize: number,
+): { items: NotificationItem[]; total: number; page: number; page_size: number; total_pages: number } {
+  const uniqueReadItems = Array.from(
+    new Map(items.filter((item) => item.is_read).map((item) => [item.id, item])).values(),
+  )
+  const total = uniqueReadItems.length
+  const start = (page - 1) * pageSize
+  return {
+    items: uniqueReadItems.slice(start, start + pageSize),
+    total,
+    page,
+    page_size: pageSize,
+    total_pages: total === 0 ? 0 : Math.ceil(total / pageSize),
+  }
 }

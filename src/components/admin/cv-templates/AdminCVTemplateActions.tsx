@@ -75,7 +75,7 @@ export default function AdminCVTemplateActions({ template, onUpdated, onDeleted,
           onClick={() => setPending(template.is_active ? 'deactivate' : 'activate')}
           className={template.is_active
             ? 'rounded-xl border border-red-200 px-3 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60'
-            : 'rounded-xl bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60'}
+            : 'rounded-xl bg-[#1C1C1C] px-3 py-2.5 text-sm font-semibold text-white hover:bg-black disabled:opacity-60'}
         >
           {template.is_active ? 'Ngừng hoạt động' : 'Kích hoạt'}
         </button>
@@ -107,7 +107,7 @@ export default function AdminCVTemplateActions({ template, onUpdated, onDeleted,
             </p>
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button type="button" disabled={busy} onClick={() => setPending(null)} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700">Hủy</button>
-              <button type="button" disabled={busy} onClick={() => void execute()} className={`inline-flex justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white ${pending === 'deactivate' || pending === 'delete' ? 'bg-red-600' : 'bg-blue-600'}`}>
+              <button type="button" disabled={busy} onClick={() => void execute()} className={`inline-flex justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white ${pending === 'deactivate' || pending === 'delete' ? 'bg-red-600' : 'bg-[#1C1C1C]'}`}>
                 {busy && <LoaderCircle size={16} className="animate-spin" />}
                 {busy ? 'Đang cập nhật...' : labels[pending]}
               </button>

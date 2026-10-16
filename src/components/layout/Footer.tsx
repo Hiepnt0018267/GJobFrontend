@@ -1,54 +1,64 @@
 import { Link } from 'react-router-dom'
-import { Zap } from 'lucide-react'
+import { Zap, Shield, Heart } from 'lucide-react'
 
 const FOOTER_LINKS = {
   discovery: [
     { label: 'Trang chủ', to: '/' },
-    { label: 'Việc làm', to: '/jobs' },
+    { label: 'Tất cả việc làm', to: '/jobs' },
+    { label: 'Việc làm Remote', to: '/jobs?work_mode=REMOTE' },
+    { label: 'Thực tập sinh', to: '/jobs?level=INTERN' },
   ],
   candidates: [
-    { label: 'Tìm việc làm', to: '/jobs' },
-    { label: 'Đăng nhập', to: '/login' },
-    { label: 'Đăng ký', to: '/register' },
+    { label: 'Khám phá việc làm', to: '/jobs' },
+    { label: 'Tạo CV chuyên nghiệp', to: '/candidate/cvs/templates' },
+    { label: 'Đăng nhập ứng viên', to: '/login' },
+    { label: 'Đăng ký tài khoản', to: '/register' },
   ],
   employers: [
-    { label: 'Đăng tin tuyển dụng', to: '/login' },
-    { label: 'Quản lý tin tuyển dụng', to: '/login' },
-    { label: 'Đăng ký tài khoản', to: '/register' },
+    { label: 'Đăng tin tuyển dụng', to: '/recruiter/jobs/create' },
+    { label: 'Dashboard tuyển dụng', to: '/recruiter' },
+    { label: 'Tìm kiếm hồ sơ ứng viên', to: '/login' },
+    { label: 'Báo giá dịch vụ', to: '/login' },
   ],
 }
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
-          {/* Brand */}
-          <div className="sm:col-span-2 lg:col-span-1">
-            <Link to="/" className="flex items-center gap-2 mb-4" aria-label="GJob">
-              <div className="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-lg">
-                <Zap size={18} className="text-white" strokeWidth={2.5} />
+    <footer className="bg-[#1e293b] text-slate-300 pt-16 pb-12 border-t border-slate-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Links Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-14">
+          
+          {/* Brand Column */}
+          <div className="lg:col-span-2">
+            <Link to="/" className="inline-flex items-center gap-2.5 mb-4" aria-label="GJob">
+              <div className="flex items-center justify-center w-9 h-9 bg-teal-500 rounded-xl shadow-sm text-white">
+                <Zap size={20} className="fill-white" />
               </div>
-              <span className="text-xl font-bold text-white">
-                G<span className="text-blue-400">Job</span>
+              <span className="text-2xl font-black text-white tracking-tight">
+                G<span className="text-teal-400">Job</span>
               </span>
             </Link>
-            <p className="text-sm leading-relaxed mb-6">
-              Nền tảng tuyển dụng thế hệ mới — kết nối tài năng và cơ hội thông qua sức mạnh của trí tuệ nhân tạo.
+            <p className="text-sm text-slate-400 leading-relaxed mb-6 max-w-sm">
+              Nền tảng kết nối nhân tài và việc làm ứng dụng AI hàng đầu Việt Nam. Tối ưu hóa hồ sơ, đối chiếu năng lực và kiến tạo cơ hội sự nghiệp bền vững.
             </p>
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <Shield size={14} className="text-teal-400" />
+              <span>Bảo mật thông tin & Đối tác xác thực 100%</span>
+            </div>
           </div>
 
-          {/* Discovery */}
+          {/* Discovery Links */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4">
               Khám phá
-            </h3>
+            </h4>
             <ul className="space-y-2.5">
               {FOOTER_LINKS.discovery.map((link) => (
                 <li key={link.label}>
                   <Link
                     to={link.to}
-                    className="text-sm hover:text-white transition-colors duration-200"
+                    className="text-sm text-slate-400 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -57,17 +67,17 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Candidates */}
+          {/* Candidate Links */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4">
               Ứng viên
-            </h3>
+            </h4>
             <ul className="space-y-2.5">
               {FOOTER_LINKS.candidates.map((link) => (
                 <li key={link.label}>
                   <Link
                     to={link.to}
-                    className="text-sm hover:text-white transition-colors duration-200"
+                    className="text-sm text-slate-400 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -76,17 +86,17 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Employers */}
+          {/* Employer Links */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4">
               Nhà tuyển dụng
-            </h3>
+            </h4>
             <ul className="space-y-2.5">
               {FOOTER_LINKS.employers.map((link) => (
                 <li key={link.label}>
                   <Link
                     to={link.to}
-                    className="text-sm hover:text-white transition-colors duration-200"
+                    className="text-sm text-slate-400 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -94,15 +104,20 @@ export default function Footer() {
               ))}
             </ul>
           </div>
+
         </div>
 
-        {/* Bottom bar */}
-        <div className="border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-slate-500">
-            &copy; {new Date().getFullYear()} GJob. Bảo lưu mọi quyền.
+        {/* Bottom Bar */}
+        <div className="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+          <p>
+            &copy; {new Date().getFullYear()} GJob Platform. Bản quyền được bảo lưu.
           </p>
-          <p className="text-xs text-slate-500">Kết nối cơ hội nghề nghiệp và nhân tài.</p>
+          <div className="flex items-center gap-1 text-slate-400">
+            <span>Thiết kế vì cộng đồng nhân tài Việt Nam</span>
+            <Heart size={13} className="text-rose-500 fill-rose-500 mx-1" />
+          </div>
         </div>
+
       </div>
     </footer>
   )

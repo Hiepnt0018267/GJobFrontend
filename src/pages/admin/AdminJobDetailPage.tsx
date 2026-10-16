@@ -84,10 +84,10 @@ export default function AdminJobDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-white">
       <AdminHeader />
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <Link to={returnTo} className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-blue-700">
+        <Link to={returnTo} className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-black">
           <ArrowLeft size={16} aria-hidden="true" />
           Quay lại danh sách
         </Link>
@@ -101,14 +101,14 @@ export default function AdminJobDetailPage() {
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{error}</p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link to={returnTo} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Quay lại danh sách</Link>
-              {!isNotFound && <button type="button" onClick={() => reload()} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"><RefreshCw size={16} aria-hidden="true" />Thử lại</button>}
+              {!isNotFound && <button type="button" onClick={() => reload()} className="inline-flex items-center gap-2 rounded-xl bg-[#1C1C1C] px-4 py-2.5 text-sm font-semibold text-white hover:bg-black"><RefreshCw size={16} aria-hidden="true" />Thử lại</button>}
             </div>
           </section>
         )}
 
         {job && (
           <div className="mt-6">
-            {notice && <p role="status" className="mb-6 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 ring-1 ring-emerald-100">{notice}</p>}
+            {notice && <p role="status" className="mb-6 rounded-xl bg-black/[0.04] px-4 py-3 text-sm font-semibold text-[#1C1C1C] ring-1 ring-black/[0.08]">{notice}</p>}
             <AdminJobReviewContent job={job} onUpdated={handleUpdated} onConflict={handleConflict} />
           </div>
         )}

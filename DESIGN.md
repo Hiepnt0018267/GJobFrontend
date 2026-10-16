@@ -29,8 +29,8 @@ Tuân thủ nguyên tắc phân bổ **60 - 30 - 10**:
 - **Subtext / Muted:** `#64748b` (Slate 500).
 
 ### 10% — Điểm nhấn thương hiệu & Ý nghĩa nghiệp vụ (Accents & Semantics)
-- **Primary Brand Blue:** `#2563eb` (Base) $\rightarrow$ `#1d4ed8` (Royal Sapphire Focus & Dark mode) $\rightarrow$ `#1e40af` (Hover).
-- **Primary Light / Badge:** `#eff6ff` (Blue 50).
+- **Primary Brand Turquoise/Cyan (Figma Standard):** `#49bbbd` (Base) $\rightarrow$ `#3ca8aa` (Hover) $\rightarrow$ `#2e8d8f` (Active).
+- **Primary Light / Surface Badge:** `#f0fbfb` (Teal 50) với viền nhẹ `rgba(73, 187, 189, 0.2)`.
 - **Compensation (Mức lương):** Emerald Jade `#059669` trên nền `#ecfdf5` (Ring: `rgba(5, 150, 105, 0.2)`).
 - **AI Features & Match:** Iris Purple `#6366f1` / `#8b5cf6` (Nhấn mạnh trí tuệ nhân tạo).
 - **Status Badges:**
@@ -43,6 +43,7 @@ Tuân thủ nguyên tắc phân bổ **60 - 30 - 10**:
 ## 3. Typography (Hệ thống chữ)
 
 - **Primary Font Family:** `'Plus Jakarta Sans', system-ui, -apple-system, sans-serif`.
+- **Recruiter & Admin workspaces:** `'Inter', system-ui, -apple-system, sans-serif` để hai khu vực vận hành dùng chung mật độ, độ rõ và nhịp chữ dashboard.
 - **Trọng số (Weights):**
   - Regular (400): Body text dài, đoạn văn giải thích.
   - Medium (500): Nhãn phụ, input text, dropdown items.
@@ -67,7 +68,7 @@ Tuân thủ nguyên tắc phân bổ **60 - 30 - 10**:
   --shadow-premium-hover: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 16px 32px -6px rgba(15, 23, 42, 0.1);
 
   /* Bóng phát quang nhẹ khi focus */
-  --shadow-glow-blue: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  --shadow-glow-teal: 0 0 0 3px rgba(0, 168, 143, 0.2);
   ```
 - **Quy tắc Concentric Radius:** Bo góc bên trong phải nhỏ hơn bo góc bên ngoài một khoảng bằng padding:
   `R_inner = R_outer - padding`.
@@ -84,5 +85,5 @@ Tuân thủ nguyên tắc phân bổ **60 - 30 - 10**:
   }
   ```
 - **Transition Curve:** Ưu tiên `cubic-bezier(0.16, 1, 0.3, 1)` (GJob Ease) mang lại cảm giác chuyển động mượt mà và tự nhiên.
-- **Accessibility & Focus Rings:** Đảm bảo `focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2` cho người dùng điều hướng bằng bàn phím.
+- **Accessibility & Focus Rings:** Đảm bảo `focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2` cho người dùng điều hướng bằng bàn phím.
 - **Reduced Motion:** Tôn trọng cài đặt hệ thống `prefers-reduced-motion: reduce`.

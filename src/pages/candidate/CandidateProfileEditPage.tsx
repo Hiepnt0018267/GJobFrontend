@@ -68,9 +68,9 @@ export default function CandidateProfileEditPage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-slate-400 mb-6" aria-label="breadcrumb">
-          <Link to="/" className="hover:text-blue-600 transition-colors">Trang chủ</Link>
+          <Link to="/" className="hover:text-[#49BBBD] transition-colors">Trang chủ</Link>
           <span>/</span>
-          <Link to="/candidate/profile" className="hover:text-blue-600 transition-colors">Hồ sơ cá nhân</Link>
+          <Link to="/candidate/profile" className="hover:text-[#49BBBD] transition-colors">Hồ sơ cá nhân</Link>
           <span>/</span>
           <span className="text-slate-600 font-medium">Cập nhật hồ sơ</span>
         </nav>

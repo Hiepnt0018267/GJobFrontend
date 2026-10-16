@@ -1,9 +1,9 @@
 import type { AdminUserRole } from '../../../types/adminUser'
 
 const roleStyles: Record<AdminUserRole, { label: string; className: string }> = {
-  CANDIDATE: { label: 'Ứng viên', className: 'bg-blue-50 text-blue-800 ring-blue-200/80' },
-  RECRUITER: { label: 'Nhà tuyển dụng', className: 'bg-violet-50 text-violet-800 ring-violet-200/80' },
-  ADMIN: { label: 'Quản trị viên', className: 'bg-slate-100 text-slate-800 ring-slate-200/80' },
+  CANDIDATE: { label: 'Ứng viên', className: 'bg-slate-100 text-slate-700 ring-slate-200/80' },
+  RECRUITER: { label: 'Nhà tuyển dụng', className: 'bg-black/[0.04] text-[#1C1C1C] ring-black/10' },
+  ADMIN: { label: 'Quản trị viên', className: 'bg-slate-900 text-white ring-slate-900' },
 }
 
 export function AdminUserRoleBadge({ role }: { role: AdminUserRole }) {

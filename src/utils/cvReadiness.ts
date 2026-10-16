@@ -9,7 +9,7 @@ export function getCandidateCVReadiness(cv: CVListItem): CandidateCVReadiness {
 }
 
 export const candidateCVReadinessMeta: Record<CandidateCVReadiness, { label: string; className: string }> = {
-  READY: { label: 'Sẵn sàng', className: 'bg-emerald-50 text-emerald-700' },
+  READY: { label: 'Sẵn sàng', className: 'bg-[#E5ECF6] text-[#1C1C1C]' },
   PROCESSING: { label: 'Đang xử lý', className: 'bg-amber-50 text-amber-800' },
   NEEDS_RETRY: { label: 'Cần thử lại', className: 'bg-red-50 text-red-700' },
 }

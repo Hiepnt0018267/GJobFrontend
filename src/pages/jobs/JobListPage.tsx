@@ -160,20 +160,30 @@ export default function JobListPage() {
 
   return (
     <div className="min-h-screen bg-slate-50/50">
-      {/* Compact Header with integrated Search Bar */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-8 text-white sm:py-10">
+      {/* Figma Branded Header with integrated Search Bar */}
+      <section
+        className="relative overflow-hidden py-10 sm:py-14 text-white rounded-b-3xl sm:rounded-b-[48px] shadow-lg shadow-teal-900/10"
+        style={{
+          background: 'linear-gradient(135deg, #49BBBD 0%, #49BBBD 50%, #49BBBD 100%)',
+        }}
+      >
         <div
-          className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-blue-600/20 blur-3xl"
+          className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-white/10 blur-3xl"
           aria-hidden="true"
         />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
-            <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">Tìm kiếm việc làm</h1>
-            <p className="mt-1 text-xs text-slate-300 sm:text-sm">
-              Khám phá cơ hội nghề nghiệp lý tưởng theo chức danh, kỹ năng hoặc vị trí địa lý.
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-bold uppercase tracking-wider mb-2 backdrop-blur-md">
+              Cơ hội nghề nghiệp xác thực
+            </span>
+            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+              Khám phá việc làm lý tưởng
+            </h1>
+            <p className="mt-2 text-xs sm:text-sm text-teal-50/90 max-w-xl leading-relaxed">
+              Tìm kiếm và ứng tuyển trực tiếp vào các vị trí phù hợp với năng lực chuyên môn của bạn.
             </p>
           </div>
-          <div className="mt-5 max-w-4xl">
+          <div className="mt-6 max-w-4xl">
             <JobSearchBar
               key={`${search}-${location}`}
               keyword={search}
@@ -216,7 +226,7 @@ export default function JobListPage() {
                   key={chip.key}
                   type="button"
                   onClick={chip.remove}
-                  className="btn-press inline-flex min-h-[30px] items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50/80 px-3 py-1 text-xs font-bold text-blue-700 transition-colors hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                  className="btn-press inline-flex min-h-[30px] items-center gap-1.5 rounded-full border border-teal-200/90 bg-teal-50 px-3 py-1 text-xs font-bold text-[#49BBBD] transition-colors hover:bg-teal-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                 >
                   {chip.label}
                   <X size={13} aria-hidden="true" />
@@ -225,7 +235,7 @@ export default function JobListPage() {
               <button
                 type="button"
                 onClick={clearAll}
-                className="btn-press ml-1 text-xs font-bold text-slate-500 underline decoration-slate-300 underline-offset-4 transition-colors hover:text-blue-700"
+                className="btn-press ml-1 text-xs font-bold text-slate-500 underline decoration-slate-300 underline-offset-4 transition-colors hover:text-[#49BBBD]"
               >
                 Xóa tất cả
               </button>
@@ -236,7 +246,7 @@ export default function JobListPage() {
             {/* Results Header + In-line Sort Controls */}
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/60 pb-3.5">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">Việc làm đang tuyển</h2>
+                <h2 className="text-lg font-bold text-slate-900 font-[Plus_Jakarta_Sans,sans-serif]">Việc làm đang tuyển</h2>
                 {data && (
                   <p className="text-xs text-slate-500">
                     <span className="font-bold tabular-nums text-slate-900">{data.total.toLocaleString('vi-VN')}</span> vị
@@ -255,7 +265,7 @@ export default function JobListPage() {
                     onChange={(event) =>
                       updateParams({ sort: event.target.value === 'newest' ? null : event.target.value })
                     }
-                    className="rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 shadow-xs outline-none transition-colors hover:border-blue-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                    className="rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 shadow-xs outline-none transition-all duration-150 hover:border-teal-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
                   >
                     {JOB_SORT_OPTIONS.map((value) => (
                       <option key={value} value={value}>
@@ -277,23 +287,25 @@ export default function JobListPage() {
             {isInitialLoading ? (
               <Skeleton />
             ) : !data && errorMessage ? (
-              <div role="alert" className="rounded-2xl border border-slate-200/80 bg-white p-8 text-center shadow-xs">
+              <div role="alert" className="rounded-2xl border border-slate-200/80 bg-white p-8 text-center shadow-premium">
                 <AlertCircle className="mx-auto text-rose-500" size={32} aria-hidden="true" />
-                <h3 className="mt-4 text-base font-bold text-slate-900">Không thể tải danh sách việc làm</h3>
+                <h3 className="mt-4 text-base font-bold text-slate-900 font-[Plus_Jakarta_Sans,sans-serif]">Không thể tải danh sách việc làm</h3>
                 <p className="mt-2 text-sm text-slate-500">{errorMessage}</p>
                 <button
                   type="button"
                   onClick={refetch}
-                  className="btn-press mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                  className="btn-press mt-5 inline-flex items-center gap-2 rounded-xl bg-[#49BBBD] px-5 py-2.5 text-sm font-bold text-white shadow-sm shadow-[#49BBBD]/20 hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] focus-visible:ring-offset-2"
                 >
                   <RefreshCw size={15} aria-hidden="true" />
                   Thử lại
                 </button>
               </div>
             ) : data?.items.length === 0 ? (
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-12 text-center shadow-xs">
-                <BriefcaseBusiness className="mx-auto text-blue-600" size={36} aria-hidden="true" />
-                <h3 className="mt-4 text-base font-bold text-slate-900">
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-12 text-center shadow-premium">
+                <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-[#49BBBD] ring-1 ring-[#49BBBD]/20">
+                  <BriefcaseBusiness size={28} aria-hidden="true" />
+                </span>
+                <h3 className="mt-4 text-base font-bold text-slate-900 font-[Plus_Jakarta_Sans,sans-serif]">
                   Không tìm thấy việc làm phù hợp với bộ lọc hiện tại
                 </h3>
                 <p className="mt-2 text-sm text-slate-500">
@@ -302,7 +314,7 @@ export default function JobListPage() {
                 <button
                   type="button"
                   onClick={clearAll}
-                  className="btn-press mt-5 inline-flex rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                  className="btn-press mt-5 inline-flex rounded-xl bg-[#49BBBD] px-5 py-2.5 text-sm font-bold text-white shadow-sm shadow-[#49BBBD]/20 hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] focus-visible:ring-offset-2"
                 >
                   Xóa toàn bộ bộ lọc
                 </button>
@@ -332,9 +344,9 @@ export default function JobListPage() {
                         <button
                           type="button"
                           onClick={() => updateParams({ page: String(value) }, false)}
-                          className={`btn-press min-h-10 min-w-10 rounded-xl px-3 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
+                          className={`btn-press min-h-10 min-w-10 rounded-xl px-3 py-2 text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] ${
                             value === data.page
-                              ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
+                              ? 'bg-[#49BBBD] text-white shadow-sm shadow-[#49BBBD]/30 font-extrabold'
                               : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                           }`}
                         >

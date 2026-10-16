@@ -43,7 +43,7 @@ function ConfirmationDialog({ action, isSubmitting, onCancel, onConfirm }: Confi
         <p id="moderation-dialog-description" className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button ref={cancelButtonRef} type="button" onClick={onCancel} disabled={isSubmitting} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60">Hủy</button>
-          <button type="button" onClick={onConfirm} disabled={isSubmitting} className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${isApprove ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'}`}>
+          <button type="button" onClick={onConfirm} disabled={isSubmitting} className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${isApprove ? 'bg-[#1C1C1C] hover:bg-black' : 'bg-red-600 hover:bg-red-700'}`}>
             {isSubmitting && <LoaderCircle size={16} className="animate-spin" aria-hidden="true" />}
             {isSubmitting ? (isApprove ? 'Đang phê duyệt...' : 'Đang từ chối...') : (isApprove ? 'Phê duyệt' : 'Từ chối')}
           </button>
@@ -90,7 +90,7 @@ export default function AdminJobModerationActions({ job, onUpdated, onConflict }
       <p className="text-sm leading-6 text-slate-600">Hãy kiểm tra nội dung trước khi đưa ra quyết định. Hành động này không chỉnh sửa nội dung tin.</p>
       {error && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-3.5 py-3 text-sm font-medium leading-6 text-red-800 ring-1 ring-red-100">{error}</p>}
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        <button type="button" onClick={() => setPendingAction('approve')} disabled={isSubmitting} className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"><CheckCircle2 size={17} aria-hidden="true" />Phê duyệt</button>
+        <button type="button" onClick={() => setPendingAction('approve')} disabled={isSubmitting} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1C1C1C] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-60"><CheckCircle2 size={17} aria-hidden="true" />Phê duyệt</button>
         <button type="button" onClick={() => setPendingAction('reject')} disabled={isSubmitting} className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"><XCircle size={17} aria-hidden="true" />Từ chối</button>
       </div>
       {pendingAction && <ConfirmationDialog action={pendingAction} isSubmitting={isSubmitting} onCancel={() => { if (!isSubmitting) setPendingAction(null) }} onConfirm={() => void submitModeration()} />}

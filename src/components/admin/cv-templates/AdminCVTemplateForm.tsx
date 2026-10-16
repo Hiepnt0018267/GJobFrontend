@@ -31,7 +31,7 @@ export default function AdminCVTemplateForm({ mode, template, submitting, error,
 <textarea value={description} rows={4} onChange={(event) => setDescription(event.target.value)} className="input resize-y leading-6" />
 </Field>
 <Field label="Ảnh xem trước">
-<label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm transition hover:border-blue-400 hover:bg-blue-50"><ImageUp size={18} className="shrink-0 text-blue-700"/><span className="min-w-0 flex-1 truncate font-medium text-slate-700">{thumbnailFile?.name || template?.thumbnail_original_filename || (template?.thumbnail_url ? 'Ảnh xem trước hiện tại — chọn tệp để thay' : 'Tải ảnh JPG, PNG hoặc WEBP')}</span><input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => { const file = event.target.files?.[0] ?? null; if (file && (file.size > 5 * 1024 * 1024 || !['image/jpeg', 'image/png', 'image/webp'].includes(file.type))) { setLocalError('Ảnh cần là JPG, PNG hoặc WEBP và không vượt quá 5 MB.'); event.target.value = ''; return } setThumbnailFile(file); setLocalError(null); if (file && onThumbnailSelected) void onThumbnailSelected(file) }} /></label>
+<label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm transition hover:border-black/20 hover:bg-black/[0.04]"><ImageUp size={18} className="shrink-0 text-[#1C1C1C]"/><span className="min-w-0 flex-1 truncate font-medium text-slate-700">{thumbnailFile?.name || template?.thumbnail_original_filename || (template?.thumbnail_url ? 'Ảnh xem trước hiện tại — chọn tệp để thay' : 'Tải ảnh JPG, PNG hoặc WEBP')}</span><input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => { const file = event.target.files?.[0] ?? null; if (file && (file.size > 5 * 1024 * 1024 || !['image/jpeg', 'image/png', 'image/webp'].includes(file.type))) { setLocalError('Ảnh cần là JPG, PNG hoặc WEBP và không vượt quá 5 MB.'); event.target.value = ''; return } setThumbnailFile(file); setLocalError(null); if (file && onThumbnailSelected) void onThumbnailSelected(file) }} /></label>
 <span className="mt-2 block text-xs leading-5 text-slate-500">Ảnh được lưu riêng trên hệ thống, không cần nhập URL.</span>
 </Field>
 </div>
@@ -49,13 +49,13 @@ export default function AdminCVTemplateForm({ mode, template, submitting, error,
 </section>
 <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
 <div className="flex items-center gap-2">
-<Palette size={19} className="text-blue-700" />
+<Palette size={19} className="text-[#1C1C1C]" />
 <h2 className="text-lg font-bold text-slate-950">Giao diện</h2>
 </div>{mode === 'edit' && usageCount > 0 && <p className="mt-4 flex gap-2 rounded-xl bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900 ring-1 ring-amber-100">
 <AlertTriangle className="mt-0.5 shrink-0" size={17} />Thay đổi giao diện của mẫu sẽ ảnh hưởng tới {usageCount} CV đang sử dụng mẫu này.</p>}<div className="mt-5 grid gap-5 sm:grid-cols-2">
 <Field label="Màu chủ đạo">
 <div className="flex gap-2">
-<input type="color" value={hexColor.test(themeConfig.primary_color) ? themeConfig.primary_color : '#2563EB'} onChange={(event) => updateTheme('primary_color', event.target.value.toUpperCase())} aria-label="Chọn màu chủ đạo" className="h-11 w-14 rounded-lg border border-slate-300 bg-white p-1" />
+<input type="color" value={hexColor.test(themeConfig.primary_color) ? themeConfig.primary_color : '#49BBBD'} onChange={(event) => updateTheme('primary_color', event.target.value.toUpperCase())} aria-label="Chọn màu chủ đạo" className="h-11 w-14 rounded-lg border border-slate-300 bg-white p-1" />
 <input value={themeConfig.primary_color} maxLength={7} onChange={(event) => updateTheme('primary_color', event.target.value.toUpperCase())} className="input min-w-0 font-mono uppercase" />
 </div>
 </Field>
@@ -67,12 +67,12 @@ export default function AdminCVTemplateForm({ mode, template, submitting, error,
 </section>{mode === 'create' && <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
 <div className="flex flex-wrap gap-5">
 <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
-<input type="checkbox" checked={active} onChange={(event) => { setActive(event.target.checked); if (!event.target.checked) setFeatured(false) }} className="h-4 w-4 accent-blue-600" />Kích hoạt ngay</label>
+<input type="checkbox" checked={active} onChange={(event) => { setActive(event.target.checked); if (!event.target.checked) setFeatured(false) }} className="h-4 w-4 accent-[#1C1C1C]" />Kích hoạt ngay</label>
 <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
-<input type="checkbox" checked={featured} disabled={!active} onChange={(event) => setFeatured(event.target.checked)} className="h-4 w-4 accent-blue-600 disabled:opacity-50" />Đánh dấu nổi bật</label>
+<input type="checkbox" checked={featured} disabled={!active} onChange={(event) => setFeatured(event.target.checked)} className="h-4 w-4 accent-[#1C1C1C] disabled:opacity-50" />Đánh dấu nổi bật</label>
 </div>
 </section>}{(localError || error) && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-800 ring-1 ring-red-100">{localError || error}</p>}<div className="flex justify-end">
-<button type="submit" disabled={submitting} className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">{submitting ? 'Đang lưu...' : mode === 'create' ? 'Tạo mẫu CV' : 'Lưu thay đổi'}</button>
+<button type="submit" disabled={submitting} className="rounded-xl bg-[#1C1C1C] px-5 py-2.5 text-sm font-semibold text-white hover:bg-black disabled:cursor-not-allowed disabled:opacity-60">{submitting ? 'Đang lưu...' : mode === 'create' ? 'Tạo mẫu CV' : 'Lưu thay đổi'}</button>
 </div>
 </div>
 <aside className="xl:sticky xl:top-5">

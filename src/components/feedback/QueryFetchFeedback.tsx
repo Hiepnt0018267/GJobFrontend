@@ -9,7 +9,7 @@ type Props = {
 /** A compact, non-blocking status for a list that already has usable data. */
 export default function QueryFetchFeedback({ isFetching, errorMessage, onRetry }: Props) {
   if (isFetching) {
-    return <div className="mt-4 min-h-9"><p role="status" aria-live="polite" className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500"><Loader2 size={14} className="animate-spin text-blue-600" aria-hidden="true" />Đang cập nhật…</p></div>
+    return <div className="mt-4 min-h-9"><p role="status" aria-live="polite" className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500"><Loader2 size={14} className="animate-spin text-[#1C1C1C]" aria-hidden="true" />Đang cập nhật…</p></div>
   }
 
   if (!errorMessage) return <div className="mt-4 min-h-9" aria-hidden="true" />

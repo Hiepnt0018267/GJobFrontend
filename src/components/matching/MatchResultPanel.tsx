@@ -16,7 +16,7 @@ const dateFormat = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeS
 function SkillList({ title, items, tone }: { title: string; items: string[]; tone: 'matched' | 'missing' }) {
   if (items.length === 0) return null
   const classes = tone === 'matched'
-    ? 'bg-emerald-50 text-emerald-800 ring-emerald-200'
+    ? 'bg-slate-100 text-slate-900 ring-slate-200/80'
     : 'bg-amber-50 text-amber-900 ring-amber-200'
 
   return <div>
@@ -79,9 +79,9 @@ function BaselineSection({ baseline }: { baseline: BaselineMatchComponent }) {
         <h3 id="baseline-title" className="text-base font-bold text-slate-950">Độ bao phủ kỹ năng</h3>
         <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">So sánh các kỹ năng có cấu trúc trong CV với yêu cầu kỹ năng của công việc.</p>
       </div>
-      <span className="tabular-nums text-3xl font-bold tracking-tight text-blue-700">{scoreFormat.format(score)}<span className="ml-1 text-base font-semibold text-slate-500">/ 100</span></span>
+      <span className="tabular-nums text-3xl font-bold tracking-tight text-[#1C1C1C]">{scoreFormat.format(score)}<span className="ml-1 text-base font-semibold text-slate-500">/ 100</span></span>
     </div>
-    <progress aria-label="Độ bao phủ kỹ năng" value={score} max={100} className="mt-4 h-2 w-full overflow-hidden rounded-full accent-blue-600" />
+    <progress aria-label="Độ bao phủ kỹ năng" value={score} max={100} className="mt-4 h-2 w-full overflow-hidden rounded-full accent-[#1C1C1C]" />
 
     <div className="mt-6 space-y-5">
       <SkillList title="Kỹ năng tìm thấy trong CV" items={skills.matched_skills} tone="matched" />
@@ -109,9 +109,9 @@ function SemanticSection({ semantic, isFetching, onRetry }: { semantic: Semantic
     </section>
   }
 
-  return <section aria-labelledby="semantic-title" className="rounded-xl bg-blue-50 p-4 sm:p-5">
+  return <section aria-labelledby="semantic-title" className="rounded-xl bg-slate-50 border border-slate-200/80 p-4 sm:p-5">
     <h3 id="semantic-title" className="text-base font-bold text-slate-950">Tương đồng ngữ nghĩa</h3>
-    <p className="mt-3 tabular-nums text-4xl font-bold tracking-tight text-blue-700">{numberFormat.format(semantic.result.semantic_similarity)}</p>
+    <p className="mt-3 tabular-nums text-4xl font-bold tracking-tight text-[#1C1C1C]">{numberFormat.format(semantic.result.semantic_similarity)}</p>
     <p className="mt-3 text-sm leading-6 text-slate-600">Chỉ số thô trên thang từ -1 đến 1, đo mức tương đồng nội dung giữa CV và mô tả công việc. Đây không phải xác suất được tuyển.</p>
   </section>
 }
@@ -123,7 +123,7 @@ export default function MatchResultPanel({ baseline, semantic, computedAt, isFet
         <Clock3 size={15} aria-hidden="true" />
         <span>So khớp lúc {dateFormat.format(new Date(computedAt))}</span>
       </div>
-      {isFetching && <span role="status" aria-live="polite" className="inline-flex items-center gap-2 text-xs font-semibold text-blue-700"><RefreshCw size={14} className="animate-spin" aria-hidden="true" />Đang cập nhật kết quả…</span>}
+      {isFetching && <span role="status" aria-live="polite" className="inline-flex items-center gap-2 text-xs font-semibold text-[#1C1C1C]"><RefreshCw size={14} className="animate-spin" aria-hidden="true" />Đang cập nhật kết quả…</span>}
     </div>
 
     <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(16rem,5fr)]">

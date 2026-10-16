@@ -87,7 +87,7 @@ export default function SavedJobButton({ jobId, jobStatus }: Props) {
         onClick={handleClick}
         disabled={isMutating || (!canSave && !saved) || (isCandidate && !status)}
         aria-pressed={isCandidate && status ? saved : undefined}
-        className={`inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-65 ${saved ? 'border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100' : 'border border-slate-300 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700'}`}
+        className={`inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-65 ${saved ? 'border border-teal-200 bg-teal-50 text-[#49BBBD] hover:bg-teal-100' : 'border border-slate-300 bg-white text-slate-700 hover:border-teal-300 hover:bg-teal-50 hover:text-[#49BBBD]'}`}
       >
         {isMutating || isChecking ? (
           <Loader2 size={17} className="animate-spin" aria-hidden="true" />

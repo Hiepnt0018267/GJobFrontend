@@ -24,16 +24,16 @@ export default function StatusOverview({ title, description, metrics, columns = 
   const gridColumns = columns === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-premium border border-slate-200/80 sm:p-6" aria-label={title}>
+    <section className="rounded-2xl bg-[#F7F9FB] p-5 border border-black/[0.04] sm:p-6" aria-label={title}>
       <div>
-        <h2 className="text-lg font-bold tracking-tight text-slate-950 font-[Plus_Jakarta_Sans,sans-serif]">{title}</h2>
-        <p className="mt-1 text-sm leading-6 text-slate-500">{description}</p>
+        <h2 className="text-sm font-semibold tracking-tight text-[#1C1C1C] font-[Inter,sans-serif]">{title}</h2>
+        <p className="mt-1 text-xs leading-5 text-slate-500">{description}</p>
       </div>
       <dl className={`mt-5 grid gap-3 ${gridColumns}`}>
         {metrics.map(({ label, value, tone = 'default' }) => (
-          <div key={label} className="flex items-center justify-between gap-3 rounded-xl bg-slate-50/80 border border-slate-100/80 px-3.5 py-3 transition-colors hover:bg-slate-100/60">
-            <dt className="text-sm font-medium text-slate-600">{label}</dt>
-            <dd className={`rounded-lg px-2.5 py-1 text-sm font-bold tabular-nums ring-1 ring-inset font-[Plus_Jakarta_Sans,sans-serif] ${toneClasses[tone]}`}>
+          <div key={label} className="flex items-center justify-between gap-3 rounded-xl bg-white border border-black/[0.04] px-3.5 py-3 transition-colors hover:border-black/[0.08]">
+            <dt className="text-xs font-normal text-slate-600">{label}</dt>
+            <dd className={`rounded-lg px-2.5 py-1 text-xs font-semibold tabular-nums ring-1 ring-inset font-[Inter,sans-serif] ${toneClasses[tone]}`}>
               {numberFormatter.format(value)}
             </dd>
           </div>

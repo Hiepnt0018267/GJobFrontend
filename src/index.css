@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-primary-active: #1e40af;
-  --color-primary-light: #eff6ff;
+  --color-primary: #49BBBD;
+  --color-primary-hover: #3CA8AA;
+  --color-primary-active: #2A8284;
+  --color-primary-light: #f0fdfa;
   --color-secondary: #0f172a;
   --color-accent: #059669;
   --color-accent-hover: #047857;
@@ -16,6 +16,7 @@
   --color-border: #e2e8f0;
 
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-recruiter: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
@@ -52,12 +53,12 @@
   }
 
   ::selection {
-    background: #dbeafe;
-    color: #1e3a8a;
+    background: #ccfbf1;
+    color: #0f766e;
   }
 
   :focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid #49BBBD;
     outline-offset: 2px;
   }
 
@@ -94,7 +95,7 @@
 
 @layer components {
   .input {
-    @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-normal text-slate-900 outline-none transition-[border-color,background-color,box-shadow,color] duration-150 ease-out focus:border-blue-600 focus:ring-2 focus:ring-blue-100;
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-normal text-slate-900 outline-none transition-[border-color,background-color,box-shadow,color] duration-150 ease-out focus:border-teal-600 focus:ring-2 focus:ring-teal-100;
   }
 
   /* Premium tinted shadows */
@@ -160,6 +161,89 @@
     background-size: 200% 100%;
     animation: gjob-shimmer 1.5s infinite linear;
   }
+
+  /* Admin inherits the recruiter workspace visual language. Keep this scoped so
+     candidate/public surfaces and semantic success/warning/error colors stay intact. */
+  .admin-workspace,
+  .admin-workspace :where(button, input, select, textarea) {
+    font-family: var(--font-recruiter);
+  }
+
+  .admin-workspace :where(.bg-slate-50, .bg-slate-50\/70) {
+    background-color: #fff;
+  }
+
+  .admin-workspace main > header h1 {
+    color: #1c1c1c;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.75rem;
+  }
+
+  .admin-workspace [class~="bg-teal-600"],
+  .admin-workspace [class~="bg-teal-700"],
+  .admin-workspace [class~="bg-teal-800"] {
+    background-color: #1c1c1c;
+  }
+
+  .admin-workspace [class~="hover:bg-teal-600"]:hover,
+  .admin-workspace [class~="hover:bg-teal-700"]:hover,
+  .admin-workspace [class~="hover:bg-teal-800"]:hover {
+    background-color: #000;
+  }
+
+  .admin-workspace [class~="bg-teal-50"],
+  .admin-workspace [class~="bg-teal-50/80"] {
+    background-color: rgb(28 28 28 / 0.04);
+  }
+
+  .admin-workspace [class~="text-teal-600"],
+  .admin-workspace [class~="text-teal-700"],
+  .admin-workspace [class~="text-teal-800"],
+  .admin-workspace [class~="text-teal-950"] {
+    color: #1c1c1c;
+  }
+
+  .admin-workspace [class~="hover:text-teal-700"]:hover,
+  .admin-workspace [class~="hover:text-teal-800"]:hover,
+  .admin-workspace [class~="hover:text-teal-950"]:hover {
+    color: #000;
+  }
+
+  .admin-workspace [class~="border-teal-200/60"],
+  .admin-workspace [class~="border-teal-200/80"],
+  .admin-workspace [class~="border-teal-400"] {
+    border-color: rgb(28 28 28 / 0.1);
+  }
+
+  .admin-workspace [class~="hover:border-teal-200/60"]:hover,
+  .admin-workspace [class~="hover:border-teal-200/80"]:hover,
+  .admin-workspace [class~="hover:border-teal-400"]:hover {
+    border-color: rgb(28 28 28 / 0.18);
+  }
+
+  .admin-workspace [class~="ring-teal-100"],
+  .admin-workspace [class~="ring-teal-200"],
+  .admin-workspace [class~="ring-teal-200/60"],
+  .admin-workspace [class~="ring-teal-600/20"] {
+    --tw-ring-color: rgb(28 28 28 / 0.1);
+  }
+
+  .admin-workspace [class~="focus:border-teal-500"]:focus,
+  .admin-workspace [class~="focus:border-teal-600"]:focus {
+    border-color: #1c1c1c;
+  }
+
+  .admin-workspace [class~="focus:ring-teal-100"]:focus,
+  .admin-workspace [class~="focus:ring-teal-500/10"]:focus,
+  .admin-workspace [class~="focus-visible:ring-teal-500"]:focus-visible,
+  .admin-workspace [class~="focus-visible:ring-teal-600"]:focus-visible {
+    --tw-ring-color: rgb(28 28 28 / 0.12);
+  }
+
+  .admin-workspace [class~="accent-teal-600"] {
+    accent-color: #1c1c1c;
+  }
 }
 
 @keyframes gjob-page-enter {
@@ -203,4 +287,37 @@
     scroll-behavior: auto !important;
     transition-duration: 1ms !important;
   }
+}
+
+@keyframes gjob-marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes gjob-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes gjob-float-reverse {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(7px); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: gjob-marquee 28s linear infinite;
+}
+
+.animate-float-1 {
+  animation: gjob-float 4.2s ease-in-out infinite;
+}
+
+.animate-float-2 {
+  animation: gjob-float-reverse 4.8s ease-in-out infinite 0.6s;
+}
+
+.animate-float-3 {
+  animation: gjob-float 5.2s ease-in-out infinite 1.2s;
 }

@@ -80,7 +80,7 @@ export default function JobDetailPage() {
             <Link to="/jobs" className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
               <ArrowLeft size={16} />Danh sách việc làm
             </Link>
-            <button type="button" onClick={retry} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+            <button type="button" onClick={retry} className="inline-flex items-center gap-2 rounded-lg bg-[#49BBBD] px-4 py-2 text-sm font-semibold text-white hover:bg-[#49BBBD]/90">
               <RefreshCw size={16} />Thử lại
             </button>
           </div>
@@ -97,71 +97,113 @@ export default function JobDetailPage() {
     : backTo === '/jobs' ? 'Quay lại danh sách' : 'Quay lại việc làm đã lưu'
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 lg:px-8">
-          <nav className="flex items-center gap-2 text-sm text-slate-500" aria-label="Breadcrumb">
-            <Link to="/" className="hover:text-blue-600">Trang chủ</Link><span>/</span>
-            <Link to="/jobs" className="hover:text-blue-600">Việc làm</Link><span>/</span>
-            <span className="truncate text-slate-700" aria-current="page">{job.title}</span>
+    <div className="min-h-screen bg-slate-50/60 pb-16">
+      {/* Top Breadcrumb & Banner */}
+      <div className="border-b border-slate-200/70 bg-white shadow-xs">
+        <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 lg:px-8">
+          <nav className="flex items-center gap-2 text-xs sm:text-sm text-slate-500" aria-label="Breadcrumb">
+            <Link to="/" className="hover:text-[#49BBBD] transition-colors">Trang chủ</Link>
+            <span className="text-slate-300">/</span>
+            <Link to="/jobs" className="hover:text-[#49BBBD] transition-colors">Việc làm</Link>
+            <span className="text-slate-300">/</span>
+            <span className="truncate font-semibold text-slate-800" aria-current="page">{job.title}</span>
           </nav>
         </div>
       </div>
 
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <Link to={backTo} className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-blue-600">
+        <Link to={backTo} className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#49BBBD] hover:text-[#49BBBD] transition-colors mb-6">
           <ArrowLeft size={16} />{backLabel}
         </Link>
 
-        <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <article className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-            <div className="flex flex-col justify-between gap-5 sm:flex-row">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
+          {/* Main JD Content Card (Figma Squircle Style) */}
+          <article className="rounded-3xl border border-slate-100 bg-white p-6 sm:p-10 shadow-sm">
+            <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
               <div className="min-w-0">
-                <h1 className="break-words text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{job.title}</h1>
-                <p className="mt-2 break-words text-base font-semibold text-blue-600">{job.company?.name || job.company_name}</p>
+                <span className="inline-block text-xs font-bold uppercase tracking-wider text-[#49BBBD] bg-teal-50 px-3 py-1 rounded-full mb-3">
+                  {job.company?.name || job.company_name}
+                </span>
+                <h1 className="break-words text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 leading-tight">
+                  {job.title}
+                </h1>
               </div>
-              <span className="h-fit w-fit shrink-0 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700">{employmentLabel(job.employment_type)}</span>
+              <span className="h-fit w-fit shrink-0 rounded-full bg-[#49BBBD] px-3.5 py-1.5 text-xs font-bold text-white shadow-sm">
+                {employmentLabel(job.employment_type)}
+              </span>
             </div>
 
-            <div className="mt-7 grid gap-3 border-y border-slate-100 py-5 text-sm text-slate-600 sm:grid-cols-2">
-              <p className="flex items-center gap-2"><MapPin size={17} className="shrink-0 text-slate-400" />{job.location ?? 'Linh hoạt'}</p>
-              <p className="flex items-center gap-2"><Wallet size={17} className="shrink-0 text-slate-400" />{formatSalary(job)}</p>
-              <p className="flex items-center gap-2"><BriefcaseBusiness size={17} className="shrink-0 text-slate-400" />{experienceLabel(job.experience_level)}</p>
-              <p className="flex items-center gap-2"><CalendarDays size={17} className="shrink-0 text-slate-400" />{postedDate(job.created_at)}</p>
+            {/* Quick Metrics Bar */}
+            <div className="mt-8 grid gap-4 rounded-2xl bg-slate-50 p-5 text-sm sm:grid-cols-2 border border-slate-100">
+              <p className="flex items-center gap-2.5 text-slate-600">
+                <MapPin size={18} className="shrink-0 text-[#49BBBD]" />
+                <span>{job.location ?? 'Linh hoạt'}</span>
+              </p>
+              <p className="flex items-center gap-2.5 text-slate-600">
+                <Wallet size={18} className="shrink-0 text-[#49BBBD]" />
+                <span className="tabular-nums font-bold text-[#49BBBD] text-base">{formatSalary(job)}</span>
+              </p>
+              <p className="flex items-center gap-2.5 text-slate-600">
+                <BriefcaseBusiness size={18} className="shrink-0 text-[#49BBBD]" />
+                <span>{experienceLabel(job.experience_level)}</span>
+              </p>
+              <p className="flex items-center gap-2.5 text-slate-600">
+                <CalendarDays size={18} className="shrink-0 text-[#49BBBD]" />
+                <span className="tabular-nums">Đăng ngày {postedDate(job.created_at)}</span>
+              </p>
             </div>
 
+            {/* Skills */}
             {job.skills && job.skills.length > 0 && (
-              <section className="mt-7">
-                <h2 className="text-lg font-semibold text-slate-900">Kỹ năng</h2>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {job.skills.map((skill) => <span key={skill} className="rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700">{skill}</span>)}
+              <section className="mt-8 pt-8 border-t border-slate-100">
+                <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider text-xs mb-3">
+                  Kỹ năng chuyên môn
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {job.skills.map((skill) => (
+                    <span key={skill} className="rounded-full bg-slate-100 hover:bg-teal-50 hover:text-[#49BBBD] hover:border-teal-200 border border-transparent px-3.5 py-1.5 text-xs font-bold text-slate-700 transition-colors">
+                      {skill}
+                    </span>
+                  ))}
                 </div>
               </section>
             )}
 
-            <section className="mt-8">
-              <h2 className="text-lg font-semibold text-slate-900">Mô tả công việc</h2>
-              <p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-600">{job.description}</p>
+            {/* Job Description */}
+            <section className="mt-8 pt-8 border-t border-slate-100">
+              <h2 className="text-lg font-bold text-slate-900 mb-3">
+                Mô tả công việc
+              </h2>
+              <p className="whitespace-pre-line text-sm sm:text-base leading-relaxed text-slate-600">{job.description}</p>
             </section>
+
+            {/* Requirements */}
             {job.requirements && (
-              <section className="mt-8">
-                <h2 className="text-lg font-semibold text-slate-900">Yêu cầu</h2>
-                <p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-600">{job.requirements}</p>
+              <section className="mt-8 pt-8 border-t border-slate-100">
+                <h2 className="text-lg font-bold text-slate-900 mb-3">
+                  Yêu cầu ứng viên
+                </h2>
+                <p className="whitespace-pre-line text-sm sm:text-base leading-relaxed text-slate-600">{job.requirements}</p>
               </section>
             )}
+
+            {/* Benefits */}
             {job.benefits && (
-              <section className="mt-8">
-                <h2 className="text-lg font-semibold text-slate-900">Quyền lợi</h2>
-                <p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-600">{job.benefits}</p>
+              <section className="mt-8 pt-8 border-t border-slate-100">
+                <h2 className="text-lg font-bold text-slate-900 mb-3">
+                  Quyền lợi & Đãi ngộ
+                </h2>
+                <p className="whitespace-pre-line text-sm sm:text-base leading-relaxed text-slate-600">{job.benefits}</p>
               </section>
             )}
           </article>
 
-          <div className="space-y-5 self-start lg:sticky lg:top-24">
+          {/* Sticky Apply Action & Company Column */}
+          <aside className="space-y-6 self-start lg:sticky lg:top-24">
             <JobApplyAction job={job} />
             <SavedJobButton jobId={job.id} jobStatus={job.status} />
             <CompanyInformationCard company={job.company} fallbackName={job.company_name} />
-          </div>
+          </aside>
         </div>
       </main>
     </div>

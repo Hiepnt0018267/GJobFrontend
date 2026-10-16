@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { after, before, test } from 'node:test'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { createServer } from 'vite'
 
-let server, recommendation, service, applicationService, api, navigation, JobCard, Page, CvAvailability, AuthContext, ToastContext
+let server, recommendation, service, applicationService, api, navigation, JobCard, Page, CvAvailability, StartPanel, AuthContext, ToastContext
 
 before(async () => {
   server = await createServer({ server: { middlewareMode: true, hmr: false }, appType: 'custom', logLevel: 'error' })
@@ -18,6 +19,7 @@ before(async () => {
   const pageModule = await server.ssrLoadModule('/src/pages/candidate/CandidateJobRecommendationsPage.tsx')
   Page = pageModule.default
   CvAvailability = pageModule.RecommendationCvAvailability
+  StartPanel = pageModule.RecommendationStartPanel
   AuthContext = (await server.ssrLoadModule('/src/contexts/AuthContext.tsx')).AuthContext
   ToastContext = (await server.ssrLoadModule('/src/contexts/toastContextValue.ts')).ToastContext
 })
@@ -193,7 +195,9 @@ test('server order, all availability states and semantic reasons render without 
   ]
   const html = renderCards(items)
   assert.ok(html.indexOf('Việc làm đứng trước') < html.indexOf('Việc làm đang chuẩn bị'))
-  for (const text of ['Xếp hạng #1', 'Được xếp hạng theo CV', 'Đang chuẩn bị dữ liệu xếp hạng', 'Chưa thể xếp hạng', 'Chưa thể xếp hạng lúc này', 'Có kỹ năng Python liên quan']) assert.ok(html.includes(text))
+  for (const text of ['Xếp hạng #1', 'Phù hợp theo CV', 'Đang chuẩn bị dữ liệu xếp hạng', 'Chưa thể xếp hạng', 'Chưa thể xếp hạng lúc này', 'Có kỹ năng Python liên quan']) assert.ok(html.includes(text))
+  assert.ok(html.includes('Vì sao công việc này phù hợp'))
+  assert.ok(html.includes('Chưa phải kết quả gợi ý'))
   for (const forbidden of ['90%', 'cosine', 'semantic_match_score', 'Ollama', 'BGE', 'Gemini']) assert.equal(html.includes(forbidden), false)
   assert.ok(html.includes('/jobs/3'))
 })
@@ -205,7 +209,8 @@ test('reason rendering accepts zero, one, three and long backend messages withou
     { code: 'shared_skill', message: 'Thông tin nghề nghiệp trong CV có một chuỗi mô tả dài để kiểm tra khả năng xuống dòng tự nhiên trên thẻ việc làm ở màn hình hẹp.', evidence: ['Backend'] },
   ]
   const zero = renderCards([{ ...job('0'), recommendation_rank: 1, recommendation_status: 'ranked', reasons: [] }])
-  assert.equal(zero.includes('Thông tin liên quan trong CV'), false)
+  assert.ok(zero.includes('Vì sao công việc này phù hợp'))
+  assert.ok(zero.includes('chưa cung cấp lý do cụ thể'))
   const one = renderCards([{ ...job('1'), recommendation_rank: 1, recommendation_status: 'ranked', reasons: reasons.slice(0, 1) }])
   assert.ok(one.includes(reasons[0].message))
   const three = renderCards([{ ...job('3'), recommendation_rank: 1, recommendation_status: 'ranked', reasons }])
@@ -260,14 +265,48 @@ test('successful Apply emits the shared refresh signal used to invalidate recomm
   }
 })
 
-test('page presents an explicit CV selector and no client-side ranking claim', () => {
+test('page opens in a deliberate CV-selection step without starting recommendations', () => {
   const html = renderToStaticMarkup(createElement(MemoryRouter, { initialEntries: ['/candidate/job-recommendations?cv_id=cv-1'] },
     createElement(Routes, null, createElement(Route, { path: '/candidate/job-recommendations', element: createElement(Page) }))))
   assert.ok(html.includes('Gợi ý việc làm theo CV'))
-  assert.ok(html.includes('id="recommendation-cv"'))
-  assert.ok(html.includes('Ở chế độ tự động, hệ thống chọn một CV đang sẵn sàng'))
+  assert.ok(html.includes('Chọn CV để nhận gợi ý'))
+  assert.ok(html.includes('Đang tải danh sách CV'))
+  assert.equal(html.includes('3 bước rõ ràng'), false)
+  assert.equal(html.includes('Bước 1'), false)
+  assert.equal(recommendation.shouldFetchRecommendations(false, 'cv-1', 'cv-1'), false)
+  assert.equal(recommendation.shouldFetchRecommendations(true, null, 'cv-1'), false)
+  assert.equal(recommendation.shouldFetchRecommendations(true, 'cv-1', 'cv-2'), false)
+  assert.equal(recommendation.shouldFetchRecommendations(true, 'cv-1', 'cv-1'), true)
   assert.equal(html.includes('phù hợp nhất'), false)
   assert.equal(html.includes('AI chấm điểm'), false)
+})
+
+test('recommendation workspace does not reuse job-search controls', () => {
+  const source = readFileSync(new URL('../src/pages/candidate/CandidateJobRecommendationsPage.tsx', import.meta.url), 'utf8')
+  assert.equal(source.includes('JobSearchBar'), false)
+  assert.equal(source.includes('JobFilters'), false)
+  assert.equal(source.includes('Tìm kiếm việc làm'), false)
+  assert.equal(source.includes('Bộ lọc việc làm'), false)
+})
+
+test('CV selection panel exposes one explicit AI action and never fabricates a percentage', () => {
+  const cv = {
+    id: 'cv-1', title: 'CV Backend', is_default: true, has_managed_photo: false,
+    created_at: '2026-10-01T00:00:00Z', updated_at: '2026-10-02T00:00:00Z',
+    source_type: 'UPLOADED', template_id: null, template: null,
+    original_filename: 'cv.pdf', mime_type: 'application/pdf', file_size: 1024, uploaded_at: '2026-10-01T00:00:00Z',
+  }
+  const html = renderToStaticMarkup(createElement(MemoryRouter, null,
+    createElement(StartPanel, {
+      cvs: [cv], isLoading: false, selectedCvId: cv.id, isStarting: false,
+      onSelect() {}, onStart() {},
+    })))
+  assert.ok(html.includes('id="recommendation-cv"'))
+  assert.ok(html.includes('CV Backend'))
+  assert.ok(html.includes('Gợi ý việc làm bằng AI'))
+  assert.ok(html.includes('thứ hạng và lý do liên quan'))
+  assert.ok(html.includes('không tự tạo phần trăm phù hợp'))
+  assert.equal(html.includes('90%'), false)
 })
 
 test('recommendation entry belongs to Tools, not jobs or account navigation', () => {

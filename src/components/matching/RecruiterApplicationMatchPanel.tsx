@@ -15,13 +15,13 @@ export default function RecruiterApplicationMatchPanel({ applicationId, candidat
   return <section aria-labelledby="recruiter-match-title" aria-busy={isFetching} className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
     <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
       <div className="flex min-w-0 items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700"><ScanSearch size={20} aria-hidden="true" /></span>
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-[#1C1C1C]"><ScanSearch size={20} aria-hidden="true" /></span>
         <div className="min-w-0">
           <h2 id="recruiter-match-title" className="text-lg font-bold text-slate-950">Đối chiếu CV và công việc</h2>
           <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">So khớp CV của <span className="font-semibold text-slate-800">{candidateName}</span> với vị trí <span className="font-semibold text-slate-800">{jobTitle}</span>. Các chỉ số không thay thế đánh giá tuyển dụng.</p>
         </div>
       </div>
-      <button type="button" onClick={() => void run()} disabled={isFetching} className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-[background-color,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-blue-700 disabled:cursor-wait disabled:bg-slate-300 sm:w-auto">
+      <button type="button" onClick={() => void run()} disabled={isFetching} className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-[#1C1C1C] px-5 py-2.5 text-sm font-semibold text-white transition-[background-color,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-black disabled:cursor-wait disabled:bg-slate-300 sm:w-auto">
         {isFetching ? <Loader2 size={17} className="animate-spin" aria-hidden="true" /> : <ScanSearch size={17} aria-hidden="true" />}
         {isFetching ? 'Đang so khớp…' : result ? 'So khớp lại' : 'So khớp CV'}
       </button>

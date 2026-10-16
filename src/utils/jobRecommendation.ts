@@ -122,7 +122,7 @@ export function recommendationErrorMessage(error: unknown): string {
 }
 
 export const recommendationStatusCopy: Record<JobRecommendationStatus, string> = {
-  ranked: 'Được xếp hạng theo CV',
+  ranked: 'Phù hợp theo CV',
   pending: 'Đang chuẩn bị dữ liệu xếp hạng',
   unavailable: 'Chưa thể xếp hạng',
   error: 'Chưa thể xếp hạng lúc này',
@@ -130,4 +130,8 @@ export const recommendationStatusCopy: Record<JobRecommendationStatus, string> =
 
 export function isCurrentRecommendationRequest(activeIdentity: string, responseIdentity: string): boolean {
   return activeIdentity === responseIdentity
+}
+
+export function shouldFetchRecommendations(hasStarted: boolean, cvId: string | null, startedCvId: string | null): boolean {
+  return hasStarted && Boolean(cvId) && cvId === startedCvId
 }

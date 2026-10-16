@@ -20,7 +20,7 @@ type Props = {
   onSubmit: () => void
 }
 
-const fieldClass = 'mt-1.5 w-full rounded-xl bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 outline-none transition-[background-color,box-shadow] duration-[var(--motion-feedback)] ease-[var(--ease-gjob)] placeholder:text-slate-400 hover:bg-white focus:bg-white focus:ring-2 focus:ring-inset focus:ring-blue-500 disabled:cursor-not-allowed disabled:text-slate-400'
+const fieldClass = 'mt-1.5 w-full rounded-xl bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 outline-none transition-[background-color,box-shadow] duration-[var(--motion-feedback)] ease-[var(--ease-gjob)] placeholder:text-slate-400 hover:bg-white focus:bg-white focus:ring-2 focus:ring-inset focus:ring-[#49BBBD] disabled:cursor-not-allowed disabled:text-slate-400'
 const labelClass = 'text-xs font-semibold text-slate-600'
 
 function Field({ label, children, className = '', required = false }: { label: string; children: ReactNode; className?: string; required?: boolean }) {
@@ -52,7 +52,7 @@ function ItemCard({ label, onRemove, children }: { label: string; onRemove: () =
 }
 
 function AddButton({ children, onClick }: { children: ReactNode; onClick: () => void }) {
-  return <button type="button" onClick={onClick} className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+  return <button type="button" onClick={onClick} className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-[#49BBBD] transition-colors hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD]">
     <Plus size={16} aria-hidden="true" />{children}
   </button>
 }
@@ -139,7 +139,7 @@ export default function CVAIReviewForm({ draft, submitting, submitError, onChang
           <Field label="Chuyên ngành" className="sm:col-span-2"><input className={fieldClass} value={value.field_of_study ?? ''} maxLength={255} onChange={(event) => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { field_of_study: event.target.value }) })} /></Field>
           <CVDateField label="Bắt đầu" value={value.start_date} invalid={invalidDatePaths.has(`educations.${index}.start_date`)} onChange={(next) => changeDate(`educations.${index}.start_date`, () => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { start_date: next }) }))} />
           <CVDateField label="Kết thúc" value={value.is_current ? { state: 'current' } : value.end_date} disabled={value.is_current} invalid={invalidDatePaths.has(`educations.${index}.end_date`)} onChange={(next) => changeDate(`educations.${index}.end_date`, () => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { end_date: next }) }))} />
-          <label className="flex items-center gap-2 text-sm font-medium text-slate-700 sm:col-span-2"><input type="checkbox" checked={value.is_current} onChange={(event) => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { is_current: event.target.checked, end_date: event.target.checked ? { state: 'current' } : isCVOpenEndedDate(value.end_date) ? null : value.end_date }) })} className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />Đang theo học</label>
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-700 sm:col-span-2"><input type="checkbox" checked={value.is_current} onChange={(event) => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { is_current: event.target.checked, end_date: event.target.checked ? { state: 'current' } : isCVOpenEndedDate(value.end_date) ? null : value.end_date }) })} className="h-4 w-4 rounded border-slate-300 text-[#49BBBD] focus:ring-[#49BBBD]" />Đang theo học</label>
           <Field label="Mô tả" className="sm:col-span-2"><textarea className={`${fieldClass} min-h-24 resize-y leading-6`} value={value.description ?? ''} maxLength={5000} onChange={(event) => onChange({ ...draft, educations: updateRow<CVEducationItem>(draft.educations, key, { description: event.target.value }) })} /></Field>
         </div>
       </ItemCard>)}</div>
@@ -153,7 +153,7 @@ export default function CVAIReviewForm({ draft, submitting, submitError, onChang
           <Field label="Công ty" required><input required className={fieldClass} value={value.company_name} maxLength={255} onChange={(event) => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { company_name: event.target.value }) })} /></Field>
           <CVDateField label="Bắt đầu" value={value.start_date} invalid={invalidDatePaths.has(`experiences.${index}.start_date`)} onChange={(next) => changeDate(`experiences.${index}.start_date`, () => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { start_date: next }) }))} />
           <CVDateField label="Kết thúc" value={value.is_current ? { state: 'current' } : value.end_date} disabled={value.is_current} invalid={invalidDatePaths.has(`experiences.${index}.end_date`)} onChange={(next) => changeDate(`experiences.${index}.end_date`, () => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { end_date: next }) }))} />
-          <label className="flex items-center gap-2 text-sm font-medium text-slate-700 sm:col-span-2"><input type="checkbox" checked={value.is_current} onChange={(event) => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { is_current: event.target.checked, end_date: event.target.checked ? { state: 'current' } : isCVOpenEndedDate(value.end_date) ? null : value.end_date }) })} className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />Đang làm việc tại đây</label>
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-700 sm:col-span-2"><input type="checkbox" checked={value.is_current} onChange={(event) => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { is_current: event.target.checked, end_date: event.target.checked ? { state: 'current' } : isCVOpenEndedDate(value.end_date) ? null : value.end_date }) })} className="h-4 w-4 rounded border-slate-300 text-[#49BBBD] focus:ring-[#49BBBD]" />Đang làm việc tại đây</label>
           <Field label="Mô tả công việc" className="sm:col-span-2"><textarea className={`${fieldClass} min-h-28 resize-y leading-6`} value={value.description ?? ''} maxLength={10000} onChange={(event) => onChange({ ...draft, experiences: updateRow<CVExperienceItem>(draft.experiences, key, { description: event.target.value }) })} /></Field>
         </div>
       </ItemCard>)}</div>
@@ -208,7 +208,7 @@ export default function CVAIReviewForm({ draft, submitting, submitError, onChang
 
     <section className="rounded-2xl bg-slate-950 p-5 text-white shadow-lg shadow-slate-950/10 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-6">
       <div><h3 className="font-bold">Lưu thông tin đã kiểm tra?</h3><p className="mt-1 max-w-xl text-sm leading-6 text-slate-300">Các chỉnh sửa của bạn sẽ được dùng làm thông tin chính thức cho CV này.</p></div>
-      <button type="submit" disabled={submitting} className="mt-4 inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-xl bg-blue-500 px-5 py-2.5 text-sm font-bold text-white transition-[background-color,transform] duration-[var(--motion-feedback)] ease-[var(--ease-gjob)] hover:bg-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-wait disabled:opacity-60 sm:mt-0 sm:w-auto">
+      <button type="submit" disabled={submitting} className="mt-4 inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-xl bg-[#49BBBD] px-5 py-2.5 text-sm font-bold text-white transition-[background-color,transform] duration-[var(--motion-feedback)] ease-[var(--ease-gjob)] hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-wait disabled:opacity-60 sm:mt-0 sm:w-auto">
         {submitting ? 'Đang lưu…' : 'Lưu thông tin CV'}
       </button>
     </section>

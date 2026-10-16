@@ -108,7 +108,7 @@ function App() {
         path="/login"
         element={
           <RedirectIfAuthenticated>
-            <PageTransition><LoginPage /></PageTransition>
+            <LoginPage />
           </RedirectIfAuthenticated>
         }
       />
@@ -116,7 +116,7 @@ function App() {
         path="/register"
         element={
           <RedirectIfAuthenticated>
-            <PageTransition><RegisterPage /></PageTransition>
+            <RegisterPage />
           </RedirectIfAuthenticated>
         }
       />

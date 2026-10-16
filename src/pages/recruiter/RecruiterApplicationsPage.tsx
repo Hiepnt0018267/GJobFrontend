@@ -114,53 +114,91 @@ export default function RecruiterApplicationsPage() {
   const scopedJobName = scopedJob?.title ?? 'tin tuyển dụng này'
   const isNotFound = getApiErrorStatus(error) === 404 || getApiErrorStatus(scopedJobError) === 404
 
-  return <div className="min-h-screen bg-slate-50">
-    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <header className="flex flex-col justify-between gap-5 border-b border-slate-200 pb-6 sm:flex-row sm:items-end">
+  return (
+    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 font-[Inter,sans-serif]">
+      <header className="flex flex-col justify-between gap-4 border-b border-black/[0.06] pb-5 sm:flex-row sm:items-center">
         <div>
-          {isJobScoped ? <Link to={`/recruiter/jobs/${jobId}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-blue-700"><ArrowLeft size={16} aria-hidden="true" />Quay lại tin tuyển dụng</Link> : <Link to="/recruiter" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-blue-700"><ArrowLeft size={16} aria-hidden="true" />Tổng quan</Link>}
-          <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">{isJobScoped ? `Ứng viên cho ${scopedJobName}` : 'Ứng viên'}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{isJobScoped ? 'Theo dõi và xử lý các đơn ứng tuyển cho tin tuyển dụng này.' : 'Quản lý các ứng viên đã ứng tuyển vào tin tuyển dụng của bạn.'}</p>
+          {isJobScoped ? (
+            <Link to={`/recruiter/jobs/${jobId}`} className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition-colors hover:text-[#1C1C1C]">
+              <ArrowLeft size={14} aria-hidden="true" />Quay lại tin tuyển dụng
+            </Link>
+          ) : (
+            <Link to="/recruiter" className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition-colors hover:text-[#1C1C1C]">
+              <ArrowLeft size={14} aria-hidden="true" />Tổng quan
+            </Link>
+          )}
+          <h1 className="mt-2 text-xl font-semibold tracking-tight text-[#1C1C1C]">
+            {isJobScoped ? `Ứng viên cho ${scopedJobName}` : 'Ứng viên'}
+          </h1>
+          <p className="mt-1 max-w-2xl text-xs text-slate-500 font-normal">
+            {isJobScoped ? 'Theo dõi và xử lý các đơn ứng tuyển cho tin tuyển dụng này.' : 'Quản lý các ứng viên đã ứng tuyển vào tin tuyển dụng của bạn.'}
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          {data && <p className="text-sm text-slate-500"><span className="font-semibold tabular-nums text-slate-900">{data.total.toLocaleString('vi-VN')}</span> ứng viên trong kết quả</p>}
-          {isJobScoped && <button type="button" onClick={() => setDialogOpen(true)} disabled={isFetching} aria-haspopup="dialog" className="min-h-11 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-[background-color,transform] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-blue-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-50">Xếp hạng AI</button>}
+          {data && (
+            <p className="text-xs text-slate-500">
+              <span className="font-semibold tabular-nums text-[#1C1C1C]">{data.total.toLocaleString('vi-VN')}</span> ứng viên trong kết quả
+            </p>
+          )}
+          {isJobScoped && (
+            <button
+              type="button"
+              onClick={() => setDialogOpen(true)}
+              disabled={isFetching}
+              aria-haspopup="dialog"
+              className="btn-press inline-flex items-center justify-center rounded-xl bg-[#1C1C1C] px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-xs transition-all duration-150 hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C] disabled:cursor-wait disabled:opacity-50"
+            >
+              Xếp hạng AI
+            </button>
+          )}
         </div>
       </header>
 
       <RecruiterApplicationFilters search={search} status={statusFilter} jobId={selectedJobId} jobs={jobOptions?.items ?? []} jobsLoading={!isJobScoped && isJobsLoading} showJobFilter={!isJobScoped} onSearchChange={setSearch} onStatusChange={setStatus} onJobChange={setJob} />
-      {showRanking && <div className="mt-4 flex flex-col justify-between gap-2 text-sm leading-6 text-slate-600 sm:flex-row sm:items-start">
-        <p className="max-w-2xl">Xếp hạng AI chỉ hỗ trợ sắp xếp. Nhà tuyển dụng vẫn cần xem hồ sơ trước khi quyết định.</p>
-        <div className="flex shrink-0 flex-wrap gap-2">
-          <button type="button" onClick={restartRanking} disabled={isFetching} className="min-h-11 rounded-lg px-2 text-sm font-semibold text-blue-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:opacity-50">Làm mới kết quả</button>
-          <button type="button" onClick={returnNormal} className="min-h-11 rounded-lg px-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-300 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">Về danh sách thường</button>
+      {showRanking && (
+        <div className="mt-4 flex flex-col justify-between gap-2 text-xs leading-5 text-slate-600 sm:flex-row sm:items-start">
+          <p className="max-w-2xl">Xếp hạng AI chỉ hỗ trợ sắp xếp. Nhà tuyển dụng vẫn cần xem hồ sơ trước khi quyết định.</p>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <button type="button" onClick={restartRanking} disabled={isFetching} className="rounded-lg px-2 text-xs font-semibold text-[#1C1C1C] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C] disabled:opacity-50">Làm mới kết quả</button>
+            <button type="button" onClick={returnNormal} className="rounded-xl border border-black/[0.08] bg-white px-3 py-1.5 text-xs font-medium text-[#1C1C1C] transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C]">Về danh sách thường</button>
+          </div>
         </div>
-      </div>}
+      )}
       {data && <QueryFetchFeedback isFetching={isFetching} errorMessage={errorMessage} onRetry={retryList} />}
 
-      {loadingList ? <ListSkeleton /> : !data && errorMessage ? <section role="alert" className="mt-6 rounded-2xl bg-white px-6 py-12 text-center shadow-sm ring-1 ring-slate-200">
-        <AlertCircle className="mx-auto text-red-600" size={32} aria-hidden="true" />
-        <h2 className="mt-4 text-lg font-bold text-slate-950">{isNotFound && isJobScoped ? 'Không tìm thấy tin tuyển dụng hoặc bạn không có quyền truy cập.' : invalidRanking ? 'Chưa thể tải phiên xếp hạng này.' : 'Không thể tải danh sách ứng viên.'}</h2>
-        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{isNotFound && isJobScoped ? recruiterJobErrorMessage(scopedJobError) : errorMessage}</p>
-        <div className="mt-5 flex flex-wrap justify-center gap-3">
-          <button type="button" onClick={retryList} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"><RefreshCw size={16} aria-hidden="true" />{invalidRanking ? 'Tải lại từ trang 1' : 'Thử lại'}</button>
-          {showRanking && <button type="button" onClick={returnNormal} className="min-h-11 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">Dùng danh sách thường</button>}
-          {isJobScoped && <Link to={`/recruiter/jobs/${jobId}`} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Quay lại tin tuyển dụng</Link>}
-        </div>
-      </section> : data?.items.length === 0 && !showRanking ? <section className="mt-6 rounded-2xl bg-white px-6 py-16 text-center ring-1 ring-slate-200">
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-700"><ClipboardList size={27} aria-hidden="true" /></span>
-        <h2 className="mt-5 text-xl font-bold text-slate-950">{hasFilters ? 'Không tìm thấy ứng viên phù hợp.' : isJobScoped ? 'Chưa có ứng viên nào cho tin này.' : 'Chưa có đơn ứng tuyển nào.'}</h2>
-        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{hasFilters ? 'Hãy thử thay đổi từ khóa tìm kiếm hoặc bộ lọc trạng thái.' : 'Các đơn ứng tuyển sẽ xuất hiện tại đây khi ứng viên nộp hồ sơ.'}</p>
-      </section> : data ? <>
-        {showRanking ? <RecruiterRankingResults data={data} returnTo={returnTo} /> : <RecruiterApplicationList applications={data.items} returnTo={returnTo} />}
-        {showRanking && !data.ranking_snapshot && data.total_pages > 1 && <p role="status" className="mt-4 text-sm leading-6 text-slate-600">Chưa có mã phiên xếp hạng để chuyển trang an toàn. Hãy làm mới xếp hạng hoặc chọn thứ tự mới nhất.</p>}
-        {data.total_pages > 1 && <nav className="mt-8 flex items-center justify-between gap-4" aria-label="Phân trang danh sách ứng viên">
-          <button type="button" onClick={() => setPage(page - 1)} disabled={page <= 1 || !canPage} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-45"><ArrowLeft size={16} aria-hidden="true" />Trước</button>
-          <span className="text-sm text-slate-600">Trang <strong className="tabular-nums text-slate-950">{data.page}</strong> / {data.total_pages}</span>
-          <button type="button" onClick={() => setPage(page + 1)} disabled={page >= data.total_pages || !canPage} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-45">Sau <ArrowRight size={16} aria-hidden="true" /></button>
-        </nav>}
-      </> : null}
+      {loadingList ? (
+        <ListSkeleton />
+      ) : !data && errorMessage ? (
+        <section role="alert" className="mt-6 rounded-2xl bg-[#F7F9FB] px-6 py-12 text-center border border-black/[0.04]">
+          <AlertCircle className="mx-auto text-red-500" size={32} aria-hidden="true" />
+          <h2 className="mt-3 text-base font-semibold text-[#1C1C1C]">{isNotFound && isJobScoped ? 'Không tìm thấy tin tuyển dụng hoặc bạn không có quyền truy cập.' : invalidRanking ? 'Chưa thể tải phiên xếp hạng này.' : 'Không thể tải danh sách ứng viên.'}</h2>
+          <p className="mx-auto mt-1 max-w-md text-xs text-slate-500">{isNotFound && isJobScoped ? recruiterJobErrorMessage(scopedJobError) : errorMessage}</p>
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
+            <button type="button" onClick={retryList} className="btn-press inline-flex items-center gap-1.5 rounded-xl bg-[#1C1C1C] px-4 py-2 text-xs font-semibold text-white hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C]"><RefreshCw size={14} aria-hidden="true" />{invalidRanking ? 'Tải lại từ trang 1' : 'Thử lại'}</button>
+            {showRanking && <button type="button" onClick={returnNormal} className="rounded-xl border border-black/[0.08] bg-white px-3.5 py-2 text-xs font-medium text-[#1C1C1C] hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C]">Dùng danh sách thường</button>}
+            {isJobScoped && <Link to={`/recruiter/jobs/${jobId}`} className="rounded-xl border border-black/[0.08] bg-white px-3.5 py-2 text-xs font-medium text-[#1C1C1C] hover:bg-slate-50">Quay lại tin tuyển dụng</Link>}
+          </div>
+        </section>
+      ) : data?.items.length === 0 && !showRanking ? (
+        <section className="mt-6 rounded-2xl bg-[#F7F9FB] px-6 py-14 text-center border border-black/[0.04]">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#1C1C1C] border border-black/[0.06] shadow-2xs"><ClipboardList size={22} aria-hidden="true" /></span>
+          <h2 className="mt-4 text-base font-semibold text-[#1C1C1C]">{hasFilters ? 'Không tìm thấy ứng viên phù hợp.' : isJobScoped ? 'Chưa có ứng viên nào cho tin này.' : 'Chưa có đơn ứng tuyển nào.'}</h2>
+          <p className="mx-auto mt-1 max-w-md text-xs text-slate-500">{hasFilters ? 'Hãy thử thay đổi từ khóa tìm kiếm hoặc bộ lọc trạng thái.' : 'Các đơn ứng tuyển sẽ xuất hiện tại đây khi ứng viên nộp hồ sơ.'}</p>
+        </section>
+      ) : data ? (
+        <>
+          {showRanking ? <RecruiterRankingResults data={data} returnTo={returnTo} /> : <RecruiterApplicationList applications={data.items} returnTo={returnTo} />}
+          {showRanking && !data.ranking_snapshot && data.total_pages > 1 && <p role="status" className="mt-4 text-xs text-slate-500">Chưa có mã phiên xếp hạng để chuyển trang an toàn. Hãy làm mới xếp hạng hoặc chọn thứ tự mới nhất.</p>}
+          {data.total_pages > 1 && (
+            <nav className="mt-6 flex items-center justify-between gap-4" aria-label="Phân trang danh sách ứng viên">
+              <button type="button" onClick={() => setPage(page - 1)} disabled={page <= 1 || !canPage} className="btn-press inline-flex items-center gap-1 rounded-xl border border-black/[0.06] bg-white px-3 py-1.5 text-xs font-medium text-[#1C1C1C] shadow-2xs hover:bg-slate-50 disabled:opacity-40"><ArrowLeft size={13} aria-hidden="true" />Trước</button>
+              <span className="text-xs text-slate-500">Trang <strong className="tabular-nums font-semibold text-[#1C1C1C]">{data.page}</strong> / {data.total_pages}</span>
+              <button type="button" onClick={() => setPage(page + 1)} disabled={page >= data.total_pages || !canPage} className="btn-press inline-flex items-center gap-1 rounded-xl border border-black/[0.06] bg-white px-3 py-1.5 text-xs font-medium text-[#1C1C1C] shadow-2xs hover:bg-slate-50 disabled:opacity-40">Sau <ArrowRight size={13} aria-hidden="true" /></button>
+            </nav>
+          )}
+        </>
+      ) : null}
       {dialogOpen && isJobScoped && <RecruiterRankingDialog initialMode={showRanking ? rankingQuery.mode : 'all'} initialTopN={rankingQuery.topN ?? 10} onClose={closeDialog} onConfirm={confirmRanking} />}
     </main>
-  </div>
+  )
 }

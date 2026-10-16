@@ -1,12 +1,9 @@
 import axios from 'axios'
-import { AlertCircle, ArrowLeft, ArrowRight, BriefcaseBusiness, FileText, RefreshCw, RotateCcw, Sparkles, X } from 'lucide-react'
+import { AlertCircle, ArrowLeft, ArrowRight, BriefcaseBusiness, FileText, RefreshCw, Sparkles } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import QueryFetchFeedback from '../../components/feedback/QueryFetchFeedback'
 import JobCard from '../../components/job/JobCard'
-import JobFilters, { type JobFilterValues } from '../../components/job/JobFilters'
-import JobSearchBar from '../../components/job/JobSearchBar'
-import { jobFilterLabel, SALARY_FILTER_VALUES } from '../../config/jobSearchFilters'
 import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 import { cvService } from '../../services/cvService'
 import { jobRecommendationService } from '../../services/jobRecommendationService'
@@ -17,7 +14,7 @@ import {
   compatibleRecommendationSnapshot,
   isCurrentRecommendationRequest,
   recommendationErrorMessage,
-  RECOMMENDATION_PAGE_SIZES,
+  shouldFetchRecommendations,
   shouldRecoverRecommendationSnapshot,
   updateCandidateRecommendationQuery,
   type RecommendationSnapshotSession,
@@ -84,6 +81,87 @@ export function RecommendationCvAvailability({
   )
 }
 
+export function RecommendationStartPanel({
+  cvs,
+  isLoading,
+  selectedCvId,
+  isStarting,
+  onSelect,
+  onStart,
+}: {
+  cvs: CVListItem[]
+  isLoading: boolean
+  selectedCvId: string
+  isStarting: boolean
+  onSelect: (cvId: string) => void
+  onStart: () => void
+}) {
+  return (
+    <section className="mx-auto max-w-5xl overflow-hidden rounded-2xl bg-white shadow-premium ring-1 ring-slate-200/80" aria-labelledby="recommendation-setup-title">
+      <div className="border-b border-slate-100 px-5 py-6 sm:px-8 sm:py-7">
+        <h2 id="recommendation-setup-title" className="text-2xl font-extrabold tracking-tight text-slate-950">Chọn CV để nhận gợi ý</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Chọn hồ sơ bạn muốn sử dụng. Hệ thống chỉ bắt đầu đối chiếu sau khi bạn bấm nút gợi ý.</p>
+      </div>
+
+      <div className="px-5 py-6 sm:px-8 sm:py-7">
+        {isLoading ? (
+          <div className="space-y-3" aria-busy="true" aria-label="Đang tải danh sách CV">
+            {[0, 1].map((item) => <div key={item} className="skeleton-shimmer h-20 rounded-2xl" />)}
+          </div>
+        ) : cvs.length === 0 ? (
+          <div className="rounded-2xl bg-amber-50 p-5 ring-1 ring-amber-200">
+            <h3 className="font-bold text-amber-950">Bạn chưa có CV để nhận gợi ý</h3>
+            <p className="mt-1 text-sm leading-6 text-amber-900/80">Hãy tạo hoặc tải lên một CV, sau đó quay lại để bắt đầu đối chiếu.</p>
+            <Link to="/candidate/cvs" className="mt-4 inline-flex min-h-10 items-center rounded-xl bg-amber-900 px-4 py-2 text-sm font-bold text-white hover:bg-amber-950">Tạo hoặc tải CV</Link>
+          </div>
+        ) : (
+          <fieldset id="recommendation-cv">
+            <legend className="text-sm font-bold text-slate-900">CV dùng để gợi ý</legend>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {cvs.map((cv) => {
+                const selected = selectedCvId === cv.id
+                return (
+                  <label key={cv.id} className={`relative flex cursor-pointer items-start gap-3 rounded-2xl p-4 ring-1 transition-all ${selected ? 'bg-teal-50/70 ring-2 ring-[#49BBBD]' : 'bg-white ring-slate-200 hover:bg-slate-50 hover:ring-slate-300'}`}>
+                    <input
+                      type="radio"
+                      name="recommendation-cv"
+                      value={cv.id}
+                      checked={selected}
+                      onChange={() => onSelect(cv.id)}
+                      className="mt-1 h-4 w-4 accent-[#49BBBD]"
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="flex flex-wrap items-center gap-2">
+                        <span className="truncate text-sm font-bold text-slate-950">{cv.title}</span>
+                        {cv.is_default && <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#49BBBD] ring-1 ring-teal-200">Mặc định</span>}
+                      </span>
+                      <span className="mt-1 block text-xs text-slate-500">{cv.source_type === 'UPLOADED' ? 'CV tải lên' : 'CV tạo trên GJob'} · Cập nhật {new Date(cv.updated_at).toLocaleDateString('vi-VN')}</span>
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+          </fieldset>
+        )}
+
+        {cvs.length > 0 && !isLoading && (
+          <div className="mt-7 flex flex-col gap-4 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <p className="max-w-xl text-xs leading-5 text-slate-500">Kết quả hiển thị thứ hạng và lý do liên quan từ dữ liệu hệ thống. GJob không tự tạo phần trăm phù hợp khi chưa có điểm số đã được hiệu chỉnh.</p>
+            <button
+              type="button"
+              onClick={onStart}
+              disabled={!selectedCvId || isStarting}
+              className="btn-press inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#49BBBD] px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-[#3fa9ab] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Sparkles size={17} aria-hidden="true" />Gợi ý việc làm bằng AI
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
 export default function CandidateJobRecommendationsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const refreshVersion = useDataRefreshVersion()
@@ -97,16 +175,24 @@ export default function CandidateJobRecommendationsPage() {
   const [notice, setNotice] = useState<string | null>(null)
   const [cvs, setCvs] = useState<CVListItem[]>([])
   const [cvListLoading, setCvListLoading] = useState(true)
+  const [selectedCvId, setSelectedCvId] = useState(publicQuery.cvId ?? '')
+  const [hasStarted, setHasStarted] = useState(false)
+  const [startedCvId, setStartedCvId] = useState<string | null>(null)
   const snapshotRef = useRef<RecommendationSnapshotSession | null>(null)
   const activeIdentityRef = useRef(publicQuery.identity)
   const requestIdRef = useRef(0)
+  const startPendingRef = useRef(false)
   const recoveredIdentityRef = useRef<string | null>(null)
   const previousRefreshVersion = useRef(refreshVersion)
 
   useEffect(() => {
     const controller = new AbortController()
     cvService.getCVs(controller.signal)
-      .then((response) => { if (!controller.signal.aborted) setCvs(response.items) })
+      .then((response) => {
+        if (controller.signal.aborted) return
+        setCvs(response.items)
+        setSelectedCvId((current) => current || response.items.find((cv) => cv.is_default)?.id || response.items[0]?.id || '')
+      })
       .catch(() => { if (!controller.signal.aborted) setCvs([]) })
       .finally(() => { if (!controller.signal.aborted) setCvListLoading(false) })
     return () => controller.abort()
@@ -137,6 +223,10 @@ export default function CandidateJobRecommendationsPage() {
   }, [refreshVersion, restartSession])
 
   useEffect(() => {
+    if (!shouldFetchRecommendations(hasStarted, publicQuery.cvId, startedCvId)) {
+      return
+    }
+
     if (activeIdentityRef.current !== publicQuery.identity) {
       activeIdentityRef.current = publicQuery.identity
       snapshotRef.current = null
@@ -185,144 +275,113 @@ export default function CandidateJobRecommendationsPage() {
         setError(recommendationErrorMessage(requestError))
       })
       .finally(() => {
+        startPendingRef.current = false
         if (!controller.signal.aborted && requestId === requestIdRef.current) setIsFetching(false)
       })
 
     return () => controller.abort()
-  }, [generation, publicQuery, reload, replaceWithPageOne])
+  }, [generation, hasStarted, publicQuery, reload, replaceWithPageOne, startedCvId])
+
+  const startRecommendations = useCallback(() => {
+    if (!selectedCvId || isFetching || startPendingRef.current) return
+    startPendingRef.current = true
+    snapshotRef.current = null
+    recoveredIdentityRef.current = null
+    setData(null)
+    setError(null)
+    setNotice(null)
+    setStartedCvId(selectedCvId)
+    setHasStarted(true)
+    setGeneration((value) => value + 1)
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current)
+      next.set('cv_id', selectedCvId)
+      next.delete('page')
+      next.delete('ranking_snapshot')
+      return next
+    })
+  }, [isFetching, selectedCvId, setSearchParams])
+
+  const changeCv = useCallback(() => {
+    requestIdRef.current += 1
+    startPendingRef.current = false
+    snapshotRef.current = null
+    recoveredIdentityRef.current = null
+    setHasStarted(false)
+    setStartedCvId(null)
+    setData(null)
+    setError(null)
+    setNotice(null)
+    setIsFetching(false)
+    setSelectedCvId(publicQuery.cvId ?? selectedCvId)
+  }, [publicQuery.cvId, selectedCvId])
 
   const updateParams = useCallback((updates: Record<string, string | null>, resetSession = true) => {
     setSearchParams((current) => updateCandidateRecommendationQuery(current, updates, resetSession))
   }, [setSearchParams])
 
-  const filters = useMemo<JobFilterValues>(() => {
-    const salary = new URLSearchParams(queryText).get('salary') ?? ''
-    return {
-      industry: publicQuery.request.industry ?? '',
-      experienceRequirement: publicQuery.request.experience_requirement ?? '',
-      level: publicQuery.request.level ?? '',
-      workMode: publicQuery.request.work_mode ?? '',
-      employmentType: publicQuery.request.employment_type ?? '',
-      salary: SALARY_FILTER_VALUES.includes(salary as (typeof SALARY_FILTER_VALUES)[number])
-        ? salary as JobFilterValues['salary']
-        : '',
-      sort: 'newest',
-    }
-  }, [publicQuery.request, queryText])
-
-  const clearFilters = useCallback(() => {
-    const next = new URLSearchParams()
-    if (publicQuery.cvId) next.set('cv_id', publicQuery.cvId)
-    if (publicQuery.pageSize !== 9) next.set('page_size', String(publicQuery.pageSize))
-    setSearchParams(next)
-  }, [publicQuery.cvId, publicQuery.pageSize, setSearchParams])
-
-  const activeCvId = data?.selected_cv_id ?? publicQuery.cvId
+  const activeCvId = data?.selected_cv_id ?? startedCvId ?? publicQuery.cvId
   const activeCv = cvs.find((cv) => cv.id === activeCvId)
   const currentReturnTo = `/candidate/job-recommendations${queryText ? `?${queryText}` : ''}`
   const isInitialLoading = isFetching && !data
-  const hasFilters = Boolean(publicQuery.request.search || publicQuery.request.location || filters.industry || filters.experienceRequirement || filters.level || filters.workMode || filters.employmentType || filters.salary)
   const pages = Array.from({ length: data?.total_pages ?? 0 }, (_, index) => index + 1).filter(
     (value) => value === 1 || value === data?.total_pages || Math.abs(value - (data?.page ?? 1)) <= 1,
   )
-  const chips = [
-    publicQuery.request.search && { key: 'search', label: `Từ khóa: ${publicQuery.request.search}`, remove: () => updateParams({ search: null, keyword: null }) },
-    publicQuery.request.location && { key: 'location', label: `Địa điểm: ${publicQuery.request.location}`, remove: () => updateParams({ location: null }) },
-    filters.industry && { key: 'industry', label: jobFilterLabel.industry(filters.industry), remove: () => updateParams({ industry: null }) },
-    filters.experienceRequirement && { key: 'experience_requirement', label: jobFilterLabel.experienceRequirement(filters.experienceRequirement), remove: () => updateParams({ experience_requirement: null }) },
-    filters.level && { key: 'level', label: jobFilterLabel.level(filters.level), remove: () => updateParams({ level: null }) },
-    filters.workMode && { key: 'work_mode', label: jobFilterLabel.workMode(filters.workMode), remove: () => updateParams({ work_mode: null }) },
-    filters.employmentType && { key: 'employment_type', label: jobFilterLabel.employmentType(filters.employmentType), remove: () => updateParams({ employment_type: null }) },
-    filters.salary && { key: 'salary', label: jobFilterLabel.salary(filters.salary), remove: () => updateParams({ salary: null }) },
-  ].filter(Boolean) as Array<{ key: string; label: string; remove: () => void }>
 
   return (
     <div className="min-h-screen bg-slate-50/70">
-      <section className="relative overflow-hidden bg-slate-950 py-9 text-white sm:py-11">
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-2/5 bg-[radial-gradient(circle_at_center,rgba(79,70,229,0.24),transparent_68%)]" aria-hidden="true" />
-        <div className="relative mx-auto grid max-w-7xl gap-7 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end lg:px-8">
-          <div className="max-w-3xl">
-            <h1 className="text-balance text-3xl font-extrabold tracking-[-0.03em] text-white sm:text-4xl">Gợi ý việc làm theo CV</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
-              Danh sách được xếp hạng dựa trên thông tin nghề nghiệp trong CV bạn đang sử dụng. Gợi ý hỗ trợ khám phá, không phải đánh giá đạt hoặc không đạt.
-            </p>
-          </div>
-          <div className="rounded-2xl bg-white/8 p-1.5 ring-1 ring-white/12">
-            <div className="rounded-[0.875rem] bg-white px-4 py-3 text-slate-900 shadow-premium">
-              <label htmlFor="recommendation-cv" className="block text-xs font-bold text-slate-600">CV đang dùng</label>
-              <select
-                id="recommendation-cv"
-                value={publicQuery.cvId ?? ''}
-                disabled={cvListLoading}
-                onChange={(event) => updateParams({ cv_id: event.target.value || null })}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold text-slate-900 outline-none transition-colors hover:border-indigo-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 disabled:cursor-wait disabled:text-slate-400"
-              >
-                <option value="">{activeCv ? `Tự động — ${activeCv.title}` : 'Tự động chọn CV mặc định'}</option>
-                {cvs.map((cv) => <option key={cv.id} value={cv.id}>{cv.title}{cv.is_default ? ' — Mặc định' : ''}</option>)}
-              </select>
-              <p className="mt-2 text-xs leading-5 text-slate-500">Ở chế độ tự động, hệ thống chọn một CV đang sẵn sàng từ hồ sơ của bạn. CV bạn chọn thủ công sẽ luôn được giữ nguyên.</p>
+      <section className="border-b border-teal-100 bg-[#eaf8f8]">
+        <div className="mx-auto max-w-6xl px-4 py-9 sm:px-6 sm:py-11 lg:px-8">
+          <div className="flex max-w-3xl items-start gap-4">
+            <div className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#49BBBD] text-white shadow-sm">
+              <Sparkles size={21} aria-hidden="true" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-[-0.03em] text-slate-950 sm:text-4xl">Gợi ý việc làm theo CV</h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">Chọn một CV để đối chiếu với các việc làm đang tuyển. Mỗi kết quả sẽ cho biết vì sao phù hợp, hoặc vì sao hệ thống chưa thể giải thích.</p>
             </div>
           </div>
         </div>
       </section>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid gap-5 lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start lg:gap-8">
-          <JobFilters
-            values={filters}
-            showSort={false}
-            onClear={clearFilters}
-            onChange={(next) => updateParams({
-              industry: next.industry || null,
-              experience_requirement: next.experienceRequirement || null,
-              level: next.level || null,
-              work_mode: next.workMode || null,
-              employment_type: next.employmentType || null,
-              salary: next.salary || null,
-            })}
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+        {!hasStarted ? (
+          <RecommendationStartPanel
+            cvs={cvs}
+            isLoading={cvListLoading}
+            selectedCvId={selectedCvId}
+            isStarting={isFetching}
+            onSelect={setSelectedCvId}
+            onStart={startRecommendations}
           />
-
+        ) : (
           <div className="min-w-0">
-            <JobSearchBar
-              key={`${publicQuery.request.search ?? ''}-${publicQuery.request.location ?? ''}`}
-              keyword={publicQuery.request.search ?? ''}
-              location={publicQuery.request.location ?? ''}
-              onSearch={(search, location) => updateParams({ search: search || null, keyword: null, location: location || null })}
-            />
+            <section className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80 sm:flex-row sm:items-center sm:justify-between sm:p-6" aria-label="CV đang dùng để gợi ý">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-[#49BBBD]"><FileText size={19} aria-hidden="true" /></div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-slate-500">CV đang được đối chiếu</p>
+                  <p className="truncate text-base font-bold text-slate-950">{activeCv?.title ?? 'CV đã chọn'}</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={changeCv} className="btn-press inline-flex min-h-10 items-center rounded-xl bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200">Đổi CV</button>
+                <button type="button" onClick={() => restartSession()} disabled={isFetching} className="btn-press inline-flex min-h-10 items-center gap-2 rounded-xl bg-teal-50 px-4 py-2 text-xs font-bold text-[#49BBBD] ring-1 ring-teal-200 hover:bg-teal-100 disabled:cursor-not-allowed disabled:opacity-50">
+                  <RefreshCw size={14} aria-hidden="true" />Tạo lại gợi ý
+                </button>
+              </div>
+            </section>
 
-            {chips.length > 0 && (
-              <section className="mt-4 flex flex-wrap items-center gap-2" aria-label="Bộ lọc đang áp dụng">
-                {chips.map((chip) => (
-                  <button key={chip.key} type="button" onClick={chip.remove} className="btn-press inline-flex min-h-8 items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 ring-1 ring-blue-200 hover:bg-blue-100">
-                    {chip.label}<X size={13} aria-hidden="true" />
-                  </button>
-                ))}
-                <button type="button" onClick={clearFilters} className="min-h-8 px-2 text-xs font-bold text-slate-500 underline decoration-slate-300 underline-offset-4 hover:text-blue-700">Xóa bộ lọc</button>
-              </section>
-            )}
+            {notice && <p role="status" className="motion-page mt-5 rounded-xl bg-teal-50 px-4 py-3 text-sm font-semibold text-[#49BBBD] ring-1 ring-teal-100">{notice}</p>}
 
-            {notice && <p role="status" className="motion-page mt-5 rounded-xl bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-800 ring-1 ring-blue-100">{notice}</p>}
-
-            <section className="mt-6" aria-live="polite">
-              <div className="mb-5 flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-4">
+            <section className="mt-8" aria-live="polite">
+              <div className="mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-5">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-slate-950">Danh sách gợi ý</h2>
+                  <h2 className="text-2xl font-extrabold tracking-tight text-slate-950">Kết quả đối chiếu</h2>
                   {data && <p className="mt-1 text-xs leading-5 text-slate-500"><span className="font-bold tabular-nums text-slate-900">{data.total.toLocaleString('vi-VN')}</span> việc làm · {statusSummary(data)}</p>}
+                  <p className="mt-2 max-w-2xl text-xs leading-5 text-slate-500">Chỉ những công việc có nhãn xếp hạng mới là gợi ý đã hoàn tất. Mỗi thẻ sẽ hiển thị lý do phù hợp hoặc trạng thái giải thích hiện tại.</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <label className="flex items-center gap-2 text-xs font-semibold text-slate-600">
-                    Hiển thị
-                    <select
-                      aria-label="Số việc làm mỗi trang"
-                      value={publicQuery.pageSize}
-                      onChange={(event) => updateParams({ page_size: event.target.value === '9' ? null : event.target.value })}
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 font-bold text-slate-800 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
-                    >
-                      {RECOMMENDATION_PAGE_SIZES.map((size) => <option key={size} value={size}>{size}</option>)}
-                    </select>
-                  </label>
-                  <QueryFetchFeedback isFetching={isFetching && Boolean(data)} errorMessage={data && error ? error : null} onRetry={() => setReload((value) => value + 1)} />
-                </div>
+                <QueryFetchFeedback isFetching={isFetching && Boolean(data)} errorMessage={data && error ? error : null} onRetry={() => setReload((value) => value + 1)} />
               </div>
 
               <RecommendationCvAvailability data={data} explicitCvId={publicQuery.cvId} />
@@ -333,7 +392,7 @@ export default function CandidateJobRecommendationsPage() {
                   <h3 className="mt-4 text-lg font-bold text-slate-950">Không thể tải gợi ý việc làm</h3>
                   <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">{error}</p>
                   <div className="mt-6 flex flex-wrap justify-center gap-3">
-                    <button type="button" onClick={() => restartSession()} className="btn-press inline-flex min-h-11 items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-blue-700">
+                    <button type="button" onClick={() => restartSession()} className="btn-press inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#49BBBD] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80">
                       <RefreshCw size={16} aria-hidden="true" />Thử lại
                     </button>
                     <Link to="/jobs" className="inline-flex min-h-11 items-center rounded-xl bg-slate-100 px-5 py-2.5 text-sm font-bold text-slate-800 hover:bg-slate-200">Xem tất cả việc làm</Link>
@@ -341,14 +400,14 @@ export default function CandidateJobRecommendationsPage() {
                 </div>
               ) : data?.items.length === 0 ? (
                 <div className="rounded-2xl bg-white px-6 py-14 text-center shadow-xs ring-1 ring-slate-200">
-                  <BriefcaseBusiness className="mx-auto text-blue-600" size={34} aria-hidden="true" />
-                  <h3 className="mt-4 text-lg font-bold text-slate-950">Hiện chưa có gợi ý việc làm để hiển thị</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{hasFilters ? 'Thử thay đổi bộ lọc hoặc xem danh sách việc làm thông thường.' : 'Bạn vẫn có thể khám phá toàn bộ việc làm đang tuyển.'}</p>
-                  <Link to="/jobs" className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-blue-700">Xem tất cả việc làm</Link>
+                  <BriefcaseBusiness className="mx-auto text-[#49BBBD]" size={34} aria-hidden="true" />
+                  <h3 className="mt-4 text-lg font-bold text-slate-950">Chưa có kết quả phù hợp để hiển thị</h3>
+                  <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">Bạn có thể chọn CV khác hoặc tạo lại gợi ý khi dữ liệu việc làm được cập nhật.</p>
+                  <button type="button" onClick={changeCv} className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-[#49BBBD] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3fa9ab]">Chọn CV khác</button>
                 </div>
               ) : data ? (
                 <>
-                  <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  <div className="grid gap-5 md:grid-cols-2">
                     {data.items.map((item) => (
                       <JobCard
                         key={item.id}
@@ -367,7 +426,7 @@ export default function CandidateJobRecommendationsPage() {
                       {pages.map((value, index) => (
                         <span key={value} className="contents">
                           {index > 0 && value - pages[index - 1] > 1 && <span className="px-1 text-slate-400">…</span>}
-                          <button type="button" disabled={isFetching} aria-current={value === data.page ? 'page' : undefined} onClick={() => updateParams({ page: value === 1 ? null : String(value) }, false)} className={`btn-press min-h-11 min-w-11 rounded-xl px-3 py-2 text-xs font-bold ${value === data.page ? 'bg-blue-600 text-white' : 'bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50'}`}>{value}</button>
+                          <button type="button" disabled={isFetching} aria-current={value === data.page ? 'page' : undefined} onClick={() => updateParams({ page: value === 1 ? null : String(value) }, false)} className={`btn-press min-h-11 min-w-11 rounded-xl px-3 py-2 text-xs font-bold ${value === data.page ? 'bg-[#49BBBD] text-white' : 'bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50'}`}>{value}</button>
                         </span>
                       ))}
                       <button type="button" disabled={data.page >= data.total_pages || isFetching} onClick={() => updateParams({ page: String(data.page + 1) }, false)} className="btn-press inline-flex min-h-11 items-center gap-1 rounded-xl bg-white px-3.5 py-2 text-xs font-bold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">
@@ -378,16 +437,8 @@ export default function CandidateJobRecommendationsPage() {
                 </>
               ) : null}
             </section>
-
-            <aside className="mt-10 flex flex-col gap-3 rounded-2xl bg-slate-900 px-5 py-5 text-slate-200 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-3">
-                <Sparkles className="mt-0.5 shrink-0 text-indigo-300" size={18} aria-hidden="true" />
-                <p className="max-w-2xl text-sm leading-6">Gợi ý dựa trên thông tin nghề nghiệp trong CV và chỉ mang tính hỗ trợ khám phá việc làm.</p>
-              </div>
-              <Link to="/jobs" className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-950 hover:bg-slate-100">Tìm việc theo cách thông thường<RotateCcw size={15} aria-hidden="true" /></Link>
-            </aside>
           </div>
-        </div>
+        )}
       </main>
     </div>
   )

@@ -56,7 +56,7 @@ export default function AdminJobReviewContent({ job, onUpdated, onConflict }: Ad
           {job.skills && job.skills.length > 0 && <section className="border-t border-slate-100 pt-7">
             <h2 className="text-lg font-bold text-slate-950">Kỹ năng</h2>
             <div className="mt-3 flex flex-wrap gap-2">
-              {job.skills.map((skill) => <span key={skill} className="rounded-lg bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-800">{skill}</span>)}
+              {job.skills.map((skill) => <span key={skill} className="rounded-lg bg-black/[0.04] px-2.5 py-1.5 text-xs font-semibold text-[#1C1C1C]">{skill}</span>)}
             </div>
           </section>}
         </article>

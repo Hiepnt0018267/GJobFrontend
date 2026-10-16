@@ -32,7 +32,7 @@ function AuthSkeleton() {
 function UserAvatar({ name }: { name: string }) {
   return (
     <div
-      className="flex h-9 w-9 shrink-0 select-none items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-xs ring-2 ring-white/80"
+      className="flex h-9 w-9 shrink-0 select-none items-center justify-center rounded-full bg-[#49BBBD] text-xs font-bold text-white shadow-xs ring-2 ring-white/80"
       aria-hidden="true"
     >
       {name.charAt(0).toUpperCase()}
@@ -47,9 +47,9 @@ function roleBadgeText(role: UserRole) {
 }
 
 function roleBadgeColor(role: UserRole) {
-  if (role === 'CANDIDATE') return 'bg-blue-50 text-blue-700 ring-1 ring-blue-600/20'
-  if (role === 'RECRUITER') return 'bg-violet-50 text-violet-700 ring-1 ring-violet-600/20'
-  return 'bg-rose-50 text-rose-700 ring-1 ring-rose-600/20'
+  if (role === 'CANDIDATE') return 'bg-[#49BBBD]/10 text-[#49BBBD] ring-1 ring-[#49BBBD]/25'
+  if (role === 'RECRUITER') return 'bg-teal-50 text-teal-800 ring-1 ring-teal-600/20'
+  return 'bg-slate-100 text-slate-800 ring-1 ring-slate-300'
 }
 
 function CandidateDropdown({
@@ -75,14 +75,14 @@ function CandidateDropdown({
         aria-expanded={isOpen}
         aria-controls={menuId}
         onClick={onToggle}
-        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
-          isOpen ? 'bg-slate-100/80 text-blue-700' : 'text-slate-700 hover:bg-slate-100/60 hover:text-slate-900'
+        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] ${
+          isOpen ? 'bg-slate-100/80 text-[#49BBBD]' : 'text-slate-700 hover:bg-slate-100/60 hover:text-slate-900'
         }`}
       >
         {group.label}
         <ChevronDown
           size={14}
-          className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-600' : 'text-slate-400'}`}
+          className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#49BBBD]' : 'text-slate-400'}`}
           aria-hidden="true"
         />
       </button>
@@ -99,13 +99,13 @@ function CandidateDropdown({
                 to={to}
                 role="menuitem"
                 onClick={onClose}
-                className="group flex items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                className="group flex items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD]"
               >
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50/80 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#49BBBD]/10 text-[#49BBBD] transition-colors group-hover:bg-[#49BBBD] group-hover:text-white">
                   <Icon size={16} aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold text-slate-800 transition-colors group-hover:text-blue-600">
+                  <span className="block text-sm font-semibold text-slate-800 transition-colors group-hover:text-[#49BBBD]">
                     {label}
                   </span>
                   <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">{description}</span>
@@ -144,16 +144,16 @@ function CandidateAccountMenu({
         aria-expanded={isOpen}
         aria-controls="candidate-account-menu"
         onClick={onToggle}
-        className="btn-press flex items-center gap-2.5 rounded-xl border border-slate-200/60 bg-white/60 px-3 py-1.5 shadow-xs transition-colors hover:border-slate-300 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+        className="btn-press flex items-center gap-2.5 rounded-xl border border-slate-200/60 bg-white/60 px-3 py-1.5 shadow-xs transition-colors hover:border-slate-300 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD]"
       >
         <UserAvatar name={name} />
         <div className="text-left">
           <p className="max-w-[120px] truncate text-sm font-semibold leading-tight text-slate-900">{name}</p>
-          <span className="text-[10px] font-medium text-blue-600">Ứng viên</span>
+          <span className="text-[10px] font-medium text-[#49BBBD]">Ứng viên</span>
         </div>
         <ChevronDown
           size={14}
-          className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-600' : 'text-slate-400'}`}
+          className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#49BBBD]' : 'text-slate-400'}`}
           aria-hidden="true"
         />
       </button>
@@ -176,7 +176,7 @@ function CandidateAccountMenu({
                   to={to}
                   role="menuitem"
                   onClick={onClose}
-                  className="flex items-center gap-2.5 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-600"
+                  className="flex items-center gap-2.5 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-[#49BBBD] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#49BBBD]"
                 >
                   <Icon size={16} className="text-slate-400" aria-hidden="true" />
                   {label}
@@ -219,15 +219,15 @@ function ToolsDropdown({
         aria-expanded={isOpen}
         aria-controls="candidate-tools-menu"
         onClick={onToggle}
-        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
-          isOpen ? 'bg-slate-100/80 text-blue-700' : 'text-slate-700 hover:bg-slate-100/60 hover:text-slate-900'
+        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] ${
+          isOpen ? 'bg-slate-100/80 text-[#49BBBD]' : 'text-slate-700 hover:bg-slate-100/60 hover:text-slate-900'
         }`}
       >
         <Sparkles size={14} className="text-amber-500" aria-hidden="true" />
         Công cụ
         <ChevronDown
           size={14}
-          className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-600' : 'text-slate-400'}`}
+          className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#49BBBD]' : 'text-slate-400'}`}
           aria-hidden="true"
         />
       </button>
@@ -244,13 +244,13 @@ function ToolsDropdown({
                 to={to}
                 role="menuitem"
                 onClick={onClose}
-                className="group flex items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                className="group flex items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD]"
               >
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50/80 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#49BBBD]/10 text-[#49BBBD] transition-colors group-hover:bg-[#49BBBD] group-hover:text-white">
                   <Icon size={16} aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold text-slate-800 transition-colors group-hover:text-blue-600">
+                  <span className="block text-sm font-semibold text-slate-800 transition-colors group-hover:text-[#49BBBD]">
                     {label}
                   </span>
                   <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">{description}</span>
@@ -285,7 +285,7 @@ function MobileCandidateNavigation({ onNavigate }: { onNavigate: () => void }) {
               <span>{group.label}</span>
               <ChevronDown
                 size={16}
-                className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-600' : ''}`}
+                className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#49BBBD]' : ''}`}
                 aria-hidden="true"
               />
             </button>
@@ -296,7 +296,7 @@ function MobileCandidateNavigation({ onNavigate }: { onNavigate: () => void }) {
                     key={to}
                     to={to}
                     onClick={onNavigate}
-                    className="flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-blue-600"
+                    className="flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#49BBBD]"
                   >
                     <Icon size={16} className="text-slate-400" aria-hidden="true" />
                     {label}
@@ -321,6 +321,16 @@ export default function Header() {
   const isCandidatePlatform = !user || user.role === 'CANDIDATE'
   const workspaceNavigation =
     user?.role === 'RECRUITER' ? recruiterNavigation : user?.role === 'ADMIN' ? adminNavigation : []
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     const closeOnOutsidePointer = (event: MouseEvent) => {
@@ -360,23 +370,27 @@ export default function Header() {
 
   const topLinkClass = ({ isActive }: { isActive: boolean }) =>
     isActive
-      ? 'rounded-lg bg-blue-50 px-3 py-1.5 text-sm font-bold text-blue-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600'
-      : 'rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100/60 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600'
+      ? 'rounded-lg bg-teal-50 px-3 py-1.5 text-sm font-bold text-teal-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600'
+      : 'rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100/60 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600'
 
   return (
     <header
       ref={menuRootRef}
-      className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/85 shadow-xs backdrop-blur-xl transition-all"
+      className={`sticky top-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? 'border-b border-slate-200/80 bg-white/95 shadow-md shadow-slate-900/5 backdrop-blur-2xl py-0.5'
+          : 'border-b border-slate-200/60 bg-white/85 shadow-xs backdrop-blur-xl'
+      }`}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center gap-5">
           {/* Logo with concentric icon container */}
           <Link to="/" className="group flex shrink-0 items-center gap-2.5" aria-label="GJob - Trang chủ">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 shadow-sm shadow-blue-600/20 ring-1 ring-blue-500/30 transition-transform group-hover:scale-105">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#49BBBD] shadow-sm shadow-[#49BBBD]/20 ring-1 ring-[#49BBBD]/30 transition-transform group-hover:scale-105">
               <Zap size={18} className="text-white" strokeWidth={2.5} aria-hidden="true" />
             </div>
             <span className="text-xl font-bold tracking-tight text-slate-950">
-              G<span className="text-blue-600">Job</span>
+              G<span className="text-[#49BBBD]">Job</span>
             </span>
           </Link>
 
@@ -451,7 +465,7 @@ export default function Header() {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="btn-press inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                    className="btn-press inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                   >
                     <LogOut size={16} aria-hidden="true" />
                     Đăng xuất
@@ -459,16 +473,16 @@ export default function Header() {
                 </div>
               )
             ) : (
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="btn-press rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                  className="btn-press rounded-full px-5 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                 >
                   Đăng nhập
                 </Link>
                 <Link
                   to="/register"
-                  className="btn-press inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-600/25 transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                  className="btn-press inline-flex items-center justify-center rounded-full bg-[#49BBBD] px-5 py-2 text-sm font-bold text-white shadow-sm shadow-[#49BBBD]/25 transition-all hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] focus-visible:ring-offset-2"
                 >
                   Đăng ký
                 </Link>
@@ -479,7 +493,7 @@ export default function Header() {
           {/* Mobile hamburger button */}
           <button
             type="button"
-            className="btn-press flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 md:hidden"
+            className="btn-press flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 md:hidden"
             onClick={() => { setOpenMenu(null); setMobileOpen((open) => !open) }}
             aria-expanded={mobileOpen}
             aria-label={mobileOpen ? 'Đóng menu' : 'Mở menu'}
@@ -507,7 +521,7 @@ export default function Header() {
                     onClick={closeMenus}
                     className={({ isActive }) =>
                       isActive
-                        ? 'block rounded-xl bg-blue-50 px-4 py-3 text-sm font-bold text-blue-700'
+                        ? 'block rounded-xl bg-teal-50 px-4 py-3 text-sm font-bold text-teal-700'
                         : 'block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50'
                     }
                   >
@@ -563,7 +577,7 @@ export default function Header() {
                   <Link
                     to="/register"
                     onClick={closeMenus}
-                    className="btn-press flex min-h-[44px] items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-center text-sm font-bold text-white shadow-sm hover:bg-blue-700"
+                    className="btn-press flex min-h-[44px] items-center justify-center rounded-xl bg-[#49BBBD] px-4 py-2 text-center text-sm font-bold text-white shadow-sm hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80"
                   >
                     Đăng ký tài khoản
                   </Link>

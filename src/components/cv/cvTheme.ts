@@ -27,7 +27,7 @@ export const CV_THEME_OPTIONS = {
 }
 
 export const CV_DEFAULT_THEMES: Record<CVTemplateLayoutKey, CVTemplateThemeConfig> = {
-  MODERN: { primary_color: '#2563EB', font_family: 'INTER', font_scale: 'NORMAL', section_spacing: 'NORMAL', heading_style: 'SOLID' },
+  MODERN: { primary_color: '#49BBBD', font_family: 'INTER', font_scale: 'NORMAL', section_spacing: 'NORMAL', heading_style: 'SOLID' },
   CLASSIC: { primary_color: '#0F172A', font_family: 'INTER', font_scale: 'NORMAL', section_spacing: 'NORMAL', heading_style: 'UNDERLINE' },
   MINIMAL: { primary_color: '#334155', font_family: 'INTER', font_scale: 'NORMAL', section_spacing: 'COMPACT', heading_style: 'MINIMAL' },
 }

@@ -43,12 +43,12 @@ export default function CandidateApplicationFilters({ search, status, onSearchCh
         <label className="relative block">
           <span className="sr-only">Tìm theo công việc hoặc công ty</span>
           <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
-          <input ref={inputRef} defaultValue={search} onChange={(event) => scheduleSearch(event.target.value)} placeholder="Tìm theo công việc hoặc công ty..." className="peer w-full rounded-xl border border-slate-300 py-3 pl-11 pr-11 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
-          <button type="button" onClick={clear} aria-label="Xóa từ khóa tìm kiếm" className="pointer-events-auto absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 peer-placeholder-shown:pointer-events-none peer-placeholder-shown:opacity-0"><X size={16} aria-hidden="true" /></button>
+          <input ref={inputRef} defaultValue={search} onChange={(event) => scheduleSearch(event.target.value)} placeholder="Tìm theo công việc hoặc công ty..." className="peer w-full rounded-xl border border-slate-300 py-3 pl-11 pr-11 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100" />
+          <button type="button" onClick={clear} aria-label="Xóa từ khóa tìm kiếm" className="pointer-events-auto absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 peer-placeholder-shown:pointer-events-none peer-placeholder-shown:opacity-0"><X size={16} aria-hidden="true" /></button>
         </label>
         <label>
           <span className="sr-only">Lọc trạng thái đơn ứng tuyển</span>
-          <select value={status} onChange={(event) => onStatusChange(event.target.value as CandidateApplicationStatusFilter)} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+          <select value={status} onChange={(event) => onStatusChange(event.target.value as CandidateApplicationStatusFilter)} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100">
             <option value="ALL">Tất cả trạng thái</option>
             {APPLICATION_STATUSES.map((item) => <option key={item} value={item}>{applicationStatusLabels[item]}</option>)}
           </select>

@@ -62,7 +62,7 @@ export default function SavedJobsPage() {
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <header className="flex flex-col justify-between gap-5 border-b border-slate-200 pb-6 sm:flex-row sm:items-end">
         <div>
-          <Link to="/jobs" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-blue-700"><ArrowLeft size={16} aria-hidden="true" />Tìm việc làm</Link>
+          <Link to="/jobs" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-[#49BBBD]"><ArrowLeft size={16} aria-hidden="true" />Tìm việc làm</Link>
           <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Việc làm đã lưu</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Tìm lại những cơ hội bạn đang quan tâm và ứng tuyển khi đã sẵn sàng.</p>
         </div>
@@ -77,16 +77,16 @@ export default function SavedJobsPage() {
           <AlertCircle className="mx-auto text-red-600" size={32} aria-hidden="true" />
           <h2 className="mt-4 text-lg font-bold text-slate-950">Không thể tải việc làm đã lưu.</h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{errorMessage}</p>
-          <button type="button" onClick={refetch} className="mt-5 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700">Thử lại</button>
+          <button type="button" onClick={refetch} className="mt-5 rounded-xl bg-[#49BBBD] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80">Thử lại</button>
         </section>
       ) : data?.items.length === 0 && data.total > 0 ? (
-        <div className="mt-6 flex min-h-48 items-center justify-center rounded-2xl bg-white text-sm font-medium text-slate-500 ring-1 ring-slate-200"><Loader2 size={17} className="mr-2 animate-spin text-blue-600" aria-hidden="true" />Đang mở trang trước…</div>
+        <div className="mt-6 flex min-h-48 items-center justify-center rounded-2xl bg-white text-sm font-medium text-slate-500 ring-1 ring-slate-200"><Loader2 size={17} className="mr-2 animate-spin text-[#49BBBD]" aria-hidden="true" />Đang mở trang trước…</div>
       ) : data?.items.length === 0 ? (
         <section className="mt-6 rounded-2xl bg-white px-6 py-16 text-center ring-1 ring-slate-200">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-700"><Bookmark size={27} aria-hidden="true" /></span>
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-[#49BBBD]"><Bookmark size={27} aria-hidden="true" /></span>
           <h2 className="mt-5 text-xl font-bold text-slate-950">Bạn chưa lưu việc làm nào.</h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">Lưu lại những vị trí phù hợp để dễ dàng xem lại và ứng tuyển sau.</p>
-          <Link to="/jobs" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700">Khám phá việc làm <ArrowRight size={16} aria-hidden="true" /></Link>
+          <Link to="/jobs" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#49BBBD] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80">Khám phá việc làm <ArrowRight size={16} aria-hidden="true" /></Link>
         </section>
       ) : data ? (
         <>

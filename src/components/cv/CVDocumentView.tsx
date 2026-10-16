@@ -18,7 +18,7 @@ export default function CVDocumentView({ cv, layoutKey, theme, photoUrl }: Props
   const contacts = [info.email, info.phone, info.address].filter(Boolean)
   const isClassic = layoutKey === 'CLASSIC'
   const isMinimal = layoutKey === 'MINIMAL'
-  const headerClass = isClassic ? 'border-b border-slate-900 pb-5 text-center' : isMinimal ? 'pb-5' : 'border-b-2 border-blue-600 pb-5'
+  const headerClass = isClassic ? 'border-b border-slate-900 pb-5 text-center' : isMinimal ? 'pb-5' : 'border-b-2 border-[#49BBBD] pb-5'
 
   return <>
     <header style={isMinimal ? undefined : { borderColor: theme.primary_color }} className={headerClass}><div className={`flex gap-4 ${isClassic ? 'flex-col items-center' : 'items-start'}`}><Avatar url={info.avatar_url} name={info.full_name} rounded={!isClassic} /><div className={isClassic ? '' : 'min-w-0'}><h1 className="text-2xl font-bold tracking-tight text-slate-950">{info.full_name || 'Họ và tên'}</h1><p className="mt-2 text-xs text-slate-500">{contacts.join(' · ')}</p><div style={{ color: theme.primary_color }} className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs">{[info.linkedin_url, info.github_url, info.portfolio_url].filter(Boolean).map((url) => <span key={url} className="break-all">{url}</span>)}</div></div></div></header>

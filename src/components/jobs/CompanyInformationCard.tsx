@@ -70,7 +70,7 @@ export default function CompanyInformationCard({ company, fallbackName }: Props)
           )}
 
           {website && (
-            <a href={website} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-10 max-w-full items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold text-blue-600 transition-colors duration-150 hover:bg-blue-50 hover:text-blue-700">
+            <a href={website} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-10 max-w-full items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold text-[#49BBBD] transition-colors duration-150 hover:bg-teal-50 hover:text-[#49BBBD]">
               <Globe2 size={16} className="shrink-0" aria-hidden="true" />
               <span className="truncate">{externalUrlLabel(website)}</span>
               <ExternalLink size={14} className="shrink-0" aria-hidden="true" />

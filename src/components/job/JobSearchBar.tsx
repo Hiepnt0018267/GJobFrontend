@@ -21,7 +21,7 @@ export default function JobSearchBar({ keyword, location, onSearch }: JobSearchB
       role="search"
       aria-label="Tìm kiếm việc làm"
     >
-      <div className="flex min-w-0 items-center gap-2.5 rounded-xl bg-slate-50 px-3.5 py-2.5 transition-colors focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/20">
+      <div className="flex min-w-0 items-center gap-2.5 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3.5 py-2.5 transition-all duration-150 focus-within:border-teal-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-500/10">
         <Search size={17} className="shrink-0 text-slate-400" aria-hidden="true" />
         <span className="sr-only">Từ khóa tìm kiếm</span>
         <input
@@ -34,7 +34,7 @@ export default function JobSearchBar({ keyword, location, onSearch }: JobSearchB
           <button
             type="button"
             onClick={() => setDraftKeyword('')}
-            className="btn-press flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 hover:text-slate-700"
+            className="btn-press flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
             aria-label="Xóa từ khóa"
           >
             <X size={12} aria-hidden="true" />
@@ -42,7 +42,7 @@ export default function JobSearchBar({ keyword, location, onSearch }: JobSearchB
         )}
       </div>
 
-      <div className="flex min-w-0 items-center gap-2.5 rounded-xl bg-slate-50 px-3.5 py-2.5 transition-colors focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/20">
+      <div className="flex min-w-0 items-center gap-2.5 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3.5 py-2.5 transition-all duration-150 focus-within:border-teal-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-500/10">
         <MapPin size={17} className="shrink-0 text-slate-400" aria-hidden="true" />
         <span className="sr-only">Địa điểm làm việc</span>
         <input
@@ -55,7 +55,7 @@ export default function JobSearchBar({ keyword, location, onSearch }: JobSearchB
           <button
             type="button"
             onClick={() => setDraftLocation('')}
-            className="btn-press flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 hover:text-slate-700"
+            className="btn-press flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
             aria-label="Xóa địa điểm"
           >
             <X size={12} aria-hidden="true" />
@@ -65,7 +65,7 @@ export default function JobSearchBar({ keyword, location, onSearch }: JobSearchB
 
       <button
         type="submit"
-        className="btn-press inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+        className="btn-press inline-flex items-center justify-center gap-2 rounded-xl bg-[#49BBBD] px-6 py-2.5 text-sm font-bold text-white shadow-sm shadow-[#49BBBD]/25 transition-all duration-200 hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80 hover:shadow-md hover:shadow-[#49BBBD]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] focus-visible:ring-offset-2"
       >
         <Search size={16} aria-hidden="true" />
         Tìm việc

@@ -97,14 +97,14 @@ export default function RecruiterApplicationDetailPage() {
   const actions = application ? availableRecruiterApplicationActions(application.status) : []
   const terminal = application ? terminalMessage(application.status) : null
   const noticeClass = notice?.tone === 'success'
-    ? 'bg-emerald-50 text-emerald-800 ring-emerald-100'
+    ? 'bg-slate-100 text-slate-900 ring-slate-200'
     : notice?.tone === 'warning'
       ? 'bg-amber-50 text-amber-900 ring-amber-200'
       : 'bg-red-50 text-red-700 ring-red-100'
 
   return <div className="min-h-screen bg-slate-50">
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <Link to={returnTo} className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-blue-700"><ArrowLeft size={16} aria-hidden="true" />Quay lại danh sách ứng viên</Link>
+      <Link to={returnTo} className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-[#1C1C1C]"><ArrowLeft size={16} aria-hidden="true" />Quay lại danh sách ứng viên</Link>
 
       {isInitialLoading ? <DetailSkeleton /> : !application && errorMessage ? <section role="alert" className="mt-6 rounded-2xl bg-white px-6 py-14 text-center shadow-sm ring-1 ring-slate-200">
         <AlertCircle className="mx-auto text-red-600" size={34} aria-hidden="true" />
@@ -112,7 +112,7 @@ export default function RecruiterApplicationDetailPage() {
         <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{errorMessage}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link to={returnTo} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Quay lại danh sách</Link>
-          {!isNotFound && <button type="button" onClick={refetch} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"><RefreshCw size={16} aria-hidden="true" />Thử lại</button>}
+          {!isNotFound && <button type="button" onClick={refetch} className="inline-flex items-center gap-2 rounded-xl bg-[#1C1C1C] px-4 py-2.5 text-sm font-semibold text-white hover:bg-black"><RefreshCw size={16} aria-hidden="true" />Thử lại</button>}
         </div>
       </section> : application ? <div className="mt-6 space-y-6">
         <header className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
@@ -121,7 +121,7 @@ export default function RecruiterApplicationDetailPage() {
               <RecruiterApplicationAvatar name={application.candidate.full_name} url={application.candidate.avatar_url} size="lg" />
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-3"><h1 className="break-words text-2xl font-bold tracking-tight text-slate-950">{application.candidate.full_name}</h1><RecruiterApplicationStatusBadge status={application.status} /></div>
-                <p className="mt-2 break-words text-sm font-semibold text-blue-700">{application.job.title}</p>
+                <p className="mt-2 break-words text-sm font-semibold text-slate-600">{application.job.title}</p>
                 <p className="mt-1 text-sm leading-6 text-slate-600">Hồ sơ ứng tuyển và CV hiện tại được liên kết với đơn này.</p>
               </div>
             </div>
@@ -145,25 +145,25 @@ export default function RecruiterApplicationDetailPage() {
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-500"><UserRound size={16} aria-hidden="true" />Ứng viên</div>
               <div className="mt-4 space-y-3 text-sm">
                 <p className="font-bold text-slate-950">{application.candidate.full_name}</p>
-                <a href={`mailto:${application.candidate.email}`} className="flex break-all text-slate-600 hover:text-blue-700"><Mail size={16} className="mr-2 mt-0.5 shrink-0 text-slate-400" aria-hidden="true" />{application.candidate.email}</a>
-                {application.candidate.phone && <a href={`tel:${application.candidate.phone}`} className="flex text-slate-600 hover:text-blue-700"><Phone size={16} className="mr-2 shrink-0 text-slate-400" aria-hidden="true" />{application.candidate.phone}</a>}
+                <a href={`mailto:${application.candidate.email}`} className="flex break-all text-slate-600 hover:text-[#1C1C1C]"><Mail size={16} className="mr-2 mt-0.5 shrink-0 text-slate-400" aria-hidden="true" />{application.candidate.email}</a>
+                {application.candidate.phone && <a href={`tel:${application.candidate.phone}`} className="flex text-slate-600 hover:text-[#1C1C1C]"><Phone size={16} className="mr-2 shrink-0 text-slate-400" aria-hidden="true" />{application.candidate.phone}</a>}
               </div>
             </article>
 
             <article className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-500"><BriefcaseBusiness size={16} aria-hidden="true" />Công việc</div>
-              <Link to={`/recruiter/jobs/${application.job_id}`} className="mt-4 block break-words text-lg font-bold text-slate-950 hover:text-blue-700">{application.job.title}</Link>
+              <Link to={`/recruiter/jobs/${application.job_id}`} className="mt-4 block break-words text-lg font-bold text-slate-950 hover:text-[#1C1C1C]">{application.job.title}</Link>
               <p className="mt-1 break-words text-sm text-slate-600">{application.job.company_name}</p>
               <div className="mt-4 space-y-2 text-sm text-slate-600"><JobStatusBadge status={application.job.status} /><p className="flex items-center gap-1.5"><MapPin size={15} className="text-slate-400" aria-hidden="true" />{application.job.location || 'Chưa cập nhật địa điểm'}</p><p>{workModeLabel(application.job.work_mode)}</p></div>
-              <Link to={`/recruiter/jobs/${application.job_id}`} className="mt-5 inline-flex text-sm font-semibold text-blue-700 hover:text-blue-900">Xem tin tuyển dụng</Link>
+              <Link to={`/recruiter/jobs/${application.job_id}`} className="mt-5 inline-flex text-sm font-semibold text-[#1C1C1C] hover:underline">Xem tin tuyển dụng</Link>
             </article>
 
             <article className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
               <h2 className="text-base font-bold text-slate-950">Thao tác tuyển dụng</h2>
               {terminal ? <p className="mt-3 text-sm leading-6 text-slate-600">{terminal}</p> : <div className="mt-4 space-y-3">
-                {actions.includes('review') && <button type="button" disabled={busyAction === 'review'} onClick={() => void transition('review')} className="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60">{busyAction === 'review' ? 'Đang cập nhật…' : 'Bắt đầu xem xét'}</button>}
-                {actions.includes('shortlist') && <button type="button" disabled={busyAction === 'shortlist'} onClick={() => void transition('shortlist')} className="w-full rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-700 disabled:cursor-wait disabled:opacity-60">{busyAction === 'shortlist' ? 'Đang cập nhật…' : 'Đưa vào danh sách ngắn'}</button>}
-                {actions.includes('hire') && <button type="button" disabled={busyAction === 'hire'} onClick={() => setDialogAction('hire')} className="w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60">Tuyển ứng viên</button>}
+                {actions.includes('review') && <button type="button" disabled={busyAction === 'review'} onClick={() => void transition('review')} className="w-full rounded-xl bg-[#1C1C1C] px-4 py-2.5 text-sm font-semibold text-white hover:bg-black disabled:cursor-wait disabled:opacity-60">{busyAction === 'review' ? 'Đang cập nhật…' : 'Bắt đầu xem xét'}</button>}
+                {actions.includes('shortlist') && <button type="button" disabled={busyAction === 'shortlist'} onClick={() => void transition('shortlist')} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 disabled:cursor-wait disabled:opacity-60">{busyAction === 'shortlist' ? 'Đang cập nhật…' : 'Đưa vào danh sách ngắn'}</button>}
+                {actions.includes('hire') && <button type="button" disabled={busyAction === 'hire'} onClick={() => setDialogAction('hire')} className="w-full rounded-xl bg-[#1C1C1C] px-4 py-2.5 text-sm font-semibold text-white hover:bg-black disabled:cursor-wait disabled:opacity-60">Tuyển ứng viên</button>}
                 {actions.includes('reject') && <button type="button" disabled={busyAction === 'reject'} onClick={() => setDialogAction('reject')} className="w-full rounded-xl border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-wait disabled:opacity-60">Từ chối</button>}
               </div>}
             </article>

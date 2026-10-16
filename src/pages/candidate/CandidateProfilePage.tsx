@@ -48,7 +48,7 @@ function Initials({ name }: { name: string }) {
   return (
     <div
       className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold shrink-0 select-none"
-      style={{ background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)' }}
+      style={{ background: '#49BBBD' }}
       aria-hidden="true"
     >
       {text}
@@ -103,7 +103,7 @@ export default function CandidateProfilePage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-slate-400 mb-6" aria-label="breadcrumb">
-          <Link to="/" className="hover:text-blue-600 transition-colors">Trang chủ</Link>
+          <Link to="/" className="hover:text-[#49BBBD] transition-colors">Trang chủ</Link>
           <span>/</span>
           <span className="text-slate-600 font-medium">Hồ sơ cá nhân</span>
         </nav>
@@ -114,7 +114,7 @@ export default function CandidateProfilePage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3.5">
                 <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl font-bold text-sm ${
-                  completeness.percent === 100 ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'
+                  completeness.percent === 100 ? 'bg-emerald-50 text-emerald-600' : 'bg-teal-50 text-[#49BBBD]'
                 }`}>
                   {completeness.percent === 100 ? (
                     <Sparkles size={20} className="text-emerald-500" />
@@ -143,7 +143,7 @@ export default function CandidateProfilePage() {
               {completeness.percent < 100 && (
                 <button
                   onClick={() => navigate('/candidate/profile/edit')}
-                  className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50/50 px-3.5 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 hover:text-blue-800"
+                  className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-[#49BBBD]/30 bg-[#49BBBD]/10 px-3.5 py-1.5 text-xs font-semibold text-[#49BBBD] transition hover:bg-[#49BBBD]/15"
                 >
                   <Edit2 size={13} />
                   Hoàn thiện ngay
@@ -158,7 +158,7 @@ export default function CandidateProfilePage() {
                   completeness.percent === 100
                     ? 'bg-emerald-500'
                     : completeness.percent >= 60
-                    ? 'bg-blue-600'
+                    ? 'bg-[#49BBBD]'
                     : 'bg-amber-500'
                 }`}
                 style={{ width: `${completeness.percent}%` }}
@@ -180,7 +180,7 @@ export default function CandidateProfilePage() {
             {!loading && !loadError && profile && (
               <button
                 onClick={() => navigate('/candidate/profile/edit')}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-colors"
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-[#49BBBD] hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80 transition-colors"
               >
                 <Edit2 size={15} />
                 Cập nhật hồ sơ
@@ -288,7 +288,7 @@ export default function CandidateProfilePage() {
                 <div className="mt-8 sm:hidden">
                   <button
                     onClick={() => navigate('/candidate/profile/edit')}
-                    className="w-full flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-colors"
+                    className="w-full flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#49BBBD] hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80 transition-colors"
                   >
                     <Edit2 size={15} />
                     Cập nhật hồ sơ

@@ -1,7 +1,11 @@
 import { useEffect, useRef, type FormEvent } from 'react'
-import { ArrowRight, BriefcaseBusiness, FilePlus2, Globe, GraduationCap, LayoutDashboard, MapPin, Plus, Search, Sparkles, X } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import {
+  BriefcaseBusiness, Calendar, Globe, GraduationCap, MapPin,
+  Play, Search, Sparkles, Star, Users, X
+} from 'lucide-react'
+import { Link } from 'react-router-dom'
 import type { User } from '../../types/auth'
+import TiltCard from '../motion/TiltCard'
 
 type Props = {
   user: User | null
@@ -23,9 +27,8 @@ const QUICK_FILTERS: QuickFilter[] = [
   { label: 'Thực tập sinh', icon: GraduationCap, to: '/jobs?level=INTERN' },
   { label: 'Chưa cần kinh nghiệm', to: '/jobs?experience_requirement=NO_EXPERIENCE' },
   { label: 'Lương thỏa thuận', to: '/jobs?salary=NEGOTIABLE' },
-  { label: 'Frontend', to: '/jobs?search=Frontend' },
-  { label: 'Backend', to: '/jobs?search=Backend' },
-  { label: 'ReactJS', to: '/jobs?search=ReactJS' },
+  { label: 'Frontend Developer', to: '/jobs?search=Frontend' },
+  { label: 'Backend Engineer', to: '/jobs?search=Backend' },
 ]
 
 export default function PersonalizedHomeHero({
@@ -36,10 +39,9 @@ export default function PersonalizedHomeHero({
   onLocationChange,
   onSearch,
 }: Props) {
-  const navigate = useNavigate()
   const keywordInputRef = useRef<HTMLInputElement>(null)
 
-  // Keyboard shortcut: '/' focuses the search input when not already typing
+  // Keyboard shortcut '/' focuses the search input
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
@@ -55,159 +57,217 @@ export default function PersonalizedHomeHero({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  const actions = !user
-    ? []
-    : user.role === 'RECRUITER'
-      ? [
-          { to: '/recruiter', label: 'Vào Dashboard tuyển dụng', icon: LayoutDashboard, primary: false },
-          { to: '/recruiter/jobs/create', label: 'Đăng tin tuyển dụng', icon: Plus, primary: true },
-        ]
-      : user.role === 'CANDIDATE'
-        ? [
-            { to: '/jobs', label: 'Khám phá việc làm ngay', icon: BriefcaseBusiness, primary: true },
-            { to: '/candidate/cvs/templates', label: 'Tạo CV chuyên nghiệp', icon: FilePlus2, primary: false },
-          ]
-        : [{ to: '/admin', label: 'Trang quản trị', icon: LayoutDashboard, primary: true }]
-
   const greeting =
     user?.role === 'CANDIDATE' || user?.role === 'RECRUITER'
-      ? `Chào mừng trở lại, ${user.full_name || 'bạn'}`
+      ? `Chào mừng trở lại, ${user.full_name || 'bạn'}!`
       : null
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-20 text-white sm:py-28">
-      {/* Ambient lighting meshes */}
-      <div
-        className="pointer-events-none absolute -right-20 -top-32 h-96 w-96 rounded-full bg-blue-600/20 blur-3xl"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute -bottom-36 left-1/4 h-80 w-80 rounded-full bg-indigo-600/15 blur-3xl"
-        aria-hidden="true"
-      />
+    <div className="relative pb-16 sm:pb-20">
+      {/* ── Main Hero Section with Iconic Figma Curved Wave Container ── */}
+      <section
+        className="relative overflow-hidden pt-12 sm:pt-16 pb-24 sm:pb-32 text-white rounded-b-[40px] sm:rounded-b-[64px] lg:rounded-b-[88px] shadow-2xl shadow-teal-900/10"
+        style={{
+          background: 'linear-gradient(135deg, #49BBBD 0%, #49BBBD 50%, #49BBBD 100%)',
+        }}
+      >
+        {/* Subtle decorative background shapes */}
+        <div className="pointer-events-none absolute -top-32 -left-32 w-96 h-96 rounded-full bg-white/10 blur-3xl" />
+        <div className="pointer-events-none absolute top-1/2 -right-24 w-80 h-80 rounded-full bg-cyan-300/15 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-0 left-1/3 w-64 h-64 rounded-full bg-teal-400/20 blur-2xl" />
 
-      <div className="relative mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-        {greeting && (
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-1.5 text-xs font-semibold text-blue-300 backdrop-blur-sm">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            {greeting}
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+
+            {/* Left Column: Headline, Description & Dual Actions */}
+            <div className="lg:col-span-7 text-left">
+              {greeting ? (
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 border border-white/20 text-white text-xs sm:text-sm font-semibold mb-6 backdrop-blur-md">
+                  <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
+                  {greeting}
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 border border-white/20 text-white text-xs sm:text-sm font-semibold mb-6 backdrop-blur-md">
+                  <Sparkles size={14} className="text-amber-300 fill-amber-300" />
+                  <span>Nền tảng kết nối nhân tài & việc làm AI</span>
+                </div>
+              )}
+
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.15]">
+                Khởi đầu sự nghiệp{' '}
+                <span className="relative inline-block text-amber-300">
+                  mơ ước
+                  <span className="absolute -bottom-1 left-0 right-0 h-1.5 bg-amber-300/40 rounded-full" />
+                </span>{' '}
+                cùng GJob
+              </h1>
+
+              <p className="mt-6 text-base sm:text-lg text-teal-50/90 leading-relaxed max-w-2xl font-normal">
+                Tiếp cận hơn 10,000+ cơ hội nghề nghiệp xác thực từ các doanh nghiệp hàng đầu. Đối chiếu năng lực tự động với AI và ứng tuyển trực tiếp chỉ trong tích tắc.
+              </p>
+
+              {/* Dual Action Buttons (Figma Style) */}
+              <div className="mt-8 sm:mt-10 flex flex-wrap items-center gap-4">
+                <Link
+                  to={user ? (user.role === 'RECRUITER' ? '/recruiter' : '/jobs') : '/jobs'}
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white text-[#49BBBD] hover:bg-teal-50 font-black text-sm sm:text-base shadow-xl hover:shadow-2xl active:scale-95 transition-all duration-200"
+                >
+                  <BriefcaseBusiness size={18} />
+                  <span>{user?.role === 'RECRUITER' ? 'Dashboard tuyển dụng' : 'Khám phá việc làm ngay'}</span>
+                </Link>
+
+                <a
+                  href="#how-it-works"
+                  className="inline-flex items-center gap-3 px-6 py-4 rounded-full bg-white/15 hover:bg-white/25 border border-white/25 text-white font-bold text-sm sm:text-base backdrop-blur-md transition-all duration-200"
+                >
+                  <div className="w-8 h-8 rounded-full bg-white text-[#49BBBD] flex items-center justify-center shadow-md">
+                    <Play size={14} className="fill-[#49BBBD] ml-0.5" />
+                  </div>
+                  <span>Xem cách hoạt động</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Right Column: Hero Visual with 3 Floating Badges (Figma TOTC Style) */}
+            <div className="lg:col-span-5 relative flex justify-center">
+              <div className="relative w-full max-w-md">
+
+                {/* Main Visual Image Container with Squircle Borders and 3D Tilt */}
+                <TiltCard maxTilt={6} glare={true} className="rounded-[40px]">
+                  <div className="relative mx-auto w-72 sm:w-84 lg:w-96 aspect-4/5 rounded-[40px] overflow-hidden border-4 border-white/30 shadow-2xl bg-[#49BBBD]/60">
+                    <img
+                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80"
+                      alt="Ứng viên GJob tự tin kết nối cơ hội"
+                      className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none" />
+                  </div>
+                </TiltCard>
+
+                {/* Floating Badge 1: Top-Left Calendar / Interview Invite with Floating Motion */}
+                <div className="animate-float-1 absolute -top-4 -left-4 sm:-left-8 bg-white text-slate-800 p-3 sm:p-4 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-100 flex items-center gap-3 transition-transform hover:scale-105 hover:shadow-teal-900/10 cursor-default">
+                  <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#49BBBD] flex items-center justify-center font-bold">
+                    <Calendar size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900">Lịch phỏng vấn mới</p>
+                    <p className="text-[11px] text-[#49BBBD] font-semibold">Đã xác nhận • 14:00 Hôm nay</p>
+                  </div>
+                </div>
+
+                {/* Floating Badge 2: Middle-Right Talent Community with Counter Floating Motion */}
+                <div className="animate-float-2 absolute top-1/2 -right-4 sm:-right-8 -translate-y-1/2 bg-white text-slate-800 p-3 sm:p-4 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-100 flex items-center gap-3 transition-transform hover:scale-105 hover:shadow-teal-900/10 cursor-default">
+                  <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#49BBBD] flex items-center justify-center font-bold">
+                    <Users size={20} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-black text-slate-900">250K+ Ứng viên</p>
+                    <p className="text-[11px] text-slate-500 font-medium">Đang tìm việc tích cực</p>
+                  </div>
+                </div>
+
+                {/* Floating Badge 3: Bottom Partner Companies with Gentle Float */}
+                <div className="animate-float-3 absolute -bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md text-slate-800 p-3.5 rounded-2xl sm:rounded-3xl shadow-2xl border border-white/60 flex items-center justify-between gap-3 transition-transform hover:scale-[1.02] cursor-default">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
+                      <Star size={18} className="fill-amber-400 text-amber-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">Top 500+ Doanh nghiệp</p>
+                      <p className="text-[11px] text-slate-500">Tỷ lệ hài lòng 98%</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-black text-[#49BBBD] bg-teal-50 px-2.5 py-1 rounded-full">
+                    Đã xác thực
+                  </span>
+                </div>
+
+              </div>
+            </div>
+
           </div>
-        )}
+        </div>
+      </section>
 
-        <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
-          Kiến tạo cơ hội nghề nghiệp <span className="text-blue-400">bứt phá</span>
-        </h1>
-        <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
-          Tiếp cận hàng nghìn vị trí tuyển dụng xác thực, kết nối trực tiếp với doanh nghiệp hàng đầu và mở ra hành
-          trình sự nghiệp vững chắc.
-        </p>
-
-        {/* Search Bar with 60:40 ratio and clear buttons */}
+      {/* ── Composite Floating Search Bar (Positioned at Hero Junction) ── */}
+      <div className="relative -mt-10 sm:-mt-14 z-30 mx-auto max-w-5xl px-4 sm:px-6">
         <form
           onSubmit={onSearch}
-          className="mx-auto mt-9 flex max-w-3xl flex-col gap-2 rounded-2xl bg-white p-2 shadow-2xl ring-1 ring-slate-900/10 sm:flex-row sm:items-center sm:p-2.5"
+          className="bg-white p-3 sm:p-4 rounded-3xl sm:rounded-full shadow-2xl shadow-slate-900/10 border border-slate-100 flex flex-col sm:flex-row items-center gap-2.5"
           role="search"
           aria-label="Tìm kiếm việc làm"
         >
-          <div className="flex min-w-0 items-center gap-2.5 rounded-xl bg-slate-50 px-3.5 py-3 text-left transition-colors focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/20 sm:flex-[1.4]">
-            <Search size={18} className="shrink-0 text-slate-400" aria-hidden="true" />
-            <span className="sr-only">Từ khóa tìm kiếm</span>
+          {/* Keyword Field */}
+          <div className="flex flex-1 w-full items-center gap-3 px-4 py-2 sm:py-0">
+            <Search size={20} className="text-[#49BBBD] shrink-0" />
             <input
               ref={keywordInputRef}
               type="text"
               value={keyword}
-              onChange={(event) => onKeywordChange(event.target.value)}
+              onChange={(e) => onKeywordChange(e.target.value)}
               placeholder="Vị trí, kỹ năng, công ty..."
-              className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400"
+              className="w-full text-sm sm:text-base font-medium text-slate-900 placeholder:text-slate-400 outline-none bg-transparent"
             />
             {keyword && (
               <button
                 type="button"
                 onClick={() => onKeywordChange('')}
-                className="btn-press flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 hover:text-slate-700"
-                aria-label="Xóa từ khóa"
+                className="text-slate-400 hover:text-slate-600 p-1"
               >
-                <X size={12} aria-hidden="true" />
+                <X size={16} />
               </button>
             )}
-            <kbd className="hidden rounded bg-slate-200/70 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 sm:inline-block">
-              /
-            </kbd>
           </div>
 
-          <div className="flex min-w-0 items-center gap-2.5 rounded-xl bg-slate-50 px-3.5 py-3 text-left transition-colors focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/20 sm:flex-1">
-            <MapPin size={18} className="shrink-0 text-slate-400" aria-hidden="true" />
-            <span className="sr-only">Địa điểm làm việc</span>
+          {/* Divider */}
+          <div className="hidden sm:block w-px h-8 bg-slate-200" />
+
+          {/* Location Field */}
+          <div className="flex flex-1 w-full items-center gap-3 px-4 py-2 sm:py-0">
+            <MapPin size={20} className="text-[#49BBBD] shrink-0" />
             <input
               type="text"
               value={location}
-              onChange={(event) => onLocationChange(event.target.value)}
-              placeholder="Hà Nội, TP.HCM..."
-              className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400"
+              onChange={(e) => onLocationChange(e.target.value)}
+              placeholder="Địa điểm (Hà Nội, TP.HCM, Remote...)"
+              className="w-full text-sm sm:text-base font-medium text-slate-900 placeholder:text-slate-400 outline-none bg-transparent"
             />
             {location && (
               <button
                 type="button"
                 onClick={() => onLocationChange('')}
-                className="btn-press flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 hover:text-slate-700"
-                aria-label="Xóa địa điểm"
+                className="text-slate-400 hover:text-slate-600 p-1"
               >
-                <X size={12} aria-hidden="true" />
+                <X size={16} />
               </button>
             )}
           </div>
 
+          {/* Search Button (Figma Pill) */}
           <button
             type="submit"
-            className="btn-press inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-bold text-white shadow-md shadow-blue-600/25 transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-[#49BBBD] hover:bg-[#49BBBD]/90 active:scale-95 text-white font-bold text-sm sm:text-base shadow-md shadow-[#49BBBD]/30 transition-all shrink-0 cursor-pointer"
           >
-            <Search size={16} />
-            Tìm việc
+            <Search size={18} />
+            <span>Tìm việc</span>
           </button>
         </form>
 
-        {/* Real Quick Filter Pills mapping to active query parameters */}
-        {!user ? (
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-300">
-            <span className="inline-flex items-center gap-1 font-semibold text-slate-400">
-              <Sparkles size={13} className="text-amber-400" aria-hidden="true" />
-              Lọc nhanh:
-            </span>
-            {QUICK_FILTERS.map((filter) => {
-              const Icon = filter.icon
-              return (
-                <button
-                  key={filter.label}
-                  type="button"
-                  onClick={() => navigate(filter.to)}
-                  className="btn-press inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 font-medium text-slate-200 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                >
-                  {Icon && <Icon size={12} className="text-blue-400" aria-hidden="true" />}
-                  {filter.label}
-                </button>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
-            {actions.map(({ to, label, icon: Icon, primary }) => (
-              <Link
-                key={to}
-                to={to}
-                className={`btn-press inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${
-                  primary
-                    ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-600/30'
-                    : 'border border-slate-700 bg-slate-800/80 text-slate-200 hover:bg-slate-700 hover:text-white'
-                }`}
-              >
-                <Icon size={17} />
-                {label}
-                {primary && <ArrowRight size={16} />}
-              </Link>
-            ))}
-          </div>
-        )}
+        {/* Quick Filter Tag Chips Underneath */}
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
+          <span className="text-slate-500 font-semibold mr-1">Tìm kiếm phổ biến:</span>
+          {QUICK_FILTERS.map((item) => (
+            <Link
+              key={item.label}
+              to={item.to}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-teal-50 border border-slate-200/80 hover:border-teal-300 text-slate-700 hover:text-[#49BBBD] font-medium transition-all shadow-xs"
+            >
+              {item.icon && <item.icon size={13} className="text-[#49BBBD]" />}
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
-    </section>
+    </div>
   )
 }

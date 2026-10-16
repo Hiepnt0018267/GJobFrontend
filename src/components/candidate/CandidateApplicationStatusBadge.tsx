@@ -4,7 +4,7 @@ import { applicationStatusLabels } from '../../utils/applicationDisplay'
 type Props = { status: ApplicationStatus }
 
 const styles: Record<ApplicationStatus, string> = {
-  SUBMITTED: 'bg-blue-50 text-blue-800 ring-blue-200',
+  SUBMITTED: 'bg-teal-50 text-[#49BBBD] ring-teal-200',
   REVIEWING: 'bg-amber-50 text-amber-800 ring-amber-200',
   SHORTLISTED: 'bg-violet-50 text-violet-800 ring-violet-200',
   REJECTED: 'bg-red-50 text-red-800 ring-red-200',

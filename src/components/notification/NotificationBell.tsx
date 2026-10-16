@@ -75,6 +75,7 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
         await notifications.markOne(item)
       } catch (error) {
         if (!isAbortError(error)) toast.error('Chưa thể đánh dấu thông báo đã đọc. Vui lòng thử lại.')
+        return
       }
     }
     if (previousIdentityRef.current !== requestIdentity) return
@@ -101,7 +102,7 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => onOpenChange(!open)}
-        className={`btn-press relative flex h-10 w-10 items-center justify-center rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${open ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200/80 bg-white/75 text-slate-600 hover:border-slate-300 hover:bg-white hover:text-slate-950'}`}
+        className={`btn-press relative flex h-10 w-10 items-center justify-center rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C] focus-visible:ring-offset-2 ${open ? 'border-black/[0.12] bg-black/[0.04] text-[#1C1C1C]' : 'border-slate-200/80 bg-white/75 text-slate-600 hover:border-slate-300 hover:bg-white hover:text-slate-950'}`}
       >
         <Bell size={19} strokeWidth={2} aria-hidden="true" />
         {badge && (
@@ -120,16 +121,16 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
         >
           <header className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3.5">
             <div>
-              <h2 className="text-sm font-extrabold text-slate-950">Thông báo</h2>
+              <h2 className="text-sm font-extrabold text-slate-950 font-[Plus_Jakarta_Sans,sans-serif]">Thông báo</h2>
               <p className="mt-0.5 text-xs text-slate-500">Cập nhật mới nhất dành cho bạn</p>
             </div>
             <button
               type="button"
               disabled={notifications.markAllPending || notifications.unreadCount === 0}
               onClick={() => void handleMarkAll()}
-              className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-blue-700 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-[#1C1C1C] transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              {notifications.markAllPending ? <LoaderCircle size={14} className="animate-spin" aria-hidden="true" /> : <CheckCheck size={14} aria-hidden="true" />}
+              {notifications.markAllPending ? <LoaderCircle size={14} className="animate-spin text-[#1C1C1C]" aria-hidden="true" /> : <CheckCheck size={14} aria-hidden="true" />}
               Đánh dấu tất cả đã đọc
             </button>
           </header>
@@ -143,15 +144,15 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
               <div className="px-5 py-9 text-center" role="alert">
                 <BellOff size={25} className="mx-auto text-slate-400" aria-hidden="true" />
                 <p className="mt-3 text-sm font-bold text-slate-800">Không thể tải thông báo</p>
-                <button type="button" onClick={() => void notifications.refreshPreview()} className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold text-blue-700 hover:bg-blue-50">
+                <button type="button" onClick={() => void notifications.refreshPreview()} className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold text-[#1C1C1C] hover:bg-slate-100">
                   <RefreshCw size={13} aria-hidden="true" /> Thử lại
                 </button>
               </div>
             ) : notifications.previewItems.length === 0 ? (
               <div className="px-5 py-10 text-center">
                 <Bell size={25} className="mx-auto text-slate-300" aria-hidden="true" />
-                <p className="mt-3 text-sm font-bold text-slate-800">Chưa có thông báo</p>
-                <p className="mt-1 text-xs leading-5 text-slate-500">Các cập nhật mới sẽ xuất hiện tại đây.</p>
+                <p className="mt-3 text-sm font-bold text-slate-800">Không còn thông báo chưa đọc</p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">Thông báo đã đọc vẫn được lưu trong trung tâm thông báo.</p>
               </div>
             ) : notifications.previewItems.map((item) => (
               <NotificationItem
@@ -166,7 +167,7 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
           </div>
 
           <footer className="border-t border-slate-100 bg-slate-50/70 p-2">
-            <Link to={centerPath} onClick={() => onOpenChange(false)} className="flex min-h-10 items-center justify-center rounded-xl text-sm font-bold text-blue-700 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
+            <Link to={centerPath} onClick={() => onOpenChange(false)} className="flex min-h-10 items-center justify-center rounded-xl text-sm font-bold text-[#1C1C1C] transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C]">
               Xem tất cả thông báo
             </Link>
           </footer>

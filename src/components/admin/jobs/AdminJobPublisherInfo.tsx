@@ -13,7 +13,7 @@ function CompanyLogo({ name, url }: { name: string; url: string | null }) {
   const initial = name.trim().charAt(0).toUpperCase() || 'C'
 
   return (
-    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-blue-50 text-base font-bold text-blue-700 ring-1 ring-blue-100">
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-black/[0.04] text-base font-bold text-[#1C1C1C] ring-1 ring-black/[0.08]">
       {imageUrl && !imageFailed
         ? <img src={imageUrl} alt={`Logo ${name}`} onError={() => setImageFailed(true)} className="h-full w-full object-cover" />
         : initial}
@@ -54,7 +54,7 @@ export default function AdminJobPublisherInfo({ job }: AdminJobPublisherInfoProp
         <dl className="mt-5 space-y-3.5 text-sm">
           <div className="flex items-start gap-2.5">
             <Globe2 size={16} className="mt-0.5 shrink-0 text-slate-400" aria-hidden="true" />
-            <div className="min-w-0"><dt className="sr-only">Website</dt><dd className="break-all text-slate-700">{website ? <a href={website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-semibold text-blue-700 underline-offset-4 hover:underline">{externalUrlLabel(website)}<ExternalLink size={13} aria-hidden="true" /></a> : <MissingValue />}</dd></div>
+            <div className="min-w-0"><dt className="sr-only">Website</dt><dd className="break-all text-slate-700">{website ? <a href={website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-semibold text-[#1C1C1C] underline-offset-4 hover:underline">{externalUrlLabel(website)}<ExternalLink size={13} aria-hidden="true" /></a> : <MissingValue />}</dd></div>
           </div>
           <div className="flex items-start gap-2.5">
             <MapPin size={16} className="mt-0.5 shrink-0 text-slate-400" aria-hidden="true" />
@@ -82,7 +82,7 @@ export default function AdminJobPublisherInfo({ job }: AdminJobPublisherInfoProp
         {account ? (
           <dl className="mt-4 space-y-3.5 text-sm">
             <div className="flex items-start gap-2.5"><UserRound size={16} className="mt-0.5 shrink-0 text-slate-400" aria-hidden="true" /><div className="min-w-0"><dt className="sr-only">Người phụ trách</dt><dd className="break-words font-semibold text-slate-900">{account.full_name}</dd></div></div>
-            <div className="flex items-start gap-2.5"><Mail size={16} className="mt-0.5 shrink-0 text-slate-400" aria-hidden="true" /><div className="min-w-0"><dt className="sr-only">Email đăng nhập</dt><dd className="break-all"><a href={`mailto:${account.email}`} className="text-blue-700 underline-offset-4 hover:underline">{account.email}</a></dd></div></div>
+            <div className="flex items-start gap-2.5"><Mail size={16} className="mt-0.5 shrink-0 text-slate-400" aria-hidden="true" /><div className="min-w-0"><dt className="sr-only">Email đăng nhập</dt><dd className="break-all"><a href={`mailto:${account.email}`} className="text-[#1C1C1C] underline-offset-4 hover:underline">{account.email}</a></dd></div></div>
             <div className="flex items-start gap-2.5"><Phone size={16} className="mt-0.5 shrink-0 text-slate-400" aria-hidden="true" /><div className="min-w-0"><dt className="sr-only">Số điện thoại</dt><dd className="text-slate-700">{account.phone || <MissingValue />}</dd></div></div>
           </dl>
         ) : (

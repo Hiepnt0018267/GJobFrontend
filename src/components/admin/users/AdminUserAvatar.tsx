@@ -14,7 +14,7 @@ export default function AdminUserAvatar({ name, url, size = 'sm' }: AdminUserAva
   const usableUrl = Boolean(url?.trim()) && !imageFailed
 
   return (
-    <span className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-100 font-bold text-blue-700 ${dimensions}`} aria-label={`Ảnh đại diện của ${name}`}>
+    <span className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-black/[0.04] font-bold text-[#1C1C1C] ring-1 ring-black/10 ${dimensions}`} aria-label={`Ảnh đại diện của ${name}`}>
       {usableUrl ? <img src={url ?? ''} alt="" onError={() => setImageFailed(true)} className="h-full w-full object-cover" /> : initial ? initial : <UserRound size={size === 'lg' ? 25 : 17} aria-hidden="true" />}
     </span>
   )

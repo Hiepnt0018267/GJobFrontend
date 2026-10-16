@@ -8,10 +8,16 @@ import {
   createNotificationClientState,
   notificationStateReducer,
 } from '../utils/notification'
+import {
+  enableNotificationSound,
+  playNotificationSound,
+  shouldPlayNotificationSound,
+} from '../utils/notificationSound'
 import type { NotificationItem } from '../types/notification'
 import { NotificationContext } from './notificationState'
 
 const PREVIEW_PAGE_SIZE = 6
+const NOTIFICATION_REFRESH_INTERVAL_MS = 30_000
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { user, isAuthenticated, loading } = useAuth()
@@ -26,6 +32,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const markAllControllerRef = useRef<AbortController | null>(null)
   const pendingIdsRef = useRef(new Set<string>())
   const markAllPendingRef = useRef(false)
+  const lastUnreadCountRef = useRef<number | null>(null)
 
   const abortAll = useCallback(() => {
     countControllerRef.current?.abort()
@@ -44,6 +51,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     abortAll()
     identityRef.current = identityId
     generationRef.current += 1
+    lastUnreadCountRef.current = null
     dispatch({ type: 'identity/reset', identityId, generation: generationRef.current })
   }, [abortAll, identityId])
 
@@ -64,12 +72,16 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         && identityRef.current === requestIdentity
         && generationRef.current === requestGeneration
       ) {
+        const unreadCount = Math.max(0, response.unread_count)
+        const shouldPlaySound = shouldPlayNotificationSound(lastUnreadCountRef.current, unreadCount)
+        lastUnreadCountRef.current = unreadCount
         dispatch({
           type: 'count/success',
           identityId: requestIdentity,
           generation: requestGeneration,
-          unreadCount: response.unread_count,
+          unreadCount,
         })
+        if (shouldPlaySound) playNotificationSound()
       }
     } catch {
       if (!controller.signal.aborted && identityRef.current === requestIdentity) {
@@ -90,7 +102,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'preview/start', identityId: requestIdentity, generation: requestGeneration })
     try {
       const response = await notificationService.getNotifications(
-        createNotificationListParams({ page: 1, pageSize: PREVIEW_PAGE_SIZE, unreadOnly: false }),
+        createNotificationListParams({ page: 1, pageSize: PREVIEW_PAGE_SIZE, unreadOnly: true }),
         controller.signal,
       )
       if (
@@ -118,6 +130,32 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     if (identityId) void refreshCount()
   }, [dataRefreshVersion, identityId, refreshCount])
 
+  useEffect(() => {
+    if (!identityId) return
+
+    const unlockSound = () => {
+      void enableNotificationSound()
+      window.removeEventListener('pointerdown', unlockSound)
+      window.removeEventListener('keydown', unlockSound)
+    }
+
+    window.addEventListener('pointerdown', unlockSound, { passive: true })
+    window.addEventListener('keydown', unlockSound)
+    return () => {
+      window.removeEventListener('pointerdown', unlockSound)
+      window.removeEventListener('keydown', unlockSound)
+    }
+  }, [identityId])
+
+  useEffect(() => {
+    if (!identityId) return
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === 'visible') void refreshCount()
+    }, NOTIFICATION_REFRESH_INTERVAL_MS)
+    return () => window.clearInterval(intervalId)
+  }, [identityId, refreshCount])
+
   const markOne = useCallback(async (item: NotificationItem): Promise<NotificationItem> => {
     const requestIdentity = identityId
     if (!requestIdentity) throw new Error('Notification identity is unavailable')
@@ -143,6 +181,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           item: updated,
           wasUnread: !item.is_read,
         })
+        if (!item.is_read && lastUnreadCountRef.current !== null) {
+          lastUnreadCountRef.current = Math.max(0, lastUnreadCountRef.current - 1)
+        }
         notifyDataRefresh({ local: false })
         return updated
       }
@@ -174,6 +215,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         && generationRef.current === requestGeneration
       ) {
         dispatch({ type: 'mark-all/success', identityId: requestIdentity, generation: requestGeneration })
+        lastUnreadCountRef.current = 0
         notifyDataRefresh({ local: false })
         return response.updated_count
       }

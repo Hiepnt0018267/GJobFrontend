@@ -21,7 +21,7 @@ type Props = {
     photoVersion?: string | null;
     onPhotoUpdated?: (cv: CV) => void;
 };
-const editClass = 'w-full rounded px-1 py-0.5 text-base outline-none transition hover:bg-blue-50 focus:bg-white focus:ring-2 focus:ring-blue-200';
+const editClass = 'w-full rounded px-1 py-0.5 text-base outline-none transition hover:bg-teal-50 focus:bg-white focus:ring-2 focus:ring-teal-200';
 const removeAt = <T,>(items: T[], index: number) => items.filter((_, current) => current !== index);
 const isHttpUrl = (value: string) => {
     try {
@@ -196,12 +196,12 @@ export default function CVInlineEditor({ initial, currentTemplate, templates, su
     return <div className="min-h-screen bg-slate-100">
     <div className="sticky top-0 z-30 border-b border-slate-200 bg-white">
 <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-4 py-3">
-<button type="button" onClick={onCancel} className="inline-flex items-center gap-1 text-sm font-semibold text-slate-600 hover:text-blue-700">
+<button type="button" onClick={onCancel} className="inline-flex items-center gap-1 text-sm font-semibold text-slate-600 hover:text-[#49BBBD]">
 <ChevronLeft size={16}/>CV của tôi</button>
-<input value={data.title} required maxLength={255} onChange={(event) => patch({ title: event.target.value })} className={`min-w-48 flex-1 rounded border bg-white px-2 py-1 text-sm font-bold outline-none hover:border-slate-200 focus:border-blue-500 ${sectionErrors.TITLE ? 'border-red-400 text-red-950' : 'border-transparent text-slate-900'}`} placeholder="Tên CV" aria-label="Tên CV" aria-invalid={Boolean(sectionErrors.TITLE)}/>
-<label className="text-xs font-semibold text-slate-500">Đổi mẫu<select value={data.template_id} onChange={(event) => patch({ template_id: event.target.value })} className="ml-1 rounded border border-slate-200 bg-white px-1.5 py-1 text-slate-700 outline-none focus:border-blue-500">{availableTemplates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}</select>
+<input value={data.title} required maxLength={255} onChange={(event) => patch({ title: event.target.value })} className={`min-w-48 flex-1 rounded border bg-white px-2 py-1 text-sm font-bold outline-none hover:border-slate-200 focus:border-teal-500 ${sectionErrors.TITLE ? 'border-red-400 text-red-950' : 'border-transparent text-slate-900'}`} placeholder="Tên CV" aria-label="Tên CV" aria-invalid={Boolean(sectionErrors.TITLE)}/>
+<label className="text-xs font-semibold text-slate-500">Đổi mẫu<select value={data.template_id} onChange={(event) => patch({ template_id: event.target.value })} className="ml-1 rounded border border-slate-200 bg-white px-1.5 py-1 text-slate-700 outline-none focus:border-teal-500">{availableTemplates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}</select>
 </label>
-<button type="button" disabled={submitting} onClick={save} className="ml-auto inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
+<button type="button" disabled={submitting} onClick={save} className="ml-auto inline-flex items-center gap-2 rounded-lg bg-[#49BBBD] px-4 py-2 text-sm font-semibold text-white hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80 disabled:opacity-60">
 <Save size={16}/>{submitting ? 'Đang lưu...' : submitLabel}</button>
 </div>{validationError && <p role="alert" className="mx-auto max-w-5xl border-t border-red-100 bg-red-50 px-4 py-2 text-sm text-red-700">Không thể lưu CV. {validationError}</p>}{sectionErrors.TITLE && <p className="mx-auto max-w-5xl px-4 pb-2 text-xs font-medium text-red-600">{sectionErrors.TITLE}</p>}</div>
     <main className="mx-auto max-w-4xl p-4 sm:p-8">
@@ -209,7 +209,7 @@ export default function CVInlineEditor({ initial, currentTemplate, templates, su
 <header style={isMinimal ? undefined : { borderColor: theme.primary_color }} className={`${isMinimal ? '' : isClassic ? 'border-b' : 'border-b-2'} pb-6 ${isClassic ? 'text-center' : ''}`}>
 <div className={`flex gap-5 ${isClassic ? 'flex-col items-center' : 'items-start'}`}>
 <div className="relative shrink-0">
-<button type="button" onClick={() => setAvatarEditorState((current) => !current)} aria-expanded={showAvatarEditor} aria-label="Quản lý ảnh CV" className="group relative block h-28 w-20 overflow-hidden rounded-md border border-slate-300 bg-slate-50 text-slate-500 outline-none ring-offset-2 focus:ring-2 focus:ring-blue-500">{hasAvatar ? <img src={avatarUrl} alt="Ảnh CV" onError={() => setAvatarImageFailed(true)} className="h-full w-full object-cover"/> : <span className="flex h-full flex-col items-center justify-center gap-1 text-[10px] font-bold tracking-wide">
+<button type="button" onClick={() => setAvatarEditorState((current) => !current)} aria-expanded={showAvatarEditor} aria-label="Quản lý ảnh CV" className="group relative block h-28 w-20 overflow-hidden rounded-md border border-slate-300 bg-slate-50 text-slate-500 outline-none ring-offset-2 focus:ring-2 focus:ring-teal-500">{hasAvatar ? <img src={avatarUrl} alt="Ảnh CV" onError={() => setAvatarImageFailed(true)} className="h-full w-full object-cover"/> : <span className="flex h-full flex-col items-center justify-center gap-1 text-[10px] font-bold tracking-wide">
 <Camera size={18}/>
 <span>ẢNH 3×4</span>
 </span>}<span className="absolute inset-x-0 bottom-0 bg-slate-950/75 py-1 text-[10px] font-semibold text-white opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">Đổi ảnh</span>
@@ -217,7 +217,7 @@ export default function CVInlineEditor({ initial, currentTemplate, templates, su
 <p className="text-xs font-medium text-slate-700">Ảnh CV riêng tư</p>
 <p className="mt-1 text-[11px] leading-4 text-slate-500">JPG, PNG hoặc WEBP · tối đa 5 MB.</p>
 <div className="mt-3 flex flex-wrap gap-2">
-<button type="button" disabled={photoUploading} onClick={choosePhoto} className="rounded-md bg-blue-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60">{photoUploading ? 'Đang tải...' : hasAvatar ? 'Thay ảnh' : 'Tải ảnh'}</button>
+<button type="button" disabled={photoUploading} onClick={choosePhoto} className="rounded-md bg-[#49BBBD] px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80 disabled:opacity-60">{photoUploading ? 'Đang tải...' : hasAvatar ? 'Thay ảnh' : 'Tải ảnh'}</button>
 {hasAvatar && <button type="button" disabled={photoUploading} onClick={() => void removePhoto()} className="rounded-md px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60">Xoá ảnh</button>}
 </div>
 </div>}</div>
@@ -239,17 +239,17 @@ export default function CVInlineEditor({ initial, currentTemplate, templates, su
 <input value={item.school_name} maxLength={255} onChange={(event) => updateItem<CVEducationItem>('educations', index, { school_name: event.target.value })} className={`${editClass} font-semibold`} placeholder="Trường học"/>
 <input value={[item.degree, item.field_of_study].filter(Boolean).join(' · ')} onChange={(event) => updateItem<CVEducationItem>('educations', index, { degree: event.target.value })} className={`${editClass} text-sm`} placeholder="Bằng cấp · Chuyên ngành"/>
 </div>)}</div>
-<button type="button" onClick={() => patch({ educations: [...data.educations, { school_name: '', is_current: false }] })} className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-blue-700">
+<button type="button" onClick={() => patch({ educations: [...data.educations, { school_name: '', is_current: false }] })} className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#49BBBD]">
 <Plus size={15}/>Thêm học vấn</button>
 </>)}
       {section('KINH NGHIỆM LÀM VIỆC', <>
 <div className="mt-3 space-y-3">{data.experiences.map((item, index) => <div key={index} className="group relative grid gap-1 rounded p-1 hover:bg-slate-50">
 <div className="absolute right-1 top-1">{removeButton(() => patch({ experiences: removeAt(data.experiences, index) }))}</div>
 <input value={item.position} maxLength={255} onChange={(event) => updateItem<CVExperienceItem>('experiences', index, { position: event.target.value })} className={`${editClass} font-semibold`} placeholder="Vị trí"/>
-<input value={item.company_name} maxLength={255} onChange={(event) => updateItem<CVExperienceItem>('experiences', index, { company_name: event.target.value })} className={`${editClass} text-sm text-blue-700`} placeholder="Công ty"/>
+<input value={item.company_name} maxLength={255} onChange={(event) => updateItem<CVExperienceItem>('experiences', index, { company_name: event.target.value })} className={`${editClass} text-sm text-[#49BBBD]`} placeholder="Công ty"/>
 <textarea value={item.description ?? ''} maxLength={10000} onChange={(event) => updateItem<CVExperienceItem>('experiences', index, { description: event.target.value })} className={`${editClass} min-h-12 resize-y text-sm`} placeholder="Mô tả công việc"/>
 </div>)}</div>
-<button type="button" onClick={() => patch({ experiences: [...data.experiences, { company_name: '', position: '', is_current: false }] })} className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-blue-700">
+<button type="button" onClick={() => patch({ experiences: [...data.experiences, { company_name: '', position: '', is_current: false }] })} className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#49BBBD]">
 <Plus size={15}/>Thêm kinh nghiệm</button>
 </>)}
       {section('KỸ NĂNG', <>
@@ -281,7 +281,7 @@ function InlineItems<T>({ items, label, onAdd, onDelete, render }: {
 <Trash2 size={14}/>
 </button>
 </div>)}</div>
-<button type="button" onClick={onAdd} className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-blue-700">
+<button type="button" onClick={onAdd} className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#49BBBD]">
 <Plus size={15}/>{label}</button>
 </>;
 }

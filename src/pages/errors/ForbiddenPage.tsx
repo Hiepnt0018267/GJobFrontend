@@ -35,8 +35,8 @@ export default function ForbiddenPage() {
             className="
               inline-flex items-center justify-center gap-2
               px-5 py-2.5 rounded-xl text-sm font-medium text-white
-              bg-blue-600 hover:bg-blue-700 transition-colors duration-200
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+              bg-[#49BBBD] hover:bg-[#3CA8AA] active:bg-[#2A8284] transition-colors duration-200
+              focus:outline-none focus:ring-2 focus:ring-[#49BBBD] focus:ring-offset-2
             "
           >
             <Home size={16} />
@@ -51,7 +51,7 @@ export default function ForbiddenPage() {
                 inline-flex items-center justify-center gap-2
                 px-5 py-2.5 rounded-xl text-sm font-medium text-slate-700
                 border border-slate-200 hover:bg-slate-100 transition-colors duration-200
-                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2
               "
             >
               <ArrowLeft size={16} />

@@ -22,16 +22,20 @@ export default function RecruiterSidebar({ collapsed = false, hoverExpanded = fa
         <Link
           to="/recruiter"
           onClick={onNavigate}
-          className={`group flex min-w-0 items-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${expanded ? 'gap-3' : 'justify-center'}`}
-          aria-label="GJob — Tổng quan tuyển dụng"
-          title={compact && !hoverExpanded ? 'GJob — Tổng quan tuyển dụng' : undefined}
+          className={`group flex min-w-0 items-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C] ${expanded ? 'gap-3' : 'justify-center'}`}
+          aria-label="GJob — Trang chủ tuyển dụng"
+          title={compact && !hoverExpanded ? 'GJob' : undefined}
         >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-500/25 transition-transform duration-200 group-hover:scale-105">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#1C1C1C] text-white shadow-xs transition-transform duration-200 group-hover:scale-105">
             <Zap className="h-4.5 w-4.5 fill-white/20 text-white" strokeWidth={2.4} aria-hidden="true" />
           </span>
-          <span className={expanded ? 'min-w-0' : 'sr-only'}>
-            <span className="block text-base font-bold leading-5 tracking-tight text-slate-950 font-[Plus_Jakarta_Sans,sans-serif]">GJob</span>
-            <span className="mt-0.5 block text-xs font-medium text-slate-500">Khu vực nhà tuyển dụng</span>
+          <span className={expanded ? 'min-w-0 leading-tight' : 'sr-only'}>
+            <span className="block text-base font-semibold tracking-tight text-[#1C1C1C] font-[Inter,sans-serif]">
+              GJob
+            </span>
+            <span className="block text-[11px] font-normal text-slate-400 font-[Inter,sans-serif]">
+              Khu nhà tuyển dụng
+            </span>
           </span>
         </Link>
       </div>
@@ -39,30 +43,28 @@ export default function RecruiterSidebar({ collapsed = false, hoverExpanded = fa
         <div className={expanded ? 'space-y-6' : 'space-y-5'}>
           {recruiterNavigationGroups.map((group) => (
             <section key={group.label}>
-              <p className={expanded ? 'px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400' : 'sr-only'}>
+              <p className={expanded ? 'px-3 text-xs font-normal text-slate-400 font-[Inter,sans-serif]' : 'sr-only'}>
                 {group.label}
               </p>
-              <div className={expanded ? 'mt-2 space-y-1' : 'space-y-2'}>
+              <div className={expanded ? 'mt-1.5 space-y-1' : 'space-y-2'}>
                 {group.items.map(({ to, label, icon: Icon, isActive }) => {
                   const active = isActive(pathname)
-                  const activeClass = expanded
-                    ? 'bg-blue-50/80 text-blue-700 font-semibold border-l-2 border-blue-600 pl-[10px]'
-                    : 'bg-blue-50 text-blue-700 font-semibold'
-                  const inactiveClass = 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900'
+                  const activeClass = 'bg-[#1C1C1C]/[0.05] text-[#1C1C1C] font-medium'
+                  const inactiveClass = 'text-slate-600 hover:bg-[#1C1C1C]/[0.025] hover:text-[#1C1C1C]'
 
                   return (
                     <NavLink
                       key={to}
                       to={to}
                       onClick={onNavigate}
-                      className={`group flex h-10 items-center rounded-xl text-sm font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${expanded ? 'gap-3 px-3' : 'justify-center px-0'} ${active ? activeClass : inactiveClass}`}
+                      className={`group flex h-9.5 items-center rounded-xl text-sm transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C] font-[Inter,sans-serif] ${expanded ? 'gap-3 px-3' : 'justify-center px-0'} ${active ? activeClass : inactiveClass}`}
                       aria-current={active ? 'page' : undefined}
                       aria-label={!expanded ? label : undefined}
                       title={!expanded ? label : undefined}
                     >
                       <Icon
                         size={17}
-                        className={active ? 'text-blue-600 shrink-0' : 'text-slate-400 shrink-0 transition-colors group-hover:text-slate-600'}
+                        className={active ? 'text-[#1C1C1C] shrink-0' : 'text-slate-400 shrink-0 transition-colors group-hover:text-slate-600'}
                         aria-hidden="true"
                       />
                       <span className={expanded ? undefined : 'sr-only'}>{label}</span>
@@ -79,7 +81,7 @@ export default function RecruiterSidebar({ collapsed = false, hoverExpanded = fa
           <button
             type="button"
             onClick={onToggleCollapse}
-            className={`flex h-10 w-full items-center rounded-xl text-sm font-semibold text-slate-600 transition-colors duration-150 hover:bg-slate-100/80 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${expanded ? 'gap-3 px-3' : 'justify-center px-0'}`}
+            className={`flex h-10 w-full items-center rounded-xl text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-[#1C1C1C]/[0.03] hover:text-[#1C1C1C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C] ${expanded ? 'gap-3 px-3' : 'justify-center px-0'}`}
             aria-label={compact ? 'Mở rộng thanh điều hướng' : 'Thu gọn thanh điều hướng'}
             title={!expanded ? 'Mở rộng thanh điều hướng' : undefined}
           >

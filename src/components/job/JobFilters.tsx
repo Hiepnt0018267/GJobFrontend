@@ -24,7 +24,7 @@ type Props = {
 }
 
 const selectFieldClass =
-  'w-full appearance-none rounded-xl border border-slate-200/90 bg-white py-2.5 pl-9 pr-8 text-xs font-semibold text-slate-800 shadow-xs outline-none transition-colors hover:border-blue-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100'
+  'w-full appearance-none rounded-xl border border-slate-200/90 bg-white py-2.5 pl-9 pr-8 text-xs font-semibold text-slate-800 shadow-xs outline-none transition-all duration-150 hover:border-[#49BBBD]/70 focus:border-[#49BBBD] focus:ring-4 focus:ring-[#49BBBD]/15'
 
 function Controls({
   values,
@@ -45,7 +45,7 @@ function Controls({
             <button
               type="button"
               onClick={() => update('workMode', '')}
-              className="text-[11px] font-semibold text-blue-600 hover:underline"
+              className="text-[11px] font-semibold text-[#49BBBD] hover:underline"
             >
               Mặc định
             </button>
@@ -57,7 +57,7 @@ function Controls({
             onClick={() => update('workMode', '')}
             className={`btn-press rounded-xl px-2.5 py-2 text-center text-xs font-bold transition-all ${
               values.workMode === ''
-                ? 'bg-blue-600 text-white shadow-xs'
+                ? 'bg-[#49BBBD] text-white shadow-xs'
                 : 'border border-slate-200/80 bg-slate-50/70 text-slate-700 hover:bg-slate-100'
             }`}
           >
@@ -70,7 +70,7 @@ function Controls({
               onClick={() => update('workMode', mode)}
               className={`btn-press rounded-xl px-2.5 py-2 text-center text-xs font-bold transition-all ${
                 values.workMode === mode
-                  ? 'bg-blue-600 text-white shadow-xs'
+                  ? 'bg-[#49BBBD] text-white shadow-xs'
                   : 'border border-slate-200/80 bg-slate-50/70 text-slate-700 hover:bg-slate-100'
               }`}
             >
@@ -239,12 +239,12 @@ export default function JobFilters({ values, onChange, onClear, showSort = true 
       >
         <div className="mb-4 flex items-center justify-between gap-4 border-b border-slate-100 pb-3.5">
           <div className="flex items-center gap-2 text-slate-900">
-            <SlidersHorizontal size={17} className="text-blue-600" aria-hidden="true" />
+            <SlidersHorizontal size={17} className="text-[#49BBBD]" aria-hidden="true" />
             <h2 id={headingId} className="text-sm font-bold tracking-tight">
               Bộ lọc việc làm
             </h2>
             {hasFilters && (
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#49BBBD] text-[10px] font-bold text-white">
                 {activeCount}
               </span>
             )}
@@ -253,7 +253,7 @@ export default function JobFilters({ values, onChange, onClear, showSort = true 
             <button
               type="button"
               onClick={onClear}
-              className="btn-press inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold text-slate-500 transition-colors hover:bg-slate-100 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+              className="btn-press inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#49BBBD] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD]"
             >
               <X size={13} aria-hidden="true" />
               Xóa tất cả
@@ -268,16 +268,16 @@ export default function JobFilters({ values, onChange, onClear, showSort = true 
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className={`btn-press inline-flex min-h-[44px] items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
+          className={`btn-press inline-flex min-h-[44px] items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] ${
             hasFilters
-              ? 'border-blue-300 bg-blue-50 text-blue-700'
+              ? 'border-teal-300 bg-teal-50 text-[#49BBBD]'
               : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50'
           }`}
         >
           <SlidersHorizontal size={16} aria-hidden="true" />
           <span>Bộ lọc</span>
           {hasFilters && (
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#49BBBD] text-xs font-bold text-white">
               {activeCount}
             </span>
           )}
@@ -322,7 +322,7 @@ export default function JobFilters({ values, onChange, onClear, showSort = true 
                 ref={closeButtonRef}
                 type="button"
                 onClick={() => setMobileOpen(false)}
-                className="btn-press flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                className="btn-press flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD]"
                 aria-label="Đóng bộ lọc"
               >
                 <X size={20} aria-hidden="true" />
@@ -345,7 +345,7 @@ export default function JobFilters({ values, onChange, onClear, showSort = true 
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
-                className="btn-press inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700"
+                className="btn-press inline-flex items-center gap-1.5 rounded-xl bg-[#49BBBD] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80"
               >
                 Xem kết quả
               </button>

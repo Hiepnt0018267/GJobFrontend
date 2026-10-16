@@ -45,7 +45,7 @@ function Initials({ name }: { name: string }) {
   return (
     <div
       className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold shrink-0 select-none"
-      style={{ background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)' }}
+      style={{ background: '#49BBBD' }}
       aria-hidden="true"
     >
       {text}
@@ -91,7 +91,7 @@ function inputClass(hasError?: boolean, disabled?: boolean) {
       ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-slate-200'
       : hasError
         ? 'border-red-400 bg-white focus:ring-2 focus:ring-red-400 focus:border-red-400'
-        : 'border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+        : 'border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500',
   ].join(' ')
 }
 
@@ -310,11 +310,11 @@ export default function ProfileForm({ initialData, onCancel, onSuccess }: Profil
           className="
             inline-flex items-center gap-2 px-6 py-2.5
             rounded-xl text-sm font-semibold text-white
-            bg-blue-600 hover:bg-blue-700 active:bg-blue-800
+            bg-[#49BBBD] hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80
             disabled:opacity-50 disabled:cursor-not-allowed
             transition-all duration-200
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-            shadow-sm shadow-blue-600/20
+            focus:outline-none focus:ring-2 focus:ring-[#49BBBD] focus:ring-offset-2
+            shadow-sm shadow-[#49BBBD]/20
           "
         >
           {saving ? (

@@ -16,7 +16,7 @@ type JobCardRecommendation = {
 }
 
 const recommendationTone: Record<JobRecommendationStatus, string> = {
-  ranked: 'bg-indigo-50 text-indigo-700 ring-indigo-200',
+  ranked: 'bg-teal-50 text-[#49BBBD] ring-teal-200',
   pending: 'bg-amber-50 text-amber-800 ring-amber-200',
   unavailable: 'bg-slate-100 text-slate-700 ring-slate-200',
   error: 'bg-rose-50 text-rose-700 ring-rose-200',
@@ -27,6 +27,12 @@ const RecommendationIcon = ({ status }: { status: JobRecommendationStatus }) =>
     : status === 'pending' ? <CircleDashed size={14} aria-hidden="true" />
       : status === 'error' ? <AlertTriangle size={14} aria-hidden="true" />
         : <CircleDashed size={14} aria-hidden="true" />
+
+const recommendationExplanationCopy: Record<Exclude<JobRecommendationStatus, 'ranked'>, string> = {
+  pending: 'Hệ thống đang chuẩn bị dữ liệu xếp hạng nên chưa thể đưa ra lý do phù hợp cho công việc này.',
+  unavailable: 'Công việc này chưa có đủ dữ liệu để đối chiếu với CV đã chọn.',
+  error: 'Hệ thống chưa thể hoàn tất đối chiếu công việc này. Vui lòng tạo lại gợi ý sau.',
+}
 
 export default function JobCard({ job, recommendation, returnTo }: { job: Job; recommendation?: JobCardRecommendation; returnTo?: string }) {
   const { user, isAuthenticated } = useAuth()
@@ -81,7 +87,7 @@ export default function JobCard({ job, recommendation, returnTo }: { job: Job; r
   }
 
   return (
-    <article className="group relative flex h-full flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs transition-[box-shadow,border-color,transform] duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-premium">
+    <article className="group relative flex h-full flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-premium transition-all duration-200 hover:-translate-y-1 hover:border-teal-400/80 hover:shadow-premium-hover">
       <div>
         {recommendation && (
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -94,54 +100,55 @@ export default function JobCard({ job, recommendation, returnTo }: { job: Job; r
             )}
           </div>
         )}
-        {/* Header: Company Avatar + Info + Bookmark */}
+
+        {/* Header: Company Avatar + Title/Company + Quick Bookmark */}
         <div className="flex items-start gap-3.5">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200/80 transition-transform group-hover:scale-105">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xs ring-1 ring-slate-900/5 transition-transform duration-200 group-hover:scale-105">
             {logoUrl && !logoFailed ? (
               <img
                 src={logoUrl}
                 alt={`Logo ${job.company_name}`}
-                className="h-full w-full object-contain p-1"
+                className="h-full w-full object-contain p-1.5"
                 onError={() => setLogoFailed(true)}
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-600 text-sm font-bold text-white">
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#49BBBD] to-[#49BBBD] text-sm font-bold text-white">
                 {companyInitial}
               </div>
             )}
           </div>
 
           <div className="min-w-0 flex-1 pr-9">
-            <h3 className="line-clamp-2 text-base font-bold leading-snug text-slate-900 transition-colors group-hover:text-blue-600">
-              <Link to={`/jobs/${job.id}`} state={returnTo ? { returnTo } : undefined} className="focus:outline-none focus:underline">
+            <h3 className="line-clamp-2 text-base font-bold leading-snug text-slate-950 transition-colors group-hover:text-[#49BBBD] font-[Plus_Jakarta_Sans,sans-serif]">
+              <Link to={`/jobs/${job.id}`} state={returnTo ? { returnTo } : undefined} className="focus-visible:outline-none focus-visible:underline">
                 {job.title}
               </Link>
             </h3>
-            <p className="mt-0.5 truncate text-xs font-semibold text-slate-500">
+            <p className="mt-1 truncate text-xs font-semibold text-slate-500">
               {job.company_name}
             </p>
           </div>
 
-          {/* Quick Bookmark Button with enlarged 40x40px touch area for ergonomics */}
+          {/* Quick Bookmark Button with 40x40px touch area for ergonomics */}
           <button
             type="button"
             onClick={handleToggleSave}
             disabled={saving}
-            className={`btn-press absolute right-3.5 top-3.5 flex h-10 w-10 items-center justify-center rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
+            className={`btn-press absolute right-3.5 top-3.5 flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] ${
               isSaved
-                ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                ? 'bg-teal-50 text-[#49BBBD] ring-1 ring-teal-200/80 hover:bg-teal-100'
                 : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700'
             }`}
             aria-label={isSaved ? 'Bỏ lưu việc làm' : 'Lưu việc làm'}
             title={isSaved ? 'Bỏ lưu việc làm' : 'Lưu việc làm'}
           >
-            {isSaved ? <BookmarkCheck size={18} className="fill-blue-600" /> : <Bookmark size={18} />}
+            {isSaved ? <BookmarkCheck size={17} className="fill-[#49BBBD] text-[#49BBBD]" /> : <Bookmark size={17} />}
           </button>
         </div>
 
-        {/* Salary Highlight Badge */}
+        {/* Salary Highlight Badge + Location */}
         <div className="mt-3.5 flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-600/20">
+          <span className="inline-flex items-center gap-1.5 rounded-lg bg-teal-50 px-2.5 py-1 text-xs font-bold tabular-nums text-[#49BBBD] ring-1 ring-[#49BBBD]/30">
             <Wallet size={13} aria-hidden="true" />
             {formatSalary(job)}
           </span>
@@ -157,13 +164,13 @@ export default function JobCard({ job, recommendation, returnTo }: { job: Job; r
           <span className="truncate">{industryLabel(job.industry)}</span>
         </div>
 
-        {/* Tags */}
+        {/* Metadata Tags */}
         {tags.length > 0 && (
           <div className="mt-3.5 flex flex-wrap gap-1.5">
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-md bg-blue-50/80 px-2 py-0.5 text-[11px] font-semibold text-blue-700 ring-1 ring-blue-700/10"
+                className="rounded-lg border border-slate-200/70 bg-slate-50/80 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700"
               >
                 {tag}
               </span>
@@ -171,53 +178,64 @@ export default function JobCard({ job, recommendation, returnTo }: { job: Job; r
           </div>
         )}
 
-        {/* Skills */}
+        {/* Skills Pills */}
         {job.skills && job.skills.length > 0 && (
           <div className="mt-2.5 flex flex-wrap gap-1.5">
             {job.skills.slice(0, 3).map((skill) => (
               <span
                 key={skill}
-                className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600"
+                className="rounded-lg bg-slate-100/80 px-2.5 py-0.5 text-[11px] font-medium text-slate-600 transition-colors group-hover:bg-teal-50/60 group-hover:text-[#49BBBD]"
               >
                 {skill}
               </span>
             ))}
             {job.skills.length > 3 && (
-              <span className="self-center text-[10px] font-semibold text-slate-400">
+              <span className="self-center px-1 text-[10px] font-bold text-slate-400">
                 +{job.skills.length - 3}
               </span>
             )}
           </div>
         )}
 
-        {recommendation?.status === 'ranked' && recommendation.reasons.length > 0 && (
-          <section className="mt-4 rounded-xl bg-indigo-50/70 px-3.5 py-3 ring-1 ring-indigo-100" aria-label="Lý do gợi ý">
-            <h4 className="text-xs font-bold text-indigo-700">Thông tin liên quan trong CV</h4>
-            <ul className="mt-2 space-y-1.5 text-xs leading-5 text-slate-700">
-              {recommendation.reasons.map((reason, index) => (
-                <li key={`${reason.code}-${reason.message}-${index}`} className="flex items-start gap-2">
-                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-indigo-500" aria-hidden="true" />
-                  <span>{reason.message}</span>
-                </li>
-              ))}
-            </ul>
+        {recommendation?.status === 'ranked' && (
+          <section className="mt-4 rounded-xl bg-teal-50/70 p-3 ring-1 ring-teal-100/90" aria-label="Vì sao công việc này phù hợp">
+            <h4 className="text-xs font-bold text-[#287f81] font-[Plus_Jakarta_Sans,sans-serif]">Vì sao công việc này phù hợp</h4>
+            {recommendation.reasons.length > 0 ? (
+              <ul className="mt-2 space-y-1.5 text-xs leading-5 text-slate-700">
+                {recommendation.reasons.map((reason, index) => (
+                  <li key={`${reason.code}-${reason.message}-${index}`} className="flex items-start gap-2">
+                    <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-teal-500" aria-hidden="true" />
+                    <span>{reason.message}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-xs leading-5 text-slate-600">Hệ thống đã xếp hạng công việc này nhưng chưa cung cấp lý do cụ thể.</p>
+            )}
+          </section>
+        )}
+
+        {recommendation && recommendation.status !== 'ranked' && (
+          <section className="mt-4 rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200/80" aria-label="Trạng thái giải thích gợi ý">
+            <h4 className="text-xs font-bold text-slate-800 font-[Plus_Jakarta_Sans,sans-serif]">Chưa phải kết quả gợi ý</h4>
+            <p className="mt-1.5 text-xs leading-5 text-slate-600">{recommendationExplanationCopy[recommendation.status]}</p>
           </section>
         )}
       </div>
 
-      {/* Footer: Date + View Details */}
+      {/* Footer: Date + View Details CTA */}
       <div className="mt-5 flex items-center justify-between gap-3 border-t border-slate-100 pt-3.5 text-xs text-slate-500">
-        <span className="inline-flex items-center gap-1.5 font-medium">
+        <span className="inline-flex items-center gap-1.5 font-medium tabular-nums text-slate-400">
           <CalendarDays size={13} aria-hidden="true" />
           {postedDate(job.created_at)}
         </span>
         <Link
           to={`/jobs/${job.id}`}
           state={returnTo ? { returnTo } : undefined}
-          className="inline-flex items-center gap-1 font-bold text-blue-600 transition-colors hover:text-blue-700 focus:outline-none focus:underline"
+          className="inline-flex items-center gap-1 font-bold text-[#49BBBD] transition-colors hover:text-[#49BBBD] focus-visible:outline-none focus-visible:underline"
         >
           Xem chi tiết
-          <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+          <ArrowRight size={13} className="transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden="true" />
         </Link>
       </div>
     </article>

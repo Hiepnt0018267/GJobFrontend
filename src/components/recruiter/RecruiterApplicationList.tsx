@@ -15,7 +15,7 @@ export default function RecruiterApplicationList({ applications, returnTo, showR
     <section className="mt-6" aria-label="Danh sách ứng viên">
       <div className="hidden overflow-hidden rounded-2xl bg-white shadow-premium border border-slate-200/80 lg:block">
         <table className="w-full table-fixed text-left">
-          <thead className="border-b border-slate-200/80 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-500 font-[Plus_Jakarta_Sans,sans-serif]">
+          <thead className="border-b border-slate-200/80 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-500">
             <tr>
               <th className="w-[25%] px-5 py-4">Ứng viên</th>
               <th className="w-[24%] px-4 py-4">Công việc</th>
@@ -31,7 +31,7 @@ export default function RecruiterApplicationList({ applications, returnTo, showR
                   <div className="flex min-w-0 items-center gap-3">
                     <RecruiterApplicationAvatar name={application.candidate.full_name} url={application.candidate.avatar_url} />
                     <div className="min-w-0">
-                      <p className="truncate font-semibold text-slate-950 font-[Plus_Jakarta_Sans,sans-serif]">{application.candidate.full_name}</p>
+                      <p className="truncate font-semibold text-slate-950">{application.candidate.full_name}</p>
                       <p className="mt-0.5 truncate text-xs text-slate-500">{application.candidate.email}</p>
                     </div>
                   </div>
@@ -42,8 +42,8 @@ export default function RecruiterApplicationList({ applications, returnTo, showR
                   <p className="mt-0.5 truncate text-xs text-slate-500">{application.job.company_name}</p>
                 </td>
                 <td className="px-4 py-4">
-                  <p className="flex min-w-0 items-center gap-1.5 text-sm font-semibold text-blue-700">
-                    <FileText size={15} className="shrink-0" aria-hidden="true" />
+                  <p className="flex min-w-0 items-center gap-1.5 text-sm font-semibold text-[#1C1C1C]">
+                    <FileText size={15} className="shrink-0 text-slate-400" aria-hidden="true" />
                     <span className="truncate">{application.cv.title}</span>
                   </p>
                   <p className="mt-0.5 truncate text-xs text-slate-500" title={cvMeta(application)}>
@@ -62,7 +62,7 @@ export default function RecruiterApplicationList({ applications, returnTo, showR
                     <Link
                       to={`/recruiter/applications/${application.id}`}
                       state={{ returnTo }}
-                      className="btn-press inline-flex items-center gap-1.5 rounded-xl border border-blue-200/80 bg-blue-50/70 px-3 py-1.5 text-xs font-bold text-blue-700 transition-all hover:bg-blue-600 hover:text-white"
+                      className="btn-press inline-flex items-center gap-1.5 rounded-xl border border-black/[0.08] bg-white px-3 py-1.5 text-xs font-medium text-[#1C1C1C] shadow-2xs transition-all hover:bg-[#1C1C1C] hover:text-white"
                     >
                       Chi tiết <Eye size={13} aria-hidden="true" />
                     </Link>
@@ -79,7 +79,7 @@ export default function RecruiterApplicationList({ applications, returnTo, showR
           <article key={application.id} className="motion-card rounded-2xl bg-white p-5 shadow-premium border border-slate-200/80">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="break-words text-base font-bold text-slate-950 font-[Plus_Jakarta_Sans,sans-serif]">{application.job.title}</p>
+                <p className="break-words text-base font-bold text-slate-950">{application.job.title}</p>
                 <p className="mt-1 break-words text-sm text-slate-600">{application.job.company_name}</p>
               </div>
               <RecruiterApplicationStatusBadge status={application.status} />
@@ -104,7 +104,7 @@ export default function RecruiterApplicationList({ applications, returnTo, showR
               <Link
                 to={`/recruiter/applications/${application.id}`}
                 state={{ returnTo }}
-                className="btn-press inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-blue-200/80 bg-blue-50/70 px-3 py-1.5 text-xs font-bold text-blue-700 transition-all hover:bg-blue-600 hover:text-white"
+                className="btn-press inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-black/[0.08] bg-white px-3 py-1.5 text-xs font-medium text-[#1C1C1C] shadow-2xs transition-all hover:bg-[#1C1C1C] hover:text-white"
               >
                 Chi tiết <ArrowRight size={14} aria-hidden="true" />
               </Link>

@@ -44,7 +44,7 @@ function ConfirmationDialog({ action, isSubmitting, onCancel, onConfirm }: Confi
         <p id="user-status-dialog-description" className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button ref={cancelButtonRef} type="button" onClick={onCancel} disabled={isSubmitting} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60">Hủy</button>
-          <button type="button" onClick={onConfirm} disabled={isSubmitting} className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${isActivate ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'}`}>
+          <button type="button" onClick={onConfirm} disabled={isSubmitting} className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${isActivate ? 'bg-[#1C1C1C] hover:bg-black' : 'bg-red-600 hover:bg-red-700'}`}>
             {isSubmitting && <LoaderCircle size={16} className="animate-spin" aria-hidden="true" />}
             {isSubmitting ? (isActivate ? 'Đang kích hoạt...' : 'Đang vô hiệu hóa...') : (isActivate ? 'Kích hoạt' : 'Vô hiệu hóa')}
           </button>
@@ -92,7 +92,7 @@ export default function AdminUserStatusActions({ user, isCurrentUser, onUpdated,
     <div>
       <p className="text-sm leading-6 text-slate-600">Thay đổi này chỉ cập nhật quyền truy cập tài khoản, không xóa dữ liệu người dùng.</p>
       {error && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-3.5 py-3 text-sm font-medium leading-6 text-red-800 ring-1 ring-red-100">{error}</p>}
-      <button type="button" onClick={() => setPendingAction(action)} disabled={isSubmitting} className={`mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${action === 'activate' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-red-200 bg-white text-red-700 hover:bg-red-50'}`}>
+      <button type="button" onClick={() => setPendingAction(action)} disabled={isSubmitting} className={`mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${action === 'activate' ? 'bg-[#1C1C1C] text-white hover:bg-black' : 'border border-red-200 bg-white text-red-700 hover:bg-red-50'}`}>
         {action === 'activate' ? <CheckCircle2 size={17} aria-hidden="true" /> : <XCircle size={17} aria-hidden="true" />}
         {action === 'activate' ? 'Kích hoạt tài khoản' : 'Vô hiệu hóa tài khoản'}
       </button>

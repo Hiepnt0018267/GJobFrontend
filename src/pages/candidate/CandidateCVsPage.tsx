@@ -101,7 +101,7 @@ export default function CandidateCVsPage() {
             <p className="mt-2 text-sm text-slate-600">Tạo CV trên GJob hoặc tải lên CV PDF/DOCX có sẵn.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link to="/candidate/cvs/templates" className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
+            <Link to="/candidate/cvs/templates" className="inline-flex items-center gap-2 rounded-lg bg-[#49BBBD] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80">
               <FilePlus2 size={16} />Tạo CV
             </Link>
             <button
@@ -144,20 +144,20 @@ export default function CandidateCVsPage() {
 
             {items.length === 0 ? (
               <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
-                <FileText className="mx-auto text-blue-600" size={34} />
+                <FileText className="mx-auto text-[#49BBBD]" size={34} />
                 <h3 className="mt-4 font-bold text-slate-900">Bạn chưa có CV nào.</h3>
                 <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">Bạn có thể tạo CV trực tiếp trên GJob hoặc tải lên CV có sẵn.</p>
               </div>
             ) : (
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 {items.map((item) => (
-                  <article key={item.id} className={`motion-card rounded-2xl bg-white p-5 ${item.is_default ? 'ring-2 ring-blue-200' : 'ring-1 ring-slate-200'}`}>
+                  <article key={item.id} className={`motion-card rounded-2xl bg-white p-5 ${item.is_default ? 'ring-2 ring-teal-200' : 'ring-1 ring-slate-200'}`}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="truncate font-bold text-slate-900">{item.title}</h3>
                           <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">{cvSourceLabel(item)}</span>
-                          {item.is_default && <span className="rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">Mặc định</span>}
+                          {item.is_default && <span className="rounded-full bg-teal-50 px-2 py-1 text-xs font-semibold text-[#49BBBD]">Mặc định</span>}
                           {!isBuilderCV(item) && <span className={`rounded-full px-2 py-1 text-xs font-semibold ${uploadedCVStatus(item).className}`}>{uploadedCVStatus(item).label}</span>}
                         </div>
                         {isBuilderCV(item) ? (
@@ -168,11 +168,11 @@ export default function CandidateCVsPage() {
                           </p>
                         )}
                       </div>
-                      <FileText className="shrink-0 text-blue-600" />
+                      <FileText className="shrink-0 text-[#49BBBD]" />
                     </div>
 
                     <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-                      <Link to={`/candidate/cvs/${item.id}`} className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700">
+                      <Link to={`/candidate/cvs/${item.id}`} className="inline-flex items-center gap-1 rounded-lg bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-[#49BBBD] hover:bg-teal-100">
                         <Eye size={14} />Xem
                       </Link>
                       {isBuilderCV(item) && (
@@ -186,7 +186,7 @@ export default function CandidateCVsPage() {
                         </button>
                       )}
                       {!item.is_default && (
-                        <button disabled={busy === item.id} onClick={() => void setDefault(item.id)} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-blue-700 disabled:opacity-50">
+                        <button disabled={busy === item.id} onClick={() => void setDefault(item.id)} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#49BBBD] hover:bg-teal-50 disabled:opacity-50">
                           <Star size={14} />Đặt mặc định
                         </button>
                       )}

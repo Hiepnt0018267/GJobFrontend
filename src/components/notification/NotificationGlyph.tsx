@@ -10,10 +10,10 @@ import { notificationVisualCategory } from '../../utils/notification'
 
 const categoryStyles = {
   neutral: 'bg-slate-100 text-slate-600',
-  application: 'bg-blue-50 text-blue-700',
-  status: 'bg-violet-50 text-violet-700',
+  application: 'bg-slate-100 text-[#1C1C1C]',
+  status: 'bg-slate-100 text-[#1C1C1C]',
   withdrawn: 'bg-amber-50 text-amber-700',
-  approved: 'bg-emerald-50 text-emerald-700',
+  approved: 'bg-slate-100 text-[#1C1C1C]',
   rejected: 'bg-rose-50 text-rose-700',
 } as const
 
