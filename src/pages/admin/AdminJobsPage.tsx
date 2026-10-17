@@ -28,14 +28,16 @@ export default function AdminJobsPage() {
   const activeFilter = selectedStatus ?? 'ALL'
   const search = currentParams.get('search') ?? ''
   const normalizedSearch = search.trim() || undefined
+  const recruiterId = currentParams.get('recruiter_id') ?? undefined
   const rawPage = Number(currentParams.get('page') ?? '1')
   const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1
-  const requestParams = useMemo(() => ({ status: selectedStatus, search: normalizedSearch, page, page_size: PAGE_SIZE }), [normalizedSearch, page, selectedStatus])
+  const requestParams = useMemo(() => ({ status: selectedStatus, search: normalizedSearch, recruiter_id: recruiterId, page, page_size: PAGE_SIZE }), [normalizedSearch, page, recruiterId, selectedStatus])
   const fetcher = useCallback((signal: AbortSignal) => adminJobService.getAdminJobs(requestParams, signal), [requestParams])
   const { data, error, isFetching, isInitialLoading, refetch } = usePaginatedQuery<AdminJobListResponse>({ queryKey, refreshKey: refreshVersion, fetcher })
   const errorMessage = error ? adminJobErrorMessage(error, 'list') : null
   const listQueryParams = new URLSearchParams({ status: activeFilter, page: String(page) })
   if (normalizedSearch) listQueryParams.set('search', normalizedSearch)
+  if (recruiterId) listQueryParams.set('recruiter_id', recruiterId)
   const listQuery = listQueryParams.toString()
 
   const setFilter = (filter: AdminJobStatusFilter) => { const next = new URLSearchParams(params); next.set('status', filter); next.delete('page'); setParams(next) }

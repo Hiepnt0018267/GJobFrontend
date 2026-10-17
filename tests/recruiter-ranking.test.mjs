@@ -133,11 +133,11 @@ test('global filters do not expose AI sort; job-scoped modal confirmation enable
   assert.equal(ranking.rankingActionQuery(new URLSearchParams(), 'all').get('ranking_mode'), 'all')
 })
 
-test('job-scoped page has explicit action button but does not request AI by default', () => {
+test('job-scoped page waits for authoritative entitlement and does not request AI by default', () => {
   const renderPage = (path) => renderToStaticMarkup(createElement(MemoryRouter, { initialEntries: [path] },
     createElement(Routes, null, createElement(Route, { path: '/recruiter/jobs/:jobId/applications', element: createElement(Page) }),
       createElement(Route, { path: '/recruiter/applications', element: createElement(Page) }))))
-  assert.ok(renderPage('/recruiter/jobs/job/applications').includes('Xếp hạng AI'))
+  assert.ok(renderPage('/recruiter/jobs/job/applications').includes('Đang kiểm tra gói'))
   assert.equal(renderPage('/recruiter/applications').includes('Xếp hạng AI'), false)
   assert.equal(ranking.recruiterRankingQuery(new URLSearchParams(), 10, true).ai, false)
 })

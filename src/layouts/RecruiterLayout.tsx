@@ -9,7 +9,6 @@ import { useSidebarCollapsed } from '../hooks/useSidebarCollapsed'
 export default function RecruiterLayout() {
   const { pathname } = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [accountOpen, setAccountOpen] = useState(false)
   const [notificationOpen, setNotificationOpen] = useState(false)
   const [sidebarHovered, setSidebarHovered] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useSidebarCollapsed('gjob.recruiter.sidebar-collapsed')
@@ -25,9 +24,8 @@ export default function RecruiterLayout() {
     return () => document.removeEventListener('keydown', closeOnEscape)
   }, [])
 
-  const toggleDrawer = () => { setDrawerOpen((open) => !open); setAccountOpen(false); setNotificationOpen(false) }
-  const toggleAccount = () => { setAccountOpen((open) => !open); setDrawerOpen(false); setNotificationOpen(false) }
-  const changeNotificationOpen = (open: boolean) => { setNotificationOpen(open); if (open) { setAccountOpen(false); setDrawerOpen(false) } }
+  const toggleDrawer = () => { setDrawerOpen((open) => !open); setNotificationOpen(false) }
+  const changeNotificationOpen = (open: boolean) => { setNotificationOpen(open); if (open) setDrawerOpen(false) }
 
   return (
     <div className={`min-h-screen bg-white font-recruiter lg:grid lg:transition-[grid-template-columns] lg:duration-[var(--motion-normal)] lg:ease-[var(--ease-gjob)] ${sidebarCollapsed && !sidebarHovered ? 'lg:grid-cols-[4.5rem_minmax(0,1fr)]' : 'lg:grid-cols-[15rem_minmax(0,1fr)]'}`}>
@@ -40,11 +38,8 @@ export default function RecruiterLayout() {
       <div className="min-w-0 flex flex-col">
         <RecruiterTopbar
           drawerOpen={drawerOpen}
-          accountOpen={accountOpen}
           notificationOpen={notificationOpen}
           onToggleDrawer={toggleDrawer}
-          onToggleAccount={toggleAccount}
-          onCloseAccount={() => setAccountOpen(false)}
           onNotificationOpenChange={changeNotificationOpen}
         />
         <div className="min-w-0 flex-1">

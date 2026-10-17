@@ -1,19 +1,16 @@
 import { Menu, Star, X } from 'lucide-react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { getRecruiterPageMeta } from '../../../config/recruiterNavigation'
-import { useAuth } from '../../../hooks/useAuth'
+import { useRecruiterSubscription } from '../../../hooks/useRecruiterSubscription'
+import { planDisplayName } from '../../../utils/subscription'
 import NotificationBell from '../../notification/NotificationBell'
-import RecruiterAccountMenu from './RecruiterAccountMenu'
 
-type Props = { drawerOpen: boolean; accountOpen: boolean; notificationOpen: boolean; onToggleDrawer: () => void; onToggleAccount: () => void; onCloseAccount: () => void; onNotificationOpenChange: (open: boolean) => void }
+type Props = { drawerOpen: boolean; notificationOpen: boolean; onToggleDrawer: () => void; onNotificationOpenChange: (open: boolean) => void }
 
-export default function RecruiterTopbar({ drawerOpen, accountOpen, notificationOpen, onToggleDrawer, onToggleAccount, onCloseAccount, onNotificationOpenChange }: Props) {
+export default function RecruiterTopbar({ drawerOpen, notificationOpen, onToggleDrawer, onNotificationOpenChange }: Props) {
   const { pathname } = useLocation()
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
   const meta = getRecruiterPageMeta(pathname)
-
-  const handleLogout = () => { logout(); onCloseAccount(); navigate('/') }
+  const subscriptionQuery = useRecruiterSubscription()
 
   return (
     <header className="sticky top-0 z-30 h-[68px] border-b border-slate-200/80 bg-white/85 backdrop-blur-xl">
@@ -49,21 +46,22 @@ export default function RecruiterTopbar({ drawerOpen, accountOpen, notificationO
           </nav>
         </div>
 
-        {/* Right: Notifications & Account Menu */}
+        {/* Right: Notifications & current service plan */}
         <div className="flex items-center gap-3 shrink-0">
           <NotificationBell open={notificationOpen} onOpenChange={onNotificationOpenChange} />
-
-          {user && (
-            <RecruiterAccountMenu
-              name={user.full_name}
-              email={user.email}
-              open={accountOpen}
-              onOpen={() => { if (!accountOpen) onToggleAccount() }}
-              onToggle={onToggleAccount}
-              onClose={onCloseAccount}
-              onLogout={handleLogout}
-            />
-          )}
+          {subscriptionQuery.data ? (
+            <Link
+              to="/recruiter/plans"
+              className="hidden max-w-44 items-center gap-1.5 rounded-full bg-[#F7F9FB] px-3 py-1.5 text-xs text-slate-500 ring-1 ring-black/[0.06] transition-colors hover:bg-slate-100 hover:text-slate-700 sm:inline-flex"
+              aria-label={`Gói hiện tại: ${planDisplayName(subscriptionQuery.data.effective_plan)} — Nhấn để quản lý dịch vụ`}
+            >
+              <span className="md:hidden">Gói:</span>
+              <span className="hidden md:inline">Gói hiện tại:</span>
+              <strong className="truncate font-semibold text-[#1C1C1C]">{planDisplayName(subscriptionQuery.data.effective_plan)}</strong>
+            </Link>
+          ) : subscriptionQuery.isFetching ? (
+            <span className="hidden h-7 w-24 animate-pulse rounded-full bg-slate-100 sm:block" aria-label="Đang tải gói hiện tại" />
+          ) : null}
         </div>
       </div>
     </header>

@@ -37,6 +37,7 @@ export type AdminJobListResponse = {
 export type AdminJobListParams = {
   status?: JobStatus
   search?: string
+  recruiter_id?: string
   page?: number
   page_size?: number
 }

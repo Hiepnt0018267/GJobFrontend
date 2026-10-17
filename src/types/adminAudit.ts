@@ -121,6 +121,7 @@ export type AdminAuditApplicationListParams = {
   status?: ApplicationStatus
   job_id?: string
   candidate_id?: string
+  recruiter_id?: string
   page?: number
   page_size?: number
 }

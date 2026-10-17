@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, ClipboardList, FileText, LayoutDashboard, PanelsTopLeft, UsersRound, type LucideIcon } from 'lucide-react'
+import { BriefcaseBusiness, ClipboardList, CreditCard, FileText, LayoutDashboard, PanelsTopLeft, ReceiptText, UsersRound, type LucideIcon } from 'lucide-react'
 
 export type AdminNavigationItem = {
   label: string
@@ -31,6 +31,13 @@ export const adminNavigationGroups: AdminNavigationGroup[] = [
       { label: 'CV ứng viên', to: '/admin/cvs', icon: FileText, isActive: within('/admin/cvs') },
     ],
   },
+  {
+    label: 'Thương mại',
+    items: [
+      { label: 'Gói dịch vụ', to: '/admin/subscription-plans', icon: CreditCard, isActive: within('/admin/subscription-plans') },
+      { label: 'Lịch sử giao dịch', to: '/admin/payments', icon: ReceiptText, isActive: within('/admin/payments') },
+    ],
+  },
   { label: 'Nội dung', items: [{ label: 'Mẫu CV', to: '/admin/cv-templates', icon: PanelsTopLeft, isActive: within('/admin/cv-templates') }] },
 ]
 
@@ -39,6 +46,8 @@ export type AdminPageMeta = { title: string; context: string }
 const pageMeta: Array<{ matches: (pathname: string) => boolean; meta: AdminPageMeta }> = [
   { matches: exact('/admin'), meta: { title: 'Tổng quan hệ thống', context: 'Quản trị GJob' } },
   { matches: exact('/admin/notifications'), meta: { title: 'Thông báo', context: 'Quản trị GJob' } },
+  { matches: exact('/admin/subscription-plans'), meta: { title: 'Quản lý gói dịch vụ', context: 'Thương mại' } },
+  { matches: exact('/admin/payments'), meta: { title: 'Lịch sử giao dịch', context: 'Thương mại' } },
   { matches: exact('/admin/jobs'), meta: { title: 'Tin tuyển dụng', context: 'Tuyển dụng' } },
   { matches: within('/admin/jobs'), meta: { title: 'Chi tiết tin tuyển dụng', context: 'Tuyển dụng' } },
   { matches: exact('/admin/applications'), meta: { title: 'Đơn ứng tuyển', context: 'Tuyển dụng' } },

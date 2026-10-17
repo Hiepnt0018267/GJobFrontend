@@ -3,10 +3,11 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import AdminHeader from '../../components/admin/AdminHeader'
 import AdminUserProfileContent from '../../components/admin/users/AdminUserProfileContent'
+import AdminUserRoleOverviewPanel from '../../components/admin/users/AdminUserRoleOverview'
 import { useAuth } from '../../hooks/useAuth'
 import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 import { adminUserService } from '../../services/adminUserService'
-import type { AdminUserDetail } from '../../types/adminUser'
+import type { AdminUserDetail, AdminUserRoleOverview } from '../../types/adminUser'
 import { adminUserErrorMessage, getApiErrorStatus } from '../../utils/apiError'
 
 function DetailSkeleton() {
@@ -29,6 +30,9 @@ export default function AdminUserDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [notice, setNotice] = useState<string | null>(null)
   const [requestVersion, setRequestVersion] = useState(0)
+  const [overview, setOverview] = useState<AdminUserRoleOverview | null>(null)
+  const [overviewError, setOverviewError] = useState(false)
+  const [overviewLoading, setOverviewLoading] = useState(true)
   const keepVisibleOnNextLoad = useRef(false)
   const returnTo = returnLocation(location.state)
 
@@ -60,6 +64,24 @@ export default function AdminUserDetailPage() {
     return () => { active = false }
   }, [id, refreshVersion, requestVersion])
 
+  useEffect(() => {
+    const controller = new AbortController()
+    Promise.resolve().then(() => {
+      if (controller.signal.aborted) return null
+      setOverviewLoading(true)
+      setOverviewError(false)
+      if (!id) throw new Error('missing-user-id')
+      return adminUserService.getAdminUserOverview(id, controller.signal)
+    }).then((nextOverview) => {
+      if (!controller.signal.aborted && nextOverview) setOverview(nextOverview)
+    }).catch(() => {
+      if (!controller.signal.aborted) setOverviewError(true)
+    }).finally(() => {
+      if (!controller.signal.aborted) setOverviewLoading(false)
+    })
+    return () => controller.abort()
+  }, [id, refreshVersion, requestVersion])
+
   const reload = (keepVisible = false) => {
     keepVisibleOnNextLoad.current = keepVisible
     setRequestVersion((version) => version + 1)
@@ -75,6 +97,6 @@ export default function AdminUserDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white"><AdminHeader /><main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8"><Link to={returnTo} className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-black"><ArrowLeft size={16} aria-hidden="true" />Quay lại danh sách</Link>{isLoading && !user && <div className="mt-6"><DetailSkeleton /></div>}{!isLoading && error && !user && <section role="alert" className="mt-6 rounded-2xl bg-white px-6 py-14 text-center shadow-sm ring-1 ring-slate-200"><AlertCircle className="mx-auto text-red-600" size={34} aria-hidden="true" /><h1 className="mt-4 text-xl font-bold text-slate-950">{isNotFound ? 'Người dùng không còn tồn tại.' : 'Không thể tải thông tin người dùng.'}</h1><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{error}</p><div className="mt-6 flex flex-wrap justify-center gap-3"><Link to={returnTo} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Quay lại danh sách</Link>{!isNotFound && <button type="button" onClick={() => reload()} className="inline-flex items-center gap-2 rounded-xl bg-[#1C1C1C] px-4 py-2.5 text-sm font-semibold text-white hover:bg-black"><RefreshCw size={16} aria-hidden="true" />Thử lại</button>}</div></section>}{user && <div className="mt-6">{notice && <p role="status" className="mb-6 rounded-xl bg-black/[0.04] px-4 py-3 text-sm font-semibold text-[#1C1C1C] ring-1 ring-black/[0.08]">{notice}</p>}<AdminUserProfileContent user={user} isCurrentUser={currentUser?.id === user.id} onUpdated={handleUpdated} onConflict={handleConflict} /></div>}</main></div>
+    <div className="min-h-screen bg-white"><AdminHeader /><main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"><Link to={returnTo} className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-black"><ArrowLeft size={16} aria-hidden="true" />Quay lại danh sách</Link>{isLoading && !user && <div className="mt-6"><DetailSkeleton /></div>}{!isLoading && error && !user && <section role="alert" className="mt-6 rounded-2xl bg-white px-6 py-14 text-center shadow-sm ring-1 ring-slate-200"><AlertCircle className="mx-auto text-red-600" size={34} aria-hidden="true" /><h1 className="mt-4 text-xl font-bold text-slate-950">{isNotFound ? 'Người dùng không còn tồn tại.' : 'Không thể tải thông tin người dùng.'}</h1><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{error}</p><div className="mt-6 flex flex-wrap justify-center gap-3"><Link to={returnTo} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Quay lại danh sách</Link>{!isNotFound && <button type="button" onClick={() => reload()} className="inline-flex items-center gap-2 rounded-xl bg-[#1C1C1C] px-4 py-2.5 text-sm font-semibold text-white hover:bg-black"><RefreshCw size={16} aria-hidden="true" />Thử lại</button>}</div></section>}{user && <div className="mt-6 space-y-8">{notice && <p role="status" className="rounded-xl bg-black/[0.04] px-4 py-3 text-sm font-semibold text-[#1C1C1C] ring-1 ring-black/[0.08]">{notice}</p>}<AdminUserProfileContent user={user} isCurrentUser={currentUser?.id === user.id} onUpdated={handleUpdated} onConflict={handleConflict} />{overviewLoading && !overview && <section aria-label="Đang tải dữ liệu theo vai trò" className="space-y-4"><div className="h-16 animate-pulse rounded-2xl bg-slate-100" /><div className="grid gap-4 sm:grid-cols-3"><div className="h-28 animate-pulse rounded-2xl bg-slate-100" /><div className="h-28 animate-pulse rounded-2xl bg-slate-100" /><div className="h-28 animate-pulse rounded-2xl bg-slate-100" /></div></section>}{overviewError && !overview && <section role="alert" className="rounded-2xl bg-red-50 p-5 text-sm text-red-700 ring-1 ring-red-200"><div className="flex items-center justify-between gap-4"><span>Không thể tải dữ liệu hoạt động theo vai trò.</span><button type="button" onClick={() => reload(true)} className="font-semibold underline">Thử lại</button></div></section>}{overview && <AdminUserRoleOverviewPanel user={user} overview={overview} />}</div>}</main></div>
   )
 }

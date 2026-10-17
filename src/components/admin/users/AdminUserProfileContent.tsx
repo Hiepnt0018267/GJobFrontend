@@ -22,7 +22,7 @@ export default function AdminUserProfileContent({ user, isCurrentUser, onUpdated
       <section className="rounded-2xl bg-slate-900 p-6 text-white shadow-sm sm:p-8">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
           <AdminUserAvatar name={user.full_name} url={user.avatar_url} size="lg" />
-          <div className="min-w-0"><h1 className="break-words text-2xl font-bold tracking-tight sm:text-3xl">{user.full_name}</h1><p className="mt-2 flex items-start gap-2 break-all text-sm text-slate-300"><Mail size={16} className="mt-0.5 shrink-0" aria-hidden="true" />{user.email}</p><div className="mt-4 flex flex-wrap gap-2"><AdminUserRoleBadge role={user.role} /><AdminUserStatusBadge isActive={user.is_active} /></div></div>
+          <div className="min-w-0 flex-1"><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><h1 className="break-words text-2xl font-bold tracking-tight sm:text-3xl">{user.full_name}</h1><div className="flex shrink-0 flex-wrap gap-2"><AdminUserRoleBadge role={user.role} onDark /><AdminUserStatusBadge isActive={user.is_active} /></div></div><p className="mt-2 flex items-start gap-2 break-all text-sm text-slate-300"><Mail size={16} className="mt-0.5 shrink-0" aria-hidden="true" />{user.email}</p></div>
         </div>
         <div className="mt-7 grid gap-3 border-t border-slate-700 pt-6 text-sm text-slate-200 sm:grid-cols-2"><span className="flex items-center gap-2"><CalendarClock size={16} aria-hidden="true" />Tạo {formatJobTimestamp(user.created_at)}</span><span className="flex items-center gap-2"><CalendarClock size={16} aria-hidden="true" />Cập nhật {formatJobTimestamp(user.updated_at)}</span></div>
       </section>

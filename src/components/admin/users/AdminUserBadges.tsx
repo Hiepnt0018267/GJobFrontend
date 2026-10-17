@@ -6,9 +6,10 @@ const roleStyles: Record<AdminUserRole, { label: string; className: string }> = 
   ADMIN: { label: 'Quản trị viên', className: 'bg-slate-900 text-white ring-slate-900' },
 }
 
-export function AdminUserRoleBadge({ role }: { role: AdminUserRole }) {
+export function AdminUserRoleBadge({ role, onDark = false }: { role: AdminUserRole; onDark?: boolean }) {
   const style = roleStyles[role]
-  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${style.className}`}>{style.label}</span>
+  const className = onDark ? 'bg-white/10 text-white ring-white/20' : style.className
+  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${className}`}>{style.label}</span>
 }
 
 export function AdminUserStatusBadge({ isActive }: { isActive: boolean }) {

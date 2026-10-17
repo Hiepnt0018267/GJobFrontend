@@ -21,7 +21,7 @@ export default function NotificationItem({ item, compact = false, pending = fals
             {item.title}
           </span>
           {!item.is_read && (
-            <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#1C1C1C] ring-4 ring-black/10" aria-label="Chưa đọc" />
+            <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#49BBBD] ring-4 ring-[#49BBBD]/15" aria-label="Chưa đọc" />
           )}
         </span>
         <span className={`mt-1 block break-words text-slate-600 ${compact ? 'line-clamp-2 text-xs leading-5' : 'text-sm leading-6'}`}>
@@ -30,13 +30,13 @@ export default function NotificationItem({ item, compact = false, pending = fals
         <span className="mt-2 flex items-center gap-2 text-[11px] font-medium text-slate-400">
           <time dateTime={item.created_at}>{formatNotificationTimestamp(item.created_at)}</time>
           {actionable && <ArrowUpRight size={13} aria-hidden="true" />}
-          {pending && <LoaderCircle size={13} className="animate-spin text-[#1C1C1C]" aria-label="Đang cập nhật" />}
+          {pending && <LoaderCircle size={13} className="animate-spin text-[#49BBBD]" aria-label="Đang cập nhật" />}
         </span>
       </span>
     </>
   )
 
-  const className = `flex w-full items-start gap-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1C1C1C] ${compact ? 'px-4 py-3.5' : 'rounded-2xl px-4 py-4 sm:px-5'} ${item.is_read ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-100/70 hover:bg-slate-100'}`
+  const className = `flex w-full items-start gap-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#49BBBD] ${compact ? 'px-4 py-3.5' : 'rounded-2xl px-4 py-4 sm:px-5'} ${item.is_read ? 'bg-white hover:bg-slate-50/80' : 'bg-[#49BBBD]/6 hover:bg-[#49BBBD]/10'}`
 
   if (onSelect) {
     return (

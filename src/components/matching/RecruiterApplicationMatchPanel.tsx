@@ -1,16 +1,29 @@
 import { AlertCircle, Loader2, ScanSearch } from 'lucide-react'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useMatchRequest } from '../../hooks/useMatchRequest'
 import { matchingService } from '../../services/matchingService'
 import { matchErrorMessage } from '../../utils/matchingError'
+import { isFeatureNotIncludedError } from '../../utils/apiError'
 import MatchResultPanel from './MatchResultPanel'
 
-type Props = { applicationId: string; candidateName: string; jobTitle: string }
+type Props = { applicationId: string; candidateName: string; jobTitle: string; entitled: boolean; entitlementLoading: boolean; onEntitlementDenied: () => void }
 
-export default function RecruiterApplicationMatchPanel({ applicationId, candidateName, jobTitle }: Props) {
+export default function RecruiterApplicationMatchPanel({ applicationId, candidateName, jobTitle, entitled, entitlementLoading, onEntitlementDenied }: Props) {
   const request = useCallback((signal: AbortSignal) => matchingService.matchRecruiterApplication(applicationId, signal), [applicationId])
   const { result, error, isFetching, run } = useMatchRequest(applicationId, request)
   const normalizedError = error ? matchErrorMessage(error, 'recruiter') : null
+  const staleEntitlement = isFeatureNotIncludedError(error, 'DETAILED_CV_JD_MATCH')
+
+  useEffect(() => {
+    if (staleEntitlement) onEntitlementDenied()
+  }, [onEntitlementDenied, staleEntitlement])
+
+  if (entitlementLoading) return <section aria-busy="true" className="h-40 animate-pulse rounded-2xl bg-slate-200" aria-label="Đang kiểm tra quyền đối chiếu CV" />
+
+  if (!entitled || staleEntitlement) return <section aria-labelledby="recruiter-match-title" className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
+    <div className="flex items-start gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500"><ScanSearch size={20} aria-hidden="true" /></span><div><h2 id="recruiter-match-title" className="text-lg font-bold text-slate-950">Đối chiếu CV và công việc</h2><p className="mt-1 text-sm leading-6 text-slate-600">Phân tích chi tiết CV–JD không có trong gói hiện tại của bạn.</p><Link to="/recruiter/plans" className="mt-3 inline-flex text-sm font-semibold text-slate-950 underline underline-offset-4">Xem các gói dịch vụ</Link></div></div>
+  </section>
 
   return <section aria-labelledby="recruiter-match-title" aria-busy={isFetching} className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
     <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">

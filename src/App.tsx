@@ -39,6 +39,9 @@ import RecruiterJobEditPage from './pages/recruiter/RecruiterJobEditPage'
 import RecruiterJobDetailPage from './pages/recruiter/RecruiterJobDetailPage'
 import RecruiterApplicationsPage from './pages/recruiter/RecruiterApplicationsPage'
 import RecruiterApplicationDetailPage from './pages/recruiter/RecruiterApplicationDetailPage'
+import RecruiterPlansPage from './pages/recruiter/RecruiterPlansPage'
+import RecruiterPaymentPage from './pages/recruiter/RecruiterPaymentPage'
+import RecruiterSettingsPage from './pages/recruiter/RecruiterSettingsPage'
 import AdminDashboardPage     from './pages/admin/AdminDashboardPage'
 import AdminJobsPage from './pages/admin/AdminJobsPage'
 import AdminJobDetailPage from './pages/admin/AdminJobDetailPage'
@@ -52,6 +55,8 @@ import AdminApplicationsPage from './pages/admin/AdminApplicationsPage'
 import AdminApplicationDetailPage from './pages/admin/AdminApplicationDetailPage'
 import AdminCandidateCVsPage from './pages/admin/AdminCandidateCVsPage'
 import AdminCandidateCVDetailPage from './pages/admin/AdminCandidateCVDetailPage'
+import AdminSubscriptionPlansPage from './pages/admin/AdminSubscriptionPlansPage'
+import AdminPaymentsPage from './pages/admin/AdminPaymentsPage'
 import NotificationCenterPage from './pages/notifications/NotificationCenterPage'
 
 // Route guards
@@ -139,6 +144,9 @@ function App() {
             <Route path="/recruiter/jobs/:id" element={<RecruiterJobDetailPage />} />
             <Route path="/recruiter/applications" element={<RecruiterApplicationsPage />} />
             <Route path="/recruiter/applications/:id" element={<RecruiterApplicationDetailPage />} />
+            <Route path="/recruiter/settings" element={<RecruiterSettingsPage />} />
+            <Route path="/recruiter/plans" element={<RecruiterPlansPage />} />
+            <Route path="/recruiter/payments/:orderId" element={<RecruiterPaymentPage />} />
             <Route path="/recruiter/notifications" element={<NotificationCenterPage />} />
           </Route>
         </Route>
@@ -159,6 +167,8 @@ function App() {
             <Route path="/admin/applications/:id" element={<AdminApplicationDetailPage />} />
             <Route path="/admin/cvs" element={<AdminCandidateCVsPage />} />
             <Route path="/admin/cvs/:id" element={<AdminCandidateCVDetailPage />} />
+            <Route path="/admin/subscription-plans" element={<AdminSubscriptionPlansPage />} />
+            <Route path="/admin/payments" element={<AdminPaymentsPage />} />
             <Route path="/admin/notifications" element={<NotificationCenterPage />} />
           </Route>
         </Route>

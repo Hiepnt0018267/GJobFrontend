@@ -10,12 +10,14 @@ import RecruiterCVPreviewReadOnly from '../../components/recruiter/RecruiterCVPr
 import JobStatusBadge from '../../components/recruiter/JobStatusBadge'
 import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 import { usePaginatedQuery } from '../../hooks/usePaginatedQuery'
+import { useRecruiterSubscription } from '../../hooks/useRecruiterSubscription'
 import { recruiterApplicationService } from '../../services/recruiterApplicationService'
 import type { RecruiterApplicationDetail } from '../../types/recruiterApplication'
 import { getApiErrorStatus, recruiterApplicationErrorMessage } from '../../utils/apiError'
 import { notifyDataRefresh } from '../../utils/dataRefresh'
 import { availableRecruiterApplicationActions, type RecruiterApplicationAction } from '../../utils/recruiterApplicationDisplay'
 import { formatJobTimestamp, workModeLabel } from '../../utils/jobDisplay'
+import { hasRecruiterFeature } from '../../utils/subscription'
 
 type Notice = { tone: 'success' | 'warning' | 'error'; message: string }
 
@@ -48,6 +50,8 @@ export default function RecruiterApplicationDetailPage() {
   const { id = '' } = useParams()
   const location = useLocation()
   const refreshVersion = useDataRefreshVersion()
+  const subscriptionQuery = useRecruiterSubscription()
+  const refetchSubscription = subscriptionQuery.refetch
   const [dialogAction, setDialogAction] = useState<Extract<RecruiterApplicationAction, 'reject' | 'hire'> | null>(null)
   const [busyAction, setBusyAction] = useState<RecruiterApplicationAction | null>(null)
   const [notice, setNotice] = useState<Notice | null>(null)
@@ -56,6 +60,11 @@ export default function RecruiterApplicationDetailPage() {
   const { data: application, error, isFetching, isInitialLoading, refetch, replaceData } = usePaginatedQuery<RecruiterApplicationDetail>({ queryKey: id, refreshKey: refreshVersion, fetcher })
   const errorMessage = error ? recruiterApplicationErrorMessage(error, 'detail') : null
   const isNotFound = getApiErrorStatus(error) === 404 || error instanceof Error && error.message === 'missing-application-id'
+  const canUseDetailedMatch = hasRecruiterFeature(subscriptionQuery.data, 'DETAILED_CV_JD_MATCH')
+  const handleEntitlementDenied = useCallback(() => {
+    setNotice({ tone: 'warning', message: 'Quyền phân tích CV–JD vừa thay đổi. Tính năng đã được khóa theo gói hiện tại.' })
+    refetchSubscription()
+  }, [refetchSubscription])
 
   const transition = async (action: RecruiterApplicationAction, reportInDialog = false) => {
     if (!application) return
@@ -133,7 +142,7 @@ export default function RecruiterApplicationDetailPage() {
         {notice && <p role="status" className={`motion-error rounded-xl px-4 py-3 text-sm font-medium ring-1 ${noticeClass}`}>{notice.message}</p>}
         <QueryFetchFeedback isFetching={isFetching} errorMessage={errorMessage} onRetry={refetch} />
 
-        <RecruiterApplicationMatchPanel applicationId={application.id} candidateName={application.candidate.full_name} jobTitle={application.job.title} />
+        <RecruiterApplicationMatchPanel applicationId={application.id} candidateName={application.candidate.full_name} jobTitle={application.job.title} entitled={canUseDetailedMatch} entitlementLoading={subscriptionQuery.isInitialLoading} onEntitlementDenied={handleEntitlementDenied} />
 
         <section aria-label="CV và thông tin ứng viên">
           <div className="mb-4"><h2 className="text-xl font-bold text-slate-950">CV ứng viên</h2><p className="mt-1 text-sm text-slate-500">Bản xem chỉ đọc của CV được nộp cùng đơn ứng tuyển.</p></div>

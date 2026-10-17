@@ -26,6 +26,9 @@ export const recruiterNavigationGroups: RecruiterNavigationGroup[] = [
 export type RecruiterPageMeta = { title: string; context: string }
 
 const pageMeta: Array<{ matches: (pathname: string) => boolean; meta: RecruiterPageMeta }> = [
+  { matches: within('/recruiter/settings'), meta: { title: 'Cài đặt', context: 'Tài khoản' } },
+  { matches: within('/recruiter/payments'), meta: { title: 'Thanh toán dịch vụ', context: 'Nhà tuyển dụng' } },
+  { matches: within('/recruiter/plans'), meta: { title: 'Quản lý dịch vụ', context: 'Nhà tuyển dụng' } },
   { matches: exact('/recruiter'), meta: { title: 'Tổng quan', context: 'Khu vực nhà tuyển dụng' } },
   { matches: exact('/recruiter/notifications'), meta: { title: 'Thông báo', context: 'Khu vực nhà tuyển dụng' } },
   { matches: exact('/recruiter/jobs/create'), meta: { title: 'Đăng tin tuyển dụng', context: 'Tuyển dụng' } },

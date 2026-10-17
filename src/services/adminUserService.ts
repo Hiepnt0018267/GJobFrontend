@@ -1,5 +1,5 @@
 import api from './api'
-import type { AdminUserDetail, AdminUserListParams, AdminUserListResponse } from '../types/adminUser'
+import type { AdminUserDetail, AdminUserListParams, AdminUserListResponse, AdminUserRoleOverview } from '../types/adminUser'
 
 const adminUsersPath = '/api/v1/admin/users'
 
@@ -10,6 +10,10 @@ export const adminUserService = {
 
   async getAdminUser(userId: string): Promise<AdminUserDetail> {
     return (await api.get<AdminUserDetail>(`${adminUsersPath}/${userId}`)).data
+  },
+
+  async getAdminUserOverview(userId: string, signal?: AbortSignal): Promise<AdminUserRoleOverview> {
+    return (await api.get<AdminUserRoleOverview>(`${adminUsersPath}/${userId}/overview`, { signal })).data
   },
 
   async activateAdminUser(userId: string): Promise<AdminUserDetail> {

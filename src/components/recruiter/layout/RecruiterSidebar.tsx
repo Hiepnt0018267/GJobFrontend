@@ -1,15 +1,22 @@
 import { PanelLeftClose, PanelLeftOpen, Zap } from 'lucide-react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { recruiterNavigationGroups } from '../../../config/recruiterNavigation'
+import { useAuth } from '../../../hooks/useAuth'
+import RecruiterAccountMenu from './RecruiterAccountMenu'
 
 type Props = { collapsed?: boolean; hoverExpanded?: boolean; onHoverChange?: (hovered: boolean) => void; onNavigate?: () => void; onToggleCollapse?: () => void; mobile?: boolean }
 
 export default function RecruiterSidebar({ collapsed = false, hoverExpanded = false, onHoverChange, onNavigate, onToggleCollapse, mobile = false }: Props) {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const { user, logout } = useAuth()
+  const [accountOpen, setAccountOpen] = useState(false)
   const compact = collapsed && !mobile
   const expanded = !compact || hoverExpanded
   const handleMouseEnter = () => { if (compact) onHoverChange?.(true) }
   const handleMouseLeave = () => { if (compact) onHoverChange?.(false) }
+  const handleLogout = () => { logout(); setAccountOpen(false); onNavigate?.(); navigate('/') }
 
   return (
     <aside
@@ -76,12 +83,26 @@ export default function RecruiterSidebar({ collapsed = false, hoverExpanded = fa
           ))}
         </div>
       </nav>
-      {!mobile && (
-        <div className={`border-t border-slate-200/80 py-3 ${expanded ? 'px-3' : 'px-2'}`}>
+      <div className={`border-t border-slate-200/80 py-3 ${expanded ? 'px-3' : 'px-2'}`}>
+        {user && (
+          <RecruiterAccountMenu
+            name={user.full_name}
+            email={user.email}
+            open={accountOpen}
+            compact={!expanded}
+            idSuffix={mobile ? 'mobile' : 'desktop'}
+            onOpen={() => setAccountOpen(true)}
+            onToggle={() => setAccountOpen((open) => !open)}
+            onClose={() => setAccountOpen(false)}
+            onNavigate={onNavigate}
+            onLogout={handleLogout}
+          />
+        )}
+        {!mobile && (
           <button
             type="button"
             onClick={onToggleCollapse}
-            className={`flex h-10 w-full items-center rounded-xl text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-[#1C1C1C]/[0.03] hover:text-[#1C1C1C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C] ${expanded ? 'gap-3 px-3' : 'justify-center px-0'}`}
+            className={`mt-1 flex h-10 w-full items-center rounded-xl text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-[#1C1C1C]/[0.03] hover:text-[#1C1C1C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C] ${expanded ? 'gap-3 px-3' : 'justify-center px-0'}`}
             aria-label={compact ? 'Mở rộng thanh điều hướng' : 'Thu gọn thanh điều hướng'}
             title={!expanded ? 'Mở rộng thanh điều hướng' : undefined}
           >
@@ -94,8 +115,8 @@ export default function RecruiterSidebar({ collapsed = false, hoverExpanded = fa
               </>
             )}
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </aside>
   )
 }

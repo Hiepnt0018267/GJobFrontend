@@ -49,6 +49,39 @@ export function getApiErrorStatus(error: unknown): number | null {
   return axios.isAxiosError(error) ? (error.response?.status ?? null) : null
 }
 
+export function subscriptionErrorMessage(error: unknown, context: 'list' | 'plan' | 'grant' | 'revoke' | 'self'): string {
+  const status = getApiErrorStatus(error)
+  if (status === null) return 'Không thể kết nối tới máy chủ. Vui lòng thử lại.'
+  if (status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+  if (status === 403) return 'Bạn không có quyền thực hiện thao tác này.'
+  if (status === 404) return context === 'self' ? 'Không tìm thấy thông tin gói của tài khoản.' : 'Gói dịch vụ hoặc nhà tuyển dụng không còn tồn tại.'
+  if (status === 409) {
+    if (context === 'revoke') return 'Gói của nhà tuyển dụng đã thay đổi hoặc đã được thu hồi. Hãy tải lại dữ liệu.'
+    if (context === 'grant') return 'Không thể cấp gói do dữ liệu hiện tại đã thay đổi. Hãy tải lại và thử lại.'
+    return 'Mã gói đã tồn tại hoặc dữ liệu gói đã thay đổi.'
+  }
+  if (status === 422) return 'Thông tin gói dịch vụ chưa hợp lệ. Vui lòng kiểm tra lại.'
+  if (status >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại.'
+  if (context === 'list') return 'Không thể tải dữ liệu quản lý gói dịch vụ.'
+  if (context === 'self') return 'Không thể tải thông tin gói hiện tại.'
+  return 'Không thể hoàn tất thao tác với gói dịch vụ.'
+}
+
+export function paymentErrorMessage(error: unknown, context: 'create' | 'read' | 'cancel'): string {
+  const status = getApiErrorStatus(error)
+  if (status === null) return 'Không thể kết nối tới máy chủ. Vui lòng thử lại.'
+  if (status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+  if (status === 403) return 'Bạn không có quyền sử dụng chức năng thanh toán này.'
+  if (status === 404) return context === 'create' ? 'Gói dịch vụ không còn tồn tại.' : 'Không tìm thấy đơn thanh toán này.'
+  if (status === 409) return context === 'cancel'
+    ? 'Đơn không còn ở trạng thái chờ nên không thể hủy.'
+    : 'Gói hiện tại hoặc đơn thanh toán đã thay đổi. Vui lòng tải lại và thử lại.'
+  if (status === 422) return 'Gói này hiện không thể đăng ký trực tuyến.'
+  if (status === 503) return 'Kênh thanh toán chưa được cấu hình. Vui lòng liên hệ quản trị viên.'
+  if (status >= 500) return 'Hệ thống thanh toán đang gặp sự cố. Vui lòng thử lại sau.'
+  return 'Không thể hoàn tất yêu cầu thanh toán.'
+}
+
 function getApiErrorDetail(error: unknown): string {
   if (!axios.isAxiosError(error) || !error.response?.data || typeof error.response.data !== 'object') return ''
   const detail = 'detail' in error.response.data ? error.response.data.detail : ''
@@ -57,11 +90,18 @@ function getApiErrorDetail(error: unknown): string {
   return ''
 }
 
-function getApiErrorCode(error: unknown): string {
+export function getApiErrorCode(error: unknown): string {
   if (!axios.isAxiosError(error) || !error.response?.data || typeof error.response.data !== 'object') return ''
   const detail = 'detail' in error.response.data ? error.response.data.detail : null
   if (!detail || typeof detail !== 'object' || !('code' in detail)) return ''
   return typeof detail.code === 'string' ? detail.code : ''
+}
+
+export function isFeatureNotIncludedError(error: unknown, feature: string): boolean {
+  if (getApiErrorStatus(error) !== 403 || getApiErrorCode(error) !== 'FEATURE_NOT_INCLUDED') return false
+  if (!axios.isAxiosError(error) || !error.response?.data || typeof error.response.data !== 'object') return false
+  const detail = 'detail' in error.response.data ? error.response.data.detail : null
+  return Boolean(detail && typeof detail === 'object' && 'feature' in detail && detail.feature === feature)
 }
 
 export function adminJobErrorMessage(error: unknown, context: 'list' | 'detail' | 'action'): string {

@@ -1,11 +1,13 @@
-import { Building2, ChevronDown, House, LogOut } from 'lucide-react'
+import { ChevronDown, House, LogOut, Settings } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 
-type Props = { name: string; email: string; open: boolean; onOpen: () => void; onToggle: () => void; onClose: () => void; onLogout: () => void }
+type Props = { name: string; email: string; open: boolean; compact?: boolean; idSuffix?: string; onOpen: () => void; onToggle: () => void; onClose: () => void; onNavigate?: () => void; onLogout: () => void }
 
-export default function RecruiterAccountMenu({ name, email, open, onOpen, onToggle, onClose, onLogout }: Props) {
+export default function RecruiterAccountMenu({ name, email, open, compact = false, idSuffix = 'desktop', onOpen, onToggle, onClose, onNavigate, onLogout }: Props) {
   const rootRef = useRef<HTMLDivElement>(null)
+  const triggerId = `recruiter-account-trigger-${idSuffix}`
+  const menuId = `recruiter-account-menu-${idSuffix}`
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => { if (rootRef.current && !rootRef.current.contains(event.target as Node)) onClose() }
@@ -16,31 +18,32 @@ export default function RecruiterAccountMenu({ name, email, open, onOpen, onTogg
   }, [onClose])
 
   return (
-    <div ref={rootRef} className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
+    <div ref={rootRef} className="relative w-full" onMouseEnter={onOpen} onMouseLeave={onClose}>
       <button
-        id="recruiter-account-trigger"
+        id={triggerId}
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        aria-controls="recruiter-account-menu"
-        className="flex items-center gap-2.5 rounded-xl border border-transparent px-3 py-1.5 transition-colors duration-150 hover:border-slate-200/80 hover:bg-slate-100/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C]"
+        aria-controls={menuId}
+        className={`flex min-h-12 w-full items-center rounded-xl border border-transparent transition-colors duration-150 hover:border-slate-200/80 hover:bg-slate-100/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C] ${compact ? 'justify-center px-0' : 'gap-2.5 px-2.5'}`}
+        title={compact ? name : undefined}
       >
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1C1C1C] text-xs font-bold text-white shadow-2xs" aria-hidden="true">
           {name.charAt(0).toUpperCase()}
         </span>
-        <span className="hidden text-left sm:block">
+        <span className={compact ? 'sr-only' : 'min-w-0 flex-1 text-left'}>
           <span className="block max-w-[120px] truncate text-sm font-semibold leading-tight text-slate-900">{name}</span>
           <span className="mt-0.5 inline-block rounded-full bg-black/[0.04] px-2 py-0.5 text-[10px] font-medium text-slate-600 ring-1 ring-inset ring-black/[0.06]">Nhà tuyển dụng</span>
         </span>
-        <ChevronDown size={15} className={open ? 'rotate-180 text-[#1C1C1C] transition-transform duration-200' : 'text-slate-400 transition-transform duration-200'} aria-hidden="true" />
+        {!compact && <ChevronDown size={15} className={open ? 'rotate-180 text-[#1C1C1C] transition-transform duration-200' : 'text-slate-400 transition-transform duration-200'} aria-hidden="true" />}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-40 w-72 pt-2">
+        <div className={`absolute z-40 w-72 ${compact ? 'bottom-0 left-full pl-2' : 'bottom-full left-0 pb-2'}`}>
           <div
-            id="recruiter-account-menu"
+            id={menuId}
             role="menu"
-            aria-labelledby="recruiter-account-trigger"
+            aria-labelledby={triggerId}
             className="motion-dropdown overflow-hidden rounded-2xl bg-white py-1.5 shadow-premium border border-slate-200/80 font-[Inter,sans-serif]"
           >
             <div className="border-b border-slate-100 bg-slate-50/50 px-4 py-3">
@@ -49,18 +52,18 @@ export default function RecruiterAccountMenu({ name, email, open, onOpen, onTogg
             </div>
             <div className="p-1.5 space-y-0.5">
               <Link
-                to="/recruiter/profile"
+                to="/recruiter/settings"
                 role="menuitem"
-                onClick={onClose}
+                onClick={() => { onClose(); onNavigate?.() }}
                 className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100/80 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1C1C1C]"
               >
-                <Building2 size={16} className="text-slate-400" aria-hidden="true" />
-                Hồ sơ công ty
+                <Settings size={16} className="text-slate-400" aria-hidden="true" />
+                Cài đặt
               </Link>
               <Link
                 to="/"
                 role="menuitem"
-                onClick={onClose}
+                onClick={() => { onClose(); onNavigate?.() }}
                 className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100/80 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1C1C1C]"
               >
                 <House size={16} className="text-slate-400" aria-hidden="true" />

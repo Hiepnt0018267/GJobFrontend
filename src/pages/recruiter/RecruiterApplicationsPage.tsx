@@ -8,11 +8,13 @@ import RecruiterRankingResults from '../../components/recruiter/RecruiterRanking
 import QueryFetchFeedback from '../../components/feedback/QueryFetchFeedback'
 import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 import { usePaginatedQuery } from '../../hooks/usePaginatedQuery'
+import { useRecruiterSubscription } from '../../hooks/useRecruiterSubscription'
 import { recruiterApplicationService } from '../../services/recruiterApplicationService'
 import { recruiterJobService } from '../../services/recruiterJobService'
 import type { RecruiterJob, RecruiterJobListResponse } from '../../types/job'
 import type { ApplicantRankingMode, RecruiterApplicationListResponse } from '../../types/recruiterApplication'
-import { getApiErrorStatus, recruiterApplicationErrorMessage, recruiterJobErrorMessage } from '../../utils/apiError'
+import { getApiErrorStatus, isFeatureNotIncludedError, recruiterApplicationErrorMessage, recruiterJobErrorMessage } from '../../utils/apiError'
+import { hasRecruiterFeature } from '../../utils/subscription'
 import { rankingActionQuery, recruiterListScopeQuery, recruiterRankingQuery, updateRecruiterListQuery } from '../../utils/recruiterRanking'
 
 const PAGE_SIZE = 10
@@ -27,15 +29,29 @@ export default function RecruiterApplicationsPage() {
   const { jobId } = useParams<{ jobId: string }>()
   const isJobScoped = Boolean(jobId)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [entitlementNotice, setEntitlementNotice] = useState<string | null>(null)
   const closeDialog = useCallback(() => setDialogOpen(false), [])
   const [params, setParams] = useSearchParams()
   const refreshVersion = useDataRefreshVersion()
+  const subscriptionQuery = useRecruiterSubscription()
+  const refetchSubscription = subscriptionQuery.refetch
   const queryKey = params.toString()
   const currentParams = useMemo(() => new URLSearchParams(queryKey), [queryKey])
   const search = currentParams.get('search') ?? ''
   const normalizedSearch = search.trim() || undefined
   const rankingQuery = useMemo(() => recruiterRankingQuery(currentParams, PAGE_SIZE, isJobScoped), [currentParams, isJobScoped])
-  const { ai: showRanking, page, request: requestParams } = rankingQuery
+  const canUseRanking = hasRecruiterFeature(subscriptionQuery.data, 'AI_CANDIDATE_RANKING')
+  const { ai: rankingRequested, page, request: requestedParams } = rankingQuery
+  const showRanking = rankingRequested && canUseRanking
+  const requestParams = useMemo(() => {
+    if (!rankingRequested || canUseRanking) return requestedParams
+    const normal = { ...requestedParams }
+    delete normal.sort
+    delete normal.ranking_mode
+    delete normal.top_n
+    delete normal.ranking_snapshot
+    return normal
+  }, [canUseRanking, rankingRequested, requestedParams])
   const status = requestParams.status
   const statusFilter: RecruiterApplicationStatusFilter = status ?? 'ALL'
   const selectedJobId = currentParams.get('job_id') ?? undefined
@@ -86,6 +102,25 @@ export default function RecruiterApplicationsPage() {
       ? updateRecruiterListQuery(current, {}, true)
       : recruiterListScopeQuery(current, false), { replace: true })
   }, [isJobScoped, rankingQuery.needsReset, setParams])
+
+  useEffect(() => {
+    if (!rankingRequested || !subscriptionQuery.data || canUseRanking) return
+    const frame = requestAnimationFrame(() => {
+      setEntitlementNotice('Xếp hạng ứng viên bằng AI không có trong gói hiện tại của bạn.')
+      setParams((current) => recruiterListScopeQuery(current, false), { replace: true })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [canUseRanking, rankingRequested, setParams, subscriptionQuery.data])
+
+  useEffect(() => {
+    if (!isFeatureNotIncludedError(error, 'AI_CANDIDATE_RANKING')) return
+    const frame = requestAnimationFrame(() => {
+      setEntitlementNotice('Quyền xếp hạng AI vừa thay đổi. Danh sách thường đã được khôi phục.')
+      refetchSubscription()
+      setParams((current) => recruiterListScopeQuery(current, false), { replace: true })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [error, refetchSubscription, setParams])
 
   useEffect(() => {
     const token = result?.response.ranking_snapshot
@@ -140,7 +175,7 @@ export default function RecruiterApplicationsPage() {
               <span className="font-semibold tabular-nums text-[#1C1C1C]">{data.total.toLocaleString('vi-VN')}</span> ứng viên trong kết quả
             </p>
           )}
-          {isJobScoped && (
+          {isJobScoped && (canUseRanking ? (
             <button
               type="button"
               onClick={() => setDialogOpen(true)}
@@ -150,9 +185,16 @@ export default function RecruiterApplicationsPage() {
             >
               Xếp hạng AI
             </button>
+          ) : subscriptionQuery.isFetching ? (
+            <button type="button" disabled className="rounded-xl bg-slate-200 px-4 py-2 text-xs font-semibold text-slate-500 sm:text-sm">Đang kiểm tra gói…</button>
+          ) : (
+            <Link to="/recruiter/plans" className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 sm:text-sm">Mở khóa xếp hạng AI</Link>
+          )
           )}
         </div>
       </header>
+
+      {entitlementNotice && <p role="status" className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-200">{entitlementNotice} <Link to="/recruiter/plans" className="font-semibold underline">Xem các gói</Link></p>}
 
       <RecruiterApplicationFilters search={search} status={statusFilter} jobId={selectedJobId} jobs={jobOptions?.items ?? []} jobsLoading={!isJobScoped && isJobsLoading} showJobFilter={!isJobScoped} onSearchChange={setSearch} onStatusChange={setStatus} onJobChange={setJob} />
       {showRanking && (
