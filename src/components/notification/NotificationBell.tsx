@@ -66,6 +66,16 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
 
   if (!user) return null
   const centerPath = notificationCenterPath(user.role)
+  const neutralTone = user.role !== 'CANDIDATE'
+  const triggerAccentClass = neutralTone ? 'focus-visible:ring-slate-950' : 'focus-visible:ring-[#49BBBD]'
+  const triggerOpenClass = neutralTone
+    ? 'border-slate-300 bg-slate-950 text-white'
+    : 'border-[#49BBBD]/20 bg-[#49BBBD]/8 text-[#49BBBD]'
+  const actionClass = neutralTone ? 'text-slate-700 hover:bg-slate-100' : 'text-[#49BBBD] hover:bg-[#49BBBD]/8'
+  const spinnerClass = neutralTone ? 'text-slate-950' : 'text-[#49BBBD]'
+  const footerLinkClass = neutralTone
+    ? 'text-slate-800 hover:bg-white focus-visible:ring-slate-950'
+    : 'text-[#49BBBD] hover:bg-white focus-visible:ring-[#49BBBD]'
 
   const handleSelect = async (item: NotificationItemType) => {
     const requestIdentity = identityId
@@ -102,7 +112,7 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => onOpenChange(!open)}
-        className={`btn-press relative flex h-10 w-10 items-center justify-center rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] focus-visible:ring-offset-2 ${open ? 'border-[#49BBBD]/20 bg-[#49BBBD]/8 text-[#49BBBD]' : 'border-slate-200/80 bg-white/75 text-slate-600 hover:border-slate-300 hover:bg-white hover:text-slate-950'}`}
+        className={`btn-press relative flex h-10 w-10 items-center justify-center rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${triggerAccentClass} ${open ? triggerOpenClass : 'border-slate-200/80 bg-white/75 text-slate-600 hover:border-slate-300 hover:bg-white hover:text-slate-950'}`}
       >
         <Bell size={19} strokeWidth={2} aria-hidden="true" />
         {badge && (
@@ -128,9 +138,9 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
               type="button"
               disabled={notifications.markAllPending || notifications.unreadCount === 0}
               onClick={() => void handleMarkAll()}
-              className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-[#49BBBD] transition-colors hover:bg-[#49BBBD]/8 disabled:cursor-not-allowed disabled:opacity-45"
+              className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${actionClass}`}
             >
-              {notifications.markAllPending ? <LoaderCircle size={14} className="animate-spin text-[#49BBBD]" aria-hidden="true" /> : <CheckCheck size={14} aria-hidden="true" />}
+              {notifications.markAllPending ? <LoaderCircle size={14} className={`animate-spin ${spinnerClass}`} aria-hidden="true" /> : <CheckCheck size={14} aria-hidden="true" />}
               Đánh dấu tất cả đã đọc
             </button>
           </header>
@@ -144,7 +154,7 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
               <div className="px-5 py-9 text-center" role="alert">
                 <BellOff size={25} className="mx-auto text-slate-400" aria-hidden="true" />
                 <p className="mt-3 text-sm font-bold text-slate-800">Không thể tải thông báo</p>
-                <button type="button" onClick={() => void notifications.refreshPreview()} className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold text-[#49BBBD] hover:bg-[#49BBBD]/8">
+                <button type="button" onClick={() => void notifications.refreshPreview()} className={`mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold ${actionClass}`}>
                   <RefreshCw size={13} aria-hidden="true" /> Thử lại
                 </button>
               </div>
@@ -162,12 +172,13 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
                 actionable={Boolean(getNotificationTargetPath({ role: user.role, targetType: item.target_type, targetId: item.target_id }))}
                 pending={notifications.pendingIds.has(item.id)}
                 onSelect={handleSelect}
+                tone={neutralTone ? 'neutral' : 'teal'}
               />
             ))}
           </div>
 
           <footer className="border-t border-slate-100 bg-slate-50/70 p-2">
-            <Link to={centerPath} onClick={() => onOpenChange(false)} className="flex min-h-10 items-center justify-center rounded-xl text-sm font-bold text-[#49BBBD] transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD]">
+            <Link to={centerPath} onClick={() => onOpenChange(false)} className={`flex min-h-10 items-center justify-center rounded-xl text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 ${footerLinkClass}`}>
               Xem tất cả thông báo
             </Link>
           </footer>

@@ -67,6 +67,16 @@ export default function NotificationCenterPage() {
   const { page, filter } = notificationPageFromSearch(searchParams)
   const readOnly = filter === 'read'
   const identityId = user?.id ?? null
+  const neutralTone = user?.role !== 'CANDIDATE'
+  const focusRingClass = neutralTone ? 'focus-visible:ring-slate-950' : 'focus-visible:ring-[#49BBBD]'
+  const actionButtonClass = neutralTone
+    ? 'border-slate-200 text-slate-700 hover:bg-slate-100'
+    : 'border-[#49BBBD]/20 text-[#49BBBD] hover:bg-[#49BBBD]/6'
+  const accentTextClass = neutralTone ? 'text-slate-950' : 'text-[#49BBBD]'
+  const progressTrackClass = neutralTone ? 'bg-slate-200' : 'bg-[#49BBBD]/15'
+  const progressBarClass = neutralTone ? 'bg-slate-950' : 'bg-[#49BBBD]'
+  const retryButtonClass = neutralTone ? 'bg-slate-950 hover:bg-black' : 'bg-[#49BBBD] hover:bg-[#49BBBD]/90'
+  const emptyIconClass = neutralTone ? 'bg-slate-100 text-slate-700' : 'bg-[#49BBBD]/10 text-[#49BBBD]'
   const activeIdentityRef = useRef(identityId)
   const queryKey = identityId
     ? notificationRequestKey({ userId: identityId, generation: notifications.identityGeneration, page, pageSize: PAGE_SIZE, filter })
@@ -171,21 +181,21 @@ export default function NotificationCenterPage() {
           type="button"
           disabled={notifications.markAllPending || notifications.unreadCount === 0}
           onClick={() => void handleMarkAll()}
-          className="btn-press inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-xl border border-[#49BBBD]/20 bg-white px-4 text-sm font-semibold text-[#49BBBD] shadow-2xs transition-all hover:bg-[#49BBBD]/6 disabled:cursor-not-allowed disabled:opacity-45 sm:self-auto"
+          className={`btn-press inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-xl border bg-white px-4 text-sm font-semibold shadow-2xs transition-all disabled:cursor-not-allowed disabled:opacity-45 sm:self-auto ${actionButtonClass}`}
         >
-          {notifications.markAllPending ? <LoaderCircle size={17} className="animate-spin text-[#49BBBD]" aria-hidden="true" /> : <CheckCheck size={17} aria-hidden="true" />}
+          {notifications.markAllPending ? <LoaderCircle size={17} className={`animate-spin ${accentTextClass}`} aria-hidden="true" /> : <CheckCheck size={17} aria-hidden="true" />}
           Đánh dấu tất cả đã đọc
         </button>
       </header>
 
       <section className="mt-6" aria-label="Bộ lọc thông báo">
         <div className="inline-flex rounded-xl bg-slate-100 p-1" role="group" aria-label="Trạng thái đọc">
-          <button type="button" aria-pressed={!readOnly} onClick={() => setFilter('unread')} className={`min-h-10 rounded-lg px-4 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] focus-visible:ring-offset-2 ${!readOnly ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}>Chưa đọc</button>
-          <button type="button" aria-pressed={readOnly} onClick={() => setFilter('read')} className={`min-h-10 rounded-lg px-4 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] focus-visible:ring-offset-2 ${readOnly ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}>Đã đọc</button>
+          <button type="button" aria-pressed={!readOnly} onClick={() => setFilter('unread')} className={`min-h-10 rounded-lg px-4 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${focusRingClass} ${!readOnly ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}>Chưa đọc</button>
+          <button type="button" aria-pressed={readOnly} onClick={() => setFilter('read')} className={`min-h-10 rounded-lg px-4 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${focusRingClass} ${readOnly ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}>Đã đọc</button>
         </div>
       </section>
 
-      {isFetching && data && <div className="mt-4 h-0.5 overflow-hidden rounded-full bg-[#49BBBD]/15" role="status" aria-label="Đang cập nhật thông báo"><div className="h-full w-2/5 animate-pulse rounded-full bg-[#49BBBD]" /></div>}
+      {isFetching && data && <div className={`mt-4 h-0.5 overflow-hidden rounded-full ${progressTrackClass}`} role="status" aria-label="Đang cập nhật thông báo"><div className={`h-full w-2/5 animate-pulse rounded-full ${progressBarClass}`} /></div>}
 
       {isInitialLoading || (!data && !error) ? (
         <section className="mt-6 space-y-3" aria-label="Đang tải danh sách thông báo">
@@ -196,11 +206,11 @@ export default function NotificationCenterPage() {
           <Bell size={30} className="mx-auto text-slate-400" aria-hidden="true" />
           <h2 className="mt-4 text-lg font-bold text-slate-950">Không thể tải thông báo</h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">{errorMessage(error)}</p>
-          <button type="button" onClick={refetch} className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#49BBBD] px-4 text-sm font-semibold text-white hover:bg-[#49BBBD]/90"><RefreshCw size={15} aria-hidden="true" /> Thử lại</button>
+          <button type="button" onClick={refetch} className={`mt-5 inline-flex min-h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold text-white ${retryButtonClass}`}><RefreshCw size={15} aria-hidden="true" /> Thử lại</button>
         </section>
       ) : data?.items.length === 0 ? (
         <section className="mt-6 rounded-2xl bg-white px-6 py-16 text-center shadow-sm ring-1 ring-slate-200">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#49BBBD]/10 text-[#49BBBD]"><Bell size={26} aria-hidden="true" /></span>
+          <span className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl ${emptyIconClass}`}><Bell size={26} aria-hidden="true" /></span>
           <h2 className="mt-5 text-xl font-bold text-slate-950">{readOnly ? 'Chưa có thông báo đã đọc.' : 'Không còn thông báo chưa đọc.'}</h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{readOnly ? 'Thông báo bạn mở hoặc đánh dấu đã đọc sẽ xuất hiện tại đây.' : 'Thông báo mới chưa đọc sẽ xuất hiện tại đây.'}</p>
         </section>
@@ -214,6 +224,7 @@ export default function NotificationCenterPage() {
                 actionable={Boolean(user && getNotificationTargetPath({ role: user.role, targetType: item.target_type, targetId: item.target_id }))}
                 pending={notifications.pendingIds.has(item.id)}
                 onSelect={handleSelect}
+                tone={neutralTone ? 'neutral' : 'teal'}
               />
             ))}
           </section>

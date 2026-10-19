@@ -1,4 +1,4 @@
-import { Bookmark, BriefcaseBusiness, FilePlus2, FileText, ListOrdered, type LucideIcon } from 'lucide-react'
+import { Bookmark, BriefcaseBusiness, FilePlus2, FileText, ListOrdered, Settings, type LucideIcon } from 'lucide-react'
 
 export type CandidateNavigationItem = {
   to: string
@@ -68,6 +68,12 @@ export const candidateToolsGroup: CandidateNavigationGroup = {
 }
 
 export const candidateAccountItems: CandidateNavigationItem[] = [
+  {
+    to: '/candidate/settings',
+    label: 'Cài đặt bảo mật',
+    description: 'Đổi mật khẩu và bảo vệ tài khoản',
+    icon: Settings,
+  },
   {
     to: '/candidate/profile',
     label: 'Hồ sơ cá nhân',

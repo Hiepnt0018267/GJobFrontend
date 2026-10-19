@@ -14,6 +14,10 @@ import JobListPage     from './pages/jobs/JobListPage'
 import JobDetailPage   from './pages/jobs/JobDetailPage'
 import LoginPage       from './pages/auth/LoginPage'
 import RegisterPage    from './pages/auth/RegisterPage'
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from './pages/auth/ResetPasswordPage'
+import VerifyEmailPage from './pages/auth/VerifyEmailPage'
+import VerificationRequiredPage from './pages/auth/VerificationRequiredPage'
 
 // Error pages
 import ForbiddenPage from './pages/errors/ForbiddenPage'
@@ -30,6 +34,7 @@ import CandidateApplicationsPage from './pages/candidate/CandidateApplicationsPa
 import CandidateApplicationDetailPage from './pages/candidate/CandidateApplicationDetailPage'
 import SavedJobsPage from './pages/candidate/SavedJobsPage'
 import CandidateJobRecommendationsPage from './pages/candidate/CandidateJobRecommendationsPage'
+import CandidateSettingsPage from './pages/candidate/CandidateSettingsPage'
 import RecruiterDashboardPage from './pages/recruiter/RecruiterDashboardPage'
 import RecruiterProfilePage from './pages/recruiter/RecruiterProfilePage'
 import RecruiterProfileEditPage from './pages/recruiter/RecruiterProfileEditPage'
@@ -104,6 +109,7 @@ function App() {
             <Route path="/candidate/saved-jobs" element={<SavedJobsPage />} />
             <Route path="/candidate/job-recommendations" element={<CandidateJobRecommendationsPage />} />
             <Route path="/candidate/notifications" element={<NotificationCenterPage />} />
+            <Route path="/candidate/settings" element={<CandidateSettingsPage />} />
           </Route>
         </Route>
       </Route>
@@ -125,6 +131,10 @@ function App() {
           </RedirectIfAuthenticated>
         }
       />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/verification-required" element={<VerificationRequiredPage />} />
 
       {/* ── Error pages ── */}
       <Route path="/403" element={<PageTransition><ForbiddenPage /></PageTransition>} />

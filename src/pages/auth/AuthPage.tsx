@@ -8,9 +8,12 @@ import { useAuth } from '../../hooks/useAuth'
 import type { UserRole } from '../../types/auth'
 import axios from 'axios'
 import AuthVisualPanel from '../../components/auth/AuthVisualPanel'
+import { authService } from '../../services/authService'
+import { getApiErrorCode } from '../../utils/apiError'
 
 // ─── Friendly error mapping ───────────────────────────────────────────────────
 function mapError(err: unknown): string {
+  if (getApiErrorCode(err) === 'EMAIL_NOT_VERIFIED') return 'Email chưa được xác minh. Hãy kiểm tra hộp thư hoặc gửi lại email xác minh.'
   if (!axios.isAxiosError(err)) return 'Đã xảy ra lỗi không xác định. Vui lòng thử lại.'
   const status = err.response?.status
   const detail = err.response?.data?.detail
@@ -50,6 +53,7 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
     : (initialMode ?? currentPathMode)
 
   const isLogin = mode === 'login'
+  const flashMessage = (location.state as { message?: string } | null)?.message
 
   // ── Switch mode smoothly without full-page reloads ────────────────────────
   function handleSwitchMode(targetMode: 'login' | 'register') {
@@ -135,12 +139,7 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
         role: regRole,
       })
       setRegSuccess(true)
-      // After registration success, smooth switch to login tab with prefilled email
-      setTimeout(() => {
-        setLoginEmail(regEmail.trim())
-        setRegSuccess(false)
-        handleSwitchMode('login')
-      }, 1500)
+      navigate('/verification-required', { replace: true, state: { email: regEmail.trim() } })
     } catch (err) {
       setError(mapError(err))
     } finally {
@@ -219,6 +218,12 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
           </p>
 
           {/* Error alert banner */}
+          {flashMessage && isLogin && (
+            <div role="status" className="mb-4 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3.5 text-xs text-emerald-800 sm:text-sm">
+              <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
+              <span>{flashMessage}</span>
+            </div>
+          )}
           {error && (
             <div
               role="alert"
@@ -332,11 +337,7 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
 
                     <button
                       type="button"
-                      onClick={() => {
-                        setForgotEmail(loginEmail)
-                        setForgotSent(false)
-                        setForgotOpen(true)
-                      }}
+                      onClick={() => navigate('/forgot-password', { state: { email: loginEmail } })}
                       className="text-xs sm:text-sm text-[#49BBBD] hover:text-[#3ca8aa] hover:underline transition-colors font-medium cursor-pointer"
                     >
                       Quên mật khẩu?
@@ -656,14 +657,16 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
                 </p>
 
                 <form
-                  onSubmit={(e) => {
+                  onSubmit={async (e) => {
                     e.preventDefault()
                     if (!forgotEmailValid || forgotLoading) return
                     setForgotLoading(true)
-                    setTimeout(() => {
-                      setForgotLoading(false)
+                    try {
+                      await authService.forgotPassword(forgotEmail.trim())
                       setForgotSent(true)
-                    }, 800)
+                    } finally {
+                      setForgotLoading(false)
+                    }
                   }}
                   className="mt-5 space-y-4"
                 >

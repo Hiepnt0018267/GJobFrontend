@@ -2,6 +2,7 @@ import { ArrowUpRight, LoaderCircle } from 'lucide-react'
 import type { NotificationItem as NotificationItemType } from '../../types/notification'
 import { formatNotificationTimestamp } from '../../utils/notification'
 import NotificationGlyph from './NotificationGlyph'
+import type { NotificationTone } from './NotificationGlyph'
 
 type Props = {
   item: NotificationItemType
@@ -9,19 +10,24 @@ type Props = {
   pending?: boolean
   actionable?: boolean
   onSelect?: (item: NotificationItemType) => void
+  tone?: NotificationTone
 }
 
-export default function NotificationItem({ item, compact = false, pending = false, actionable = false, onSelect }: Props) {
+export default function NotificationItem({ item, compact = false, pending = false, actionable = false, onSelect, tone = 'teal' }: Props) {
+  const unreadDotClass = tone === 'neutral' ? 'bg-slate-950 ring-slate-950/12' : 'bg-[#49BBBD] ring-[#49BBBD]/15'
+  const pendingClass = tone === 'neutral' ? 'text-slate-950' : 'text-[#49BBBD]'
+  const itemStateClass = tone === 'neutral' ? 'focus-visible:ring-slate-950' : 'focus-visible:ring-[#49BBBD]'
+  const unreadClass = tone === 'neutral' ? 'bg-slate-50 hover:bg-slate-100/80' : 'bg-[#49BBBD]/6 hover:bg-[#49BBBD]/10'
   const content = (
     <>
-      <NotificationGlyph type={item.type} compact={compact} />
+      <NotificationGlyph type={item.type} compact={compact} tone={tone} />
       <span className="min-w-0 flex-1">
         <span className="flex items-start gap-2">
           <span className={`min-w-0 flex-1 break-words font-bold text-slate-950 ${compact ? 'text-sm leading-5' : 'text-[15px] leading-6'}`}>
             {item.title}
           </span>
           {!item.is_read && (
-            <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#49BBBD] ring-4 ring-[#49BBBD]/15" aria-label="Chưa đọc" />
+            <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ring-4 ${unreadDotClass}`} aria-label="Chưa đọc" />
           )}
         </span>
         <span className={`mt-1 block break-words text-slate-600 ${compact ? 'line-clamp-2 text-xs leading-5' : 'text-sm leading-6'}`}>
@@ -30,13 +36,13 @@ export default function NotificationItem({ item, compact = false, pending = fals
         <span className="mt-2 flex items-center gap-2 text-[11px] font-medium text-slate-400">
           <time dateTime={item.created_at}>{formatNotificationTimestamp(item.created_at)}</time>
           {actionable && <ArrowUpRight size={13} aria-hidden="true" />}
-          {pending && <LoaderCircle size={13} className="animate-spin text-[#49BBBD]" aria-label="Đang cập nhật" />}
+          {pending && <LoaderCircle size={13} className={`animate-spin ${pendingClass}`} aria-label="Đang cập nhật" />}
         </span>
       </span>
     </>
   )
 
-  const className = `flex w-full items-start gap-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#49BBBD] ${compact ? 'px-4 py-3.5' : 'rounded-2xl px-4 py-4 sm:px-5'} ${item.is_read ? 'bg-white hover:bg-slate-50/80' : 'bg-[#49BBBD]/6 hover:bg-[#49BBBD]/10'}`
+  const className = `flex w-full items-start gap-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset ${itemStateClass} ${compact ? 'px-4 py-3.5' : 'rounded-2xl px-4 py-4 sm:px-5'} ${item.is_read ? 'bg-white hover:bg-slate-50/80' : unreadClass}`
 
   if (onSelect) {
     return (

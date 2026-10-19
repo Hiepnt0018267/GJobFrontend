@@ -17,8 +17,18 @@ const categoryStyles = {
   rejected: 'bg-rose-50 text-rose-700',
 } as const
 
-export default function NotificationGlyph({ type, compact = false }: { type: string; compact?: boolean }) {
+const neutralWorkspaceCategoryStyles = {
+  ...categoryStyles,
+  application: 'bg-slate-100 text-slate-700',
+  status: 'bg-slate-100 text-slate-700',
+  approved: 'bg-slate-100 text-slate-700',
+} as const
+
+export type NotificationTone = 'teal' | 'neutral'
+
+export default function NotificationGlyph({ type, compact = false, tone = 'teal' }: { type: string; compact?: boolean; tone?: NotificationTone }) {
   const category = notificationVisualCategory(type)
+  const styles = tone === 'neutral' ? neutralWorkspaceCategoryStyles : categoryStyles
   const Icon = category === 'application'
     ? UserRoundCheck
     : category === 'status'
@@ -34,7 +44,7 @@ export default function NotificationGlyph({ type, compact = false }: { type: str
   return (
     <span
       data-notification-category={category}
-      className={`flex shrink-0 items-center justify-center rounded-xl ${categoryStyles[category]} ${compact ? 'h-9 w-9' : 'h-11 w-11'}`}
+      className={`flex shrink-0 items-center justify-center rounded-xl ${styles[category]} ${compact ? 'h-9 w-9' : 'h-11 w-11'}`}
       aria-hidden="true"
     >
       <Icon size={compact ? 17 : 20} strokeWidth={2} />

@@ -99,14 +99,15 @@ test('company profile does not duplicate the current subscription section', () =
   assert.doesNotMatch(source, /RecruiterSubscriptionSection|Gói đang sử dụng/)
 })
 
-test('settings hub exposes company profile and service management without a fake password action', () => {
+test('settings hub exposes company profile, service management and the real password form', () => {
   const html = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(SettingsPage)))
   assert.match(html, /Cài đặt/)
   assert.match(html, /href="\/recruiter\/profile\/edit"/)
   assert.match(html, /href="\/recruiter\/plans"/)
   assert.match(html, /Quản lý dịch vụ/)
   assert.match(html, /Đổi mật khẩu/)
-  assert.match(html, /Sắp có/)
-  assert.doesNotMatch(html, /button[^>]*>[^<]*Đổi mật khẩu/)
+  assert.match(html, /Mật khẩu hiện tại/)
+  assert.match(html, /Cập nhật mật khẩu/)
+  assert.doesNotMatch(html, /Sắp có/)
   assert.deepEqual(recruiterNavigation.getRecruiterPageMeta('/recruiter/settings'), { title: 'Cài đặt', context: 'Tài khoản' })
 })

@@ -49,9 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await authService.login({ email, password })
     tokenStorage.save(res.access_token)
     setToken(res.access_token)
-
-    const me = await authService.getMe()
-    setUser(me)
+    setUser(res.user)
   }, [])
 
   // ── register ──────────────────────────────────────────────────────────────

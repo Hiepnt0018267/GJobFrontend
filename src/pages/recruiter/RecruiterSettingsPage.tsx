@@ -1,5 +1,6 @@
-import { Building2, ChevronRight, CreditCard, LockKeyhole, Settings } from 'lucide-react'
+import { Building2, ChevronRight, CreditCard, Settings } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import AccountSecurityForm from '../../components/account/AccountSecurityForm'
 
 const linkClass = 'group flex items-center gap-4 rounded-2xl border border-black/[0.05] bg-white p-5 transition-all duration-150 hover:-translate-y-0.5 hover:border-black/[0.1] hover:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C]'
 
@@ -43,16 +44,7 @@ export default function RecruiterSettingsPage() {
 
       <section className="mt-8" aria-labelledby="security-settings-title">
         <h2 id="security-settings-title" className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Bảo mật</h2>
-        <div className="mt-3 flex items-center gap-4 rounded-2xl border border-black/[0.05] bg-[#F7F9FB] p-5" aria-disabled="true">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-slate-500 ring-1 ring-black/[0.05]">
-            <LockKeyhole size={19} aria-hidden="true" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block font-semibold text-slate-700">Đổi mật khẩu</span>
-            <span className="mt-1 block text-xs leading-5 text-slate-500">Chức năng sẽ được bổ sung khi luồng bảo mật tài khoản sẵn sàng.</span>
-          </span>
-          <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500 ring-1 ring-black/[0.06]">Sắp có</span>
-        </div>
+        <div className="mt-3"><AccountSecurityForm /></div>
       </section>
     </main>
   )

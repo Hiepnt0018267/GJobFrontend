@@ -2,8 +2,9 @@ import {
   AlertTriangle, ArrowLeft, ArrowRight, Banknote, CheckCircle2, Clock3,
   Eye, FileClock, RefreshCw, Search, X,
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { useSearchParams } from 'react-router-dom'
 import { adminPaymentService } from '../../services/adminPaymentService'
 import { subscriptionService } from '../../services/subscriptionService'
@@ -36,41 +37,111 @@ function SummaryCard({ label, value, hint, icon: Icon }: { label: string; value:
 }
 
 function DetailDrawer({ detail, loading, onClose }: { detail: Detail | null; loading: boolean; onClose: () => void }) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Khoá scroll trang nền và reset vị trí cuộn bên trong modal
   useEffect(() => {
     if (!detail && !loading) return
+    document.body.style.overflow = 'hidden'
+    scrollRef.current?.scrollTo({ top: 0 })
     const close = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
     document.addEventListener('keydown', close)
-    return () => document.removeEventListener('keydown', close)
+    return () => {
+      document.removeEventListener('keydown', close)
+      document.body.style.overflow = ''
+    }
   }, [detail, loading, onClose])
+
   if (!detail && !loading) return null
   const transaction = detail?.kind === 'transaction' ? detail.value : null
   const order = detail?.kind === 'order' ? detail.value : transaction?.order
-  return <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/30" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
-    <aside role="dialog" aria-modal="true" aria-label="Chi tiết thanh toán" className="h-full w-full max-w-lg overflow-y-auto bg-white p-6 shadow-2xl">
-      <header className="flex items-start justify-between border-b border-slate-200 pb-5"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Chỉ đọc</p><h2 className="mt-1 text-xl font-semibold text-slate-950">Chi tiết thanh toán</h2></div><button type="button" onClick={onClose} aria-label="Đóng" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={20} /></button></header>
-      {loading && <div className="mt-6 space-y-3">{[1, 2, 3, 4].map((key) => <div key={key} className="h-16 animate-pulse rounded-xl bg-slate-100" />)}</div>}
-      {!loading && detail && <div className="mt-6 space-y-6">
-        {transaction && <section><h3 className="text-sm font-semibold text-slate-950">Giao dịch ngân hàng</h3><dl className="mt-3 grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm">
-          <div className="flex justify-between gap-4"><dt className="text-slate-500">Trạng thái</dt><dd><StatusBadge value={transaction.disposition} /></dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-slate-500">Mã SePay</dt><dd className="break-all text-right font-medium">{transaction.provider_transaction_id}</dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-slate-500">Số tiền</dt><dd className="font-semibold tabular-nums">{formatVnd(transaction.amount)}</dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-slate-500">Thời gian</dt><dd>{formatPaymentDate(transaction.transaction_date)}</dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-slate-500">Nội dung</dt><dd className="max-w-[65%] break-words text-right">{transaction.content || '—'}</dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-slate-500">Tài khoản nhận</dt><dd>{transaction.destination_account || '—'}</dd></div>
-        </dl></section>}
-        {order && <section><h3 className="text-sm font-semibold text-slate-950">Đơn thanh toán</h3><dl className="mt-3 grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm">
-          <div className="flex justify-between gap-4"><dt className="text-slate-500">Mã thanh toán</dt><dd className="font-semibold">{order.payment_code}</dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-slate-500">Trạng thái</dt><dd><StatusBadge value={order.status} /></dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-slate-500">Gói</dt><dd className="text-right">{order.plan_name} · {order.plan_code}</dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-slate-500">Nhà tuyển dụng</dt><dd className="text-right"><strong className="block">{order.recruiter.full_name}</strong><span className="text-slate-500">{order.recruiter.email}</span></dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-slate-500">Khởi tạo</dt><dd>{formatPaymentDate(order.created_at)}</dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-slate-500">Hết hạn</dt><dd>{formatPaymentDate(order.expires_at)}</dd></div>
-          {detail.kind === 'order' && <div className="flex justify-between gap-4"><dt className="text-slate-500">Thời hạn gói</dt><dd>{detail.value.duration_days} ngày</dd></div>}
-        </dl></section>}
-        {detail.kind === 'order' && <section><h3 className="text-sm font-semibold text-slate-950">Giao dịch liên quan ({detail.value.transactions.length})</h3>{detail.value.transactions.length === 0 ? <p className="mt-3 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Chưa có giao dịch ngân hàng.</p> : <div className="mt-3 space-y-2">{detail.value.transactions.map((item) => <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 p-3 text-sm"><div><strong className="block">{formatVnd(item.amount)}</strong><span className="text-xs text-slate-500">{formatPaymentDate(item.transaction_date)}</span></div><StatusBadge value={item.disposition} /></div>)}</div>}</section>}
-      </div>}
-    </aside>
-  </div>
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
+      role="presentation"
+      onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Chi tiết thanh toán"
+        className="flex flex-col w-full max-w-xl max-h-[85vh] rounded-2xl bg-white shadow-2xl overflow-hidden"
+      >
+        {/* Header cố định trên cùng */}
+        <header className="flex items-start justify-between border-b border-slate-200 bg-white px-6 py-5 shrink-0">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Chỉ đọc</p>
+            <h2 className="mt-1 text-xl font-semibold text-slate-950">Chi tiết thanh toán</h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Đóng"
+            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </header>
+
+        {/* Vùng nội dung cuộn mượt mà độc lập */}
+        <div ref={scrollRef} className="overflow-y-auto px-6 py-6 flex-1">
+          {loading && (
+            <div className="space-y-3">
+              {[1, 2, 3, 4].map((key) => <div key={key} className="h-16 animate-pulse rounded-xl bg-slate-100" />)}
+            </div>
+          )}
+          {!loading && detail && (
+            <div className="space-y-6">
+              {transaction && (
+                <section>
+                  <h3 className="text-sm font-semibold text-slate-950">Giao dịch ngân hàng</h3>
+                  <dl className="mt-3 grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm">
+                    <div className="flex justify-between gap-4"><dt className="text-slate-500">Trạng thái</dt><dd><StatusBadge value={transaction.disposition} /></dd></div>
+                    <div className="flex justify-between gap-4"><dt className="text-slate-500">Mã SePay</dt><dd className="break-all text-right font-medium">{transaction.provider_transaction_id}</dd></div>
+                    <div className="flex justify-between gap-4"><dt className="text-slate-500">Số tiền</dt><dd className="font-semibold tabular-nums">{formatVnd(transaction.amount)}</dd></div>
+                    <div className="flex justify-between gap-4"><dt className="text-slate-500">Thời gian</dt><dd>{formatPaymentDate(transaction.transaction_date)}</dd></div>
+                    <div className="flex justify-between gap-4"><dt className="text-slate-500">Nội dung</dt><dd className="max-w-[65%] break-words text-right">{transaction.content || '—'}</dd></div>
+                    <div className="flex justify-between gap-4"><dt className="text-slate-500">Tài khoản nhận</dt><dd>{transaction.destination_account || '—'}</dd></div>
+                  </dl>
+                </section>
+              )}
+              {order && (
+                <section>
+                  <h3 className="text-sm font-semibold text-slate-950">Đơn thanh toán</h3>
+                  <dl className="mt-3 grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm">
+                    <div className="flex justify-between gap-4"><dt className="text-slate-500">Mã thanh toán</dt><dd className="font-semibold">{order.payment_code}</dd></div>
+                    <div className="flex justify-between gap-4"><dt className="text-slate-500">Trạng thái</dt><dd><StatusBadge value={order.status} /></dd></div>
+                    <div className="flex justify-between gap-4"><dt className="text-slate-500">Gói</dt><dd className="text-right">{order.plan_name} · {order.plan_code}</dd></div>
+                    <div className="flex justify-between gap-4"><dt className="text-slate-500">Nhà tuyển dụng</dt><dd className="text-right"><strong className="block">{order.recruiter.full_name}</strong><span className="text-slate-500">{order.recruiter.email}</span></dd></div>
+                    <div className="flex justify-between gap-4"><dt className="text-slate-500">Khởi tạo</dt><dd>{formatPaymentDate(order.created_at)}</dd></div>
+                    <div className="flex justify-between gap-4"><dt className="text-slate-500">Hết hạn</dt><dd>{formatPaymentDate(order.expires_at)}</dd></div>
+                    {detail.kind === 'order' && <div className="flex justify-between gap-4"><dt className="text-slate-500">Thời hạn gói</dt><dd>{detail.value.duration_days} ngày</dd></div>}
+                  </dl>
+                </section>
+              )}
+              {detail.kind === 'order' && (
+                <section>
+                  <h3 className="text-sm font-semibold text-slate-950">Giao dịch liên quan ({detail.value.transactions.length})</h3>
+                  {detail.value.transactions.length === 0
+                    ? <p className="mt-3 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Chưa có giao dịch ngân hàng.</p>
+                    : <div className="mt-3 space-y-2">{detail.value.transactions.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 p-3 text-sm">
+                          <div><strong className="block">{formatVnd(item.amount)}</strong><span className="text-xs text-slate-500">{formatPaymentDate(item.transaction_date)}</span></div>
+                          <StatusBadge value={item.disposition} />
+                        </div>
+                      ))}
+                    </div>
+                  }
+                </section>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
 }
 
 export default function AdminPaymentsPage() {
