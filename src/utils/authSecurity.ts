@@ -12,6 +12,8 @@ export const AUTH_SECURITY_ERROR_MESSAGES: Readonly<Record<string, string>> = {
   PASSWORD_SAME_AS_CURRENT: 'Mật khẩu mới phải khác mật khẩu hiện tại.',
   PASSWORD_POLICY_VIOLATION: 'Mật khẩu phải có ít nhất 8 ký tự và không vượt quá 72 byte UTF-8.',
   AUTH_SESSION_INVALIDATED: 'Phiên đăng nhập đã hết hiệu lực. Vui lòng đăng nhập lại.',
+  LOCAL_PASSWORD_ALREADY_SET: 'Tài khoản đã có mật khẩu. Hãy sử dụng chức năng đổi mật khẩu.',
+  ACCOUNT_DEACTIVATED: 'Tài khoản đã bị vô hiệu hóa.',
 }
 
 export function authSecurityErrorMessage(error: unknown, fallback = 'Không thể hoàn tất yêu cầu. Vui lòng thử lại.'): string {

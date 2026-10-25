@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { after, before, test } from 'node:test'
+import { readFileSync } from 'node:fs'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router-dom'
@@ -119,8 +120,13 @@ test('strict target allowlist returns exact role routes and no fabricated path',
   assert.equal(path('CANDIDATE', 'CV'), `/candidate/cvs/${id}`)
   assert.equal(path('ADMIN', 'CV'), `/admin/cvs/${id}`)
   assert.equal(path('RECRUITER', 'CV'), null)
+  assert.equal(path('ADMIN', 'USER'), `/admin/users/${id}`)
+  assert.equal(path('CANDIDATE', 'USER'), null)
   assert.equal(path('ADMIN', 'UNKNOWN'), null)
   assert.equal(notification.getNotificationTargetPath({ role: 'ADMIN', targetType: 'JOB', targetId: '../unsafe' }), null)
+  assert.equal(notification.getNotificationTargetPath({ role: 'ADMIN', notificationType: 'CANDIDATE_REGISTERED', targetType: null, targetId: null }), '/admin/users')
+  assert.equal(notification.getNotificationTargetPath({ role: 'ADMIN', notificationType: 'RECRUITER_REGISTERED', targetType: null, targetId: null }), '/admin/users')
+  assert.equal(notification.getNotificationTargetPath({ role: 'CANDIDATE', notificationType: 'CANDIDATE_REGISTERED', targetType: null, targetId: null }), null)
 })
 
 test('server list params and request key contain page, view, page size, user and generation', () => {
@@ -242,6 +248,14 @@ test('SSR bell has accessible state, empty panel, mark-all and full-page action'
   assert.ok(html.includes('aria-expanded="true"')); assert.ok(html.includes('99+'))
   assert.ok(html.includes('Không còn thông báo chưa đọc')); assert.ok(html.includes('Đánh dấu tất cả đã đọc')); assert.ok(html.includes('Xem tất cả thông báo'))
   assert.ok(html.includes('/candidate/notifications'))
+})
+
+test('shared notification bell opens on hover and closes with a short grace period', () => {
+  const source = readFileSync(new URL('../src/components/notification/NotificationBell.tsx', import.meta.url), 'utf8')
+  assert.match(source, /onMouseEnter=\{openFromHover\}/)
+  assert.match(source, /onMouseLeave=\{scheduleHoverClose\}/)
+  assert.match(source, /window\.setTimeout\(\(\) => \{/)
+  assert.match(source, /\}, 180\)/)
 })
 
 test('SSR popover renders SYSTEM item and notification page exposes loading/filter controls', () => {

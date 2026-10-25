@@ -1,13 +1,17 @@
 import type { PaymentOrderStatus } from './adminPayment'
 
 export type AdminUserRole = 'CANDIDATE' | 'RECRUITER' | 'ADMIN'
+export type AdminUserAccountStatus = 'PENDING' | 'ACTIVE' | 'INACTIVE'
 
 export type AdminUserListItem = {
   id: string
   email: string
   full_name: string
   role: AdminUserRole
+  account_status: AdminUserAccountStatus
   is_active: boolean
+  email_verified: boolean
+  email_verified_at: string | null
   avatar_url: string | null
   created_at: string
   updated_at: string
@@ -30,6 +34,7 @@ export type AdminUserListResponse = {
 export type AdminUserListParams = {
   search?: string
   role?: AdminUserRole
+  account_status?: AdminUserAccountStatus
   is_active?: boolean
   page?: number
   page_size?: number

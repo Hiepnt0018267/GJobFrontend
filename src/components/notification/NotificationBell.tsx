@@ -31,8 +31,35 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
   const panelId = useId()
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const closeTimerRef = useRef<number | null>(null)
+  const mouseInsideRef = useRef(false)
   const previousIdentityRef = useRef(identityId)
   const badge = notificationBadgeText(notifications.unreadCount)
+
+  const cancelScheduledClose = () => {
+    if (closeTimerRef.current === null) return
+    window.clearTimeout(closeTimerRef.current)
+    closeTimerRef.current = null
+  }
+
+  const openFromHover = () => {
+    mouseInsideRef.current = true
+    cancelScheduledClose()
+    if (!open) onOpenChange(true)
+  }
+
+  const scheduleHoverClose = () => {
+    mouseInsideRef.current = false
+    cancelScheduledClose()
+    closeTimerRef.current = window.setTimeout(() => {
+      closeTimerRef.current = null
+      onOpenChange(false)
+    }, 180)
+  }
+
+  useEffect(() => () => {
+    if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current)
+  }, [])
 
   useEffect(() => {
     if (previousIdentityRef.current !== identityId) {
@@ -79,7 +106,7 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
 
   const handleSelect = async (item: NotificationItemType) => {
     const requestIdentity = identityId
-    const targetPath = getNotificationTargetPath({ role: user.role, targetType: item.target_type, targetId: item.target_id })
+    const targetPath = getNotificationTargetPath({ role: user.role, notificationType: item.type, targetType: item.target_type, targetId: item.target_id })
     if (!item.is_read) {
       try {
         await notifications.markOne(item)
@@ -103,7 +130,19 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
   }
 
   return (
-    <div ref={rootRef} className="relative shrink-0">
+    <div
+      ref={rootRef}
+      className="relative shrink-0"
+      onMouseEnter={openFromHover}
+      onMouseLeave={scheduleHoverClose}
+      onFocusCapture={() => {
+        cancelScheduledClose()
+        if (!open) onOpenChange(true)
+      }}
+      onBlurCapture={(event) => {
+        if (!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) scheduleHoverClose()
+      }}
+    >
       <button
         ref={triggerRef}
         type="button"
@@ -111,7 +150,10 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => onOpenChange(!open)}
+        onClick={() => {
+          cancelScheduledClose()
+          onOpenChange(mouseInsideRef.current ? true : !open)
+        }}
         className={`btn-press relative flex h-10 w-10 items-center justify-center rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${triggerAccentClass} ${open ? triggerOpenClass : 'border-slate-200/80 bg-white/75 text-slate-600 hover:border-slate-300 hover:bg-white hover:text-slate-950'}`}
       >
         <Bell size={19} strokeWidth={2} aria-hidden="true" />
@@ -169,7 +211,7 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
                 key={item.id}
                 item={item}
                 compact
-                actionable={Boolean(getNotificationTargetPath({ role: user.role, targetType: item.target_type, targetId: item.target_id }))}
+                actionable={Boolean(getNotificationTargetPath({ role: user.role, notificationType: item.type, targetType: item.target_type, targetId: item.target_id }))}
                 pending={notifications.pendingIds.has(item.id)}
                 onSelect={handleSelect}
                 tone={neutralTone ? 'neutral' : 'teal'}

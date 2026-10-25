@@ -1,6 +1,7 @@
 import { AlertTriangle, ArrowRight, Bookmark, BookmarkCheck, BriefcaseBusiness, CalendarDays, CircleDashed, ListChecks, MapPin, Wallet } from 'lucide-react'
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import JobQuickPreview from './JobQuickPreview'
 import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
 import { savedJobService } from '../../services/savedJobService'
@@ -38,9 +39,13 @@ export default function JobCard({ job, recommendation, returnTo }: { job: Job; r
   const { user, isAuthenticated } = useAuth()
   const { success, info, error: toastError } = useToast()
   const navigate = useNavigate()
+  const cardRef = useRef<HTMLElement>(null)
+  const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [logoFailed, setLogoFailed] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [previewOpen, setPreviewOpen] = useState(false)
 
   const logoUrl = safeImageUrl(job.company_logo_url)
   const companyInitial = job.company_name ? job.company_name.trim().charAt(0).toUpperCase() : 'G'
@@ -50,6 +55,41 @@ export default function JobCard({ job, recommendation, returnTo }: { job: Job; r
     job.level ? levelLabel(job.level) : null,
     job.experience_requirement ? experienceRequirementLabel(job.experience_requirement) : null,
   ].filter(Boolean)
+
+  const clearPreviewTimers = useCallback(() => {
+    if (openTimer.current) clearTimeout(openTimer.current)
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+    openTimer.current = null
+    closeTimer.current = null
+  }, [])
+
+  const openPreview = useCallback((withDelay = true) => {
+    clearPreviewTimers()
+    if (!withDelay) {
+      setPreviewOpen(true)
+      return
+    }
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
+    openTimer.current = setTimeout(() => setPreviewOpen(true), 280)
+  }, [clearPreviewTimers])
+
+  const keepPreviewOpen = useCallback(() => {
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+    closeTimer.current = null
+  }, [])
+
+  const schedulePreviewClose = useCallback(() => {
+    if (openTimer.current) clearTimeout(openTimer.current)
+    openTimer.current = null
+    closeTimer.current = setTimeout(() => setPreviewOpen(false), 180)
+  }, [])
+
+  const closePreview = useCallback(() => {
+    clearPreviewTimers()
+    setPreviewOpen(false)
+  }, [clearPreviewTimers])
+
+  useEffect(() => clearPreviewTimers, [clearPreviewTimers])
 
   const handleToggleSave = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -86,17 +126,96 @@ export default function JobCard({ job, recommendation, returnTo }: { job: Job; r
     }
   }
 
+  if (!recommendation) {
+    return (
+      <>
+        <article
+          ref={cardRef}
+          onMouseEnter={() => openPreview()}
+          onMouseLeave={schedulePreviewClose}
+          className="group relative flex h-[158px] overflow-hidden flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-4 shadow-premium transition-all duration-200 hover:-translate-y-1 hover:border-[#49BBBD]/80 hover:shadow-premium-hover"
+        >
+          <div className="flex min-w-0 items-start gap-3 pr-10">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs transition-transform duration-200 group-hover:scale-[1.03]">
+              {logoUrl && !logoFailed ? (
+                <img
+                  src={logoUrl}
+                  alt={`Logo ${job.company_name}`}
+                  className="h-full w-full object-contain p-2"
+                  onError={() => setLogoFailed(true)}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-[#49BBBD] text-xl font-bold text-white">
+                  {companyInitial}
+                </div>
+              )}
+            </div>
+
+            <div className="min-w-0 flex-1 pt-1">
+              <h3 className="line-clamp-2 min-h-[2.72rem] text-[15px] font-bold leading-[1.45] text-slate-950 transition-colors group-hover:text-[#31999b] font-[Plus_Jakarta_Sans,sans-serif]">
+                <Link
+                  to={`/jobs/${job.id}`}
+                  state={returnTo ? { returnTo } : undefined}
+                  className="focus-visible:outline-none focus-visible:underline"
+                >
+                  {job.title}
+                </Link>
+              </h3>
+              <p className="mt-1.5 truncate text-xs font-semibold text-slate-500">
+                {job.company_name}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-3 flex min-w-0 items-center gap-2 pr-12">
+            <span className="inline-flex min-w-0 max-w-[45%] items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800">
+              <span className="truncate">{formatSalary(job)}</span>
+            </span>
+            <span className="inline-flex min-w-0 max-w-[180px] items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+              <span className="truncate">{job.location ?? 'Linh hoạt'}</span>
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleToggleSave}
+            disabled={saving}
+            className={`btn-press absolute bottom-4 right-4 flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] ${
+              isSaved
+                ? 'bg-teal-50 text-[#49BBBD] ring-1 ring-teal-200/80 hover:bg-teal-100'
+                : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700'
+            }`}
+            aria-label={isSaved ? 'Bỏ lưu việc làm' : 'Lưu việc làm'}
+            title={isSaved ? 'Bỏ lưu việc làm' : 'Lưu việc làm'}
+          >
+            {isSaved ? <BookmarkCheck size={17} className="fill-[#49BBBD] text-[#49BBBD]" /> : <Bookmark size={17} />}
+          </button>
+        </article>
+        <JobQuickPreview
+          job={job}
+          open={previewOpen}
+          anchorRef={cardRef}
+          returnTo={returnTo}
+          onEnter={keepPreviewOpen}
+          onLeave={schedulePreviewClose}
+          onClose={closePreview}
+        />
+      </>
+    )
+  }
+
   return (
-    <article className="group relative flex h-full flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-premium transition-all duration-200 hover:-translate-y-1 hover:border-teal-400/80 hover:shadow-premium-hover">
+    <>
+    <article ref={cardRef} onMouseEnter={() => openPreview()} onMouseLeave={schedulePreviewClose} className="group relative flex h-full flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-premium transition-all duration-200 hover:-translate-y-1 hover:border-teal-400/80 hover:shadow-premium-hover">
       <div>
         {recommendation && (
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div className="mb-4 flex min-h-9 flex-wrap items-center justify-between gap-2 pr-11">
             <span className={`inline-flex min-h-7 items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-bold ring-1 ${recommendationTone[recommendation.status]}`}>
               <RecommendationIcon status={recommendation.status} />
               {recommendation.status === 'ranked' && recommendation.rank ? `Xếp hạng #${recommendation.rank}` : recommendationStatusCopy[recommendation.status]}
             </span>
             {recommendation.status === 'ranked' && recommendation.rank && (
-              <span className="text-[11px] font-semibold text-slate-500">{recommendationStatusCopy.ranked}</span>
+              <span className="min-w-0 text-right text-[11px] font-semibold text-slate-500">{recommendationStatusCopy.ranked}</span>
             )}
           </div>
         )}
@@ -224,7 +343,7 @@ export default function JobCard({ job, recommendation, returnTo }: { job: Job; r
       </div>
 
       {/* Footer: Date + View Details CTA */}
-      <div className="mt-5 flex items-center justify-between gap-3 border-t border-slate-100 pt-3.5 text-xs text-slate-500">
+      <div className="mt-5 flex items-center justify-between gap-2 border-t border-slate-100 pt-3.5 text-xs text-slate-500">
         <span className="inline-flex items-center gap-1.5 font-medium tabular-nums text-slate-400">
           <CalendarDays size={13} aria-hidden="true" />
           {postedDate(job.created_at)}
@@ -232,12 +351,22 @@ export default function JobCard({ job, recommendation, returnTo }: { job: Job; r
         <Link
           to={`/jobs/${job.id}`}
           state={returnTo ? { returnTo } : undefined}
-          className="inline-flex items-center gap-1 font-bold text-[#49BBBD] transition-colors hover:text-[#49BBBD] focus-visible:outline-none focus-visible:underline"
+          className="inline-flex shrink-0 items-center gap-1 font-bold text-[#49BBBD] transition-colors hover:text-[#49BBBD] focus-visible:outline-none focus-visible:underline"
         >
-          Xem chi tiết
+          Chi tiết
           <ArrowRight size={13} className="transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden="true" />
         </Link>
       </div>
     </article>
+    <JobQuickPreview
+      job={job}
+      open={previewOpen}
+      anchorRef={cardRef}
+      returnTo={returnTo}
+      onEnter={keepPreviewOpen}
+      onLeave={schedulePreviewClose}
+      onClose={closePreview}
+    />
+    </>
   )
 }

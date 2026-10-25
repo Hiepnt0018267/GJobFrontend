@@ -9,6 +9,8 @@ import type {
   ResetPasswordRequest,
   ChangePasswordRequest,
   User,
+  GoogleAuthResponse,
+  GoogleAuthenticatedResponse,
 } from '../types/auth'
 
 // ─── Auth API calls ───────────────────────────────────────────────────────────
@@ -82,6 +84,31 @@ export const authService = {
 
   changePassword: async (data: ChangePasswordRequest): Promise<MessageResponse> => {
     const res = await api.post<MessageResponse>('/api/v1/account/change-password', data)
+    return res.data
+  },
+
+  setPassword: async (newPassword: string): Promise<MessageResponse> => {
+    const res = await api.post<MessageResponse>('/api/v1/account/set-password', { new_password: newPassword })
+    return res.data
+  },
+
+  google: async (credential: string): Promise<GoogleAuthResponse> => {
+    const res = await api.post<GoogleAuthResponse>('/api/v1/auth/google', { credential })
+    return res.data
+  },
+
+  completeGoogleRegistration: async (onboardingToken: string, role: 'CANDIDATE' | 'RECRUITER', fullName: string): Promise<GoogleAuthenticatedResponse> => {
+    const res = await api.post<GoogleAuthenticatedResponse>('/api/v1/auth/google/complete-registration', { onboarding_token: onboardingToken, role, full_name: fullName })
+    return res.data
+  },
+
+  linkGoogleWithPassword: async (linkToken: string, currentPassword: string): Promise<GoogleAuthenticatedResponse> => {
+    const res = await api.post<GoogleAuthenticatedResponse>('/api/v1/auth/google/link/password', { link_token: linkToken, current_password: currentPassword })
+    return res.data
+  },
+
+  linkGoogleWithSession: async (linkToken: string): Promise<GoogleAuthenticatedResponse> => {
+    const res = await api.post<GoogleAuthenticatedResponse>('/api/v1/auth/google/link/session', { link_token: linkToken })
     return res.data
   },
 }

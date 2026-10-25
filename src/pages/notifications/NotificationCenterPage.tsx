@@ -120,7 +120,7 @@ export default function NotificationCenterPage() {
   const handleSelect = async (item: NotificationItemType) => {
     if (!user || !identityId) return
     const requestIdentity = identityId
-    const targetPath = getNotificationTargetPath({ role: user.role, targetType: item.target_type, targetId: item.target_id })
+    const targetPath = getNotificationTargetPath({ role: user.role, notificationType: item.type, targetType: item.target_type, targetId: item.target_id })
     if (!item.is_read) {
       try {
         const updated = await notifications.markOne(item)
@@ -221,7 +221,7 @@ export default function NotificationCenterPage() {
               <NotificationItem
                 key={item.id}
                 item={item}
-                actionable={Boolean(user && getNotificationTargetPath({ role: user.role, targetType: item.target_type, targetId: item.target_id }))}
+                actionable={Boolean(user && getNotificationTargetPath({ role: user.role, notificationType: item.type, targetType: item.target_type, targetId: item.target_id }))}
                 pending={notifications.pendingIds.has(item.id)}
                 onSelect={handleSelect}
                 tone={neutralTone ? 'neutral' : 'teal'}

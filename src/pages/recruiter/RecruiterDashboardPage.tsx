@@ -1,11 +1,12 @@
 import { AlertCircle, ArrowUpRight, Building2, CheckCircle2, ClipboardClock, FilePenLine, Plus, RefreshCw, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import RecruiterJobStatusChart from '../../components/recruiter/RecruiterJobStatusChart'
 import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 import { recruiterService } from '../../services/recruiterService'
 import type { RecruiterDashboardSummary, RecruiterProfile } from '../../types/recruiter'
 import { recruiterErrorMessage } from '../../utils/apiError'
+import { safeImageUrl } from '../../utils/publicUrl'
 
 type DashboardData = { profile: RecruiterProfile; summary: RecruiterDashboardSummary }
 const emptySummary: RecruiterDashboardSummary = { total_jobs: 0, pending_jobs: 0, approved_jobs: 0, rejected_jobs: 0, closed_jobs: 0 }
@@ -28,6 +29,7 @@ function Skeleton() {
 
 export default function RecruiterDashboardPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const refreshVersion = useDataRefreshVersion()
   const [data, setData] = useState<DashboardData | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -120,6 +122,31 @@ export default function RecruiterDashboardPage() {
             <div role="status" aria-live="polite" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">
               Không thể cập nhật dữ liệu mới nhất. {error}
             </div>
+          )}
+
+          {location.state && typeof location.state === 'object' && 'message' in location.state && (
+            <div role="status" className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-xs">
+              {String(location.state.message)}
+            </div>
+          )}
+
+          {data && !data.profile.profile_completed && (
+            <section className="flex flex-col gap-5 rounded-2xl bg-[#1C1C1C] p-5 text-white sm:flex-row sm:items-center sm:justify-between sm:p-6">
+              <div className="flex items-start gap-4">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15">
+                  <Building2 size={19} aria-hidden="true" />
+                </span>
+                <div>
+                  <h2 className="text-sm font-semibold">Hoàn thiện hồ sơ để bắt đầu đăng tin</h2>
+                  <p className="mt-1 text-xs leading-5 text-slate-300">
+                    Bạn còn {data.profile.missing_required_fields.length} thông tin doanh nghiệp cần bổ sung. Các chức năng khác vẫn sử dụng bình thường.
+                  </p>
+                </div>
+              </div>
+              <Link to="/recruiter/profile/edit" className="inline-flex shrink-0 items-center justify-center rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-[#1C1C1C] transition-colors hover:bg-slate-100">
+                Hoàn thiện hồ sơ
+              </Link>
+            </section>
           )}
 
           {/* 4 Metric Cards with exact 2 alternating colors from Figma SnowUI */}
@@ -224,7 +251,7 @@ export default function RecruiterDashboardPage() {
                     </span>
                     {data.profile.company_logo_url ? (
                       <img
-                        src={data.profile.company_logo_url}
+                        src={safeImageUrl(data.profile.company_logo_url) ?? undefined}
                         alt={data.profile.company_name || 'Logo'}
                         className="h-9 w-9 rounded-xl object-contain border border-black/[0.06] p-0.5 bg-white"
                       />

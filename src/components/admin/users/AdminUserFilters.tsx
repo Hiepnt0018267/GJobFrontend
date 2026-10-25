@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react'
 import type { AdminUserRole } from '../../../types/adminUser'
 
 export type AdminUserRoleFilter = AdminUserRole | 'ALL'
-export type AdminUserActiveFilter = 'ALL' | 'ACTIVE' | 'INACTIVE'
+export type AdminUserStatusFilter = 'ALL' | 'PENDING' | 'ACTIVE' | 'INACTIVE'
 
 const roleFilters: Array<{ value: AdminUserRoleFilter; label: string }> = [
   { value: 'ALL', label: 'Tất cả vai trò' },
@@ -12,22 +12,23 @@ const roleFilters: Array<{ value: AdminUserRoleFilter; label: string }> = [
   { value: 'ADMIN', label: 'Quản trị viên' },
 ]
 
-const activeFilters: Array<{ value: AdminUserActiveFilter; label: string }> = [
+const statusFilters: Array<{ value: AdminUserStatusFilter; label: string }> = [
   { value: 'ALL', label: 'Tất cả trạng thái' },
+  { value: 'PENDING', label: 'Chờ xác minh' },
   { value: 'ACTIVE', label: 'Đang hoạt động' },
   { value: 'INACTIVE', label: 'Đã vô hiệu hóa' },
 ]
 
 type AdminUserFiltersProps = {
   role: AdminUserRoleFilter
-  activeStatus: AdminUserActiveFilter
+  accountStatus: AdminUserStatusFilter
   search: string
   onSearchChange: (search: string) => void
   onRoleChange: (role: AdminUserRoleFilter) => void
-  onActiveStatusChange: (status: AdminUserActiveFilter) => void
+  onAccountStatusChange: (status: AdminUserStatusFilter) => void
 }
 
-export default function AdminUserFilters({ role, activeStatus, search, onSearchChange, onRoleChange, onActiveStatusChange }: AdminUserFiltersProps) {
+export default function AdminUserFilters({ role, accountStatus, search, onSearchChange, onRoleChange, onAccountStatusChange }: AdminUserFiltersProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const debounceTimer = useRef<number | null>(null)
 
@@ -55,12 +56,12 @@ export default function AdminUserFilters({ role, activeStatus, search, onSearchC
     onSearchChange('')
   }
 
-  const hasActiveFilters = Boolean(search || role !== 'ALL' || activeStatus !== 'ALL')
+  const hasActiveFilters = Boolean(search || role !== 'ALL' || accountStatus !== 'ALL')
 
   const handleReset = () => {
     clearSearch()
     onRoleChange('ALL')
-    onActiveStatusChange('ALL')
+    onAccountStatusChange('ALL')
   }
 
   return (
@@ -106,11 +107,11 @@ export default function AdminUserFilters({ role, activeStatus, search, onSearchC
       <label className="min-w-0 w-44 flex-1 sm:flex-initial">
         <span className="sr-only">Lọc theo trạng thái tài khoản</span>
         <select
-          value={activeStatus}
-          onChange={(event) => onActiveStatusChange(event.target.value as AdminUserActiveFilter)}
+          value={accountStatus}
+          onChange={(event) => onAccountStatusChange(event.target.value as AdminUserStatusFilter)}
           className="h-10 w-full rounded-xl border border-slate-200/90 bg-white shadow-2xs px-3 text-xs sm:text-sm font-medium text-slate-700 outline-none transition-all duration-150 hover:border-slate-300 focus:border-[#1C1C1C] focus:ring-3 focus:ring-black/10"
         >
-          {activeFilters.map((filter) => (
+          {statusFilters.map((filter) => (
             <option key={filter.value} value={filter.value}>
               {filter.label}
             </option>

@@ -1,4 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import CandidateRouteFallback from '../components/feedback/CandidateRouteFallback'
+import WorkspaceRouteFallback from '../components/feedback/WorkspaceRouteFallback'
 import { useAuth } from '../hooks/useAuth'
 
 /**
@@ -8,20 +10,14 @@ import { useAuth } from '../hooks/useAuth'
  * - Not authenticated: redirect to /login, preserving the attempted URL
  * - Authenticated: render the nested route
  */
-export default function ProtectedRoute() {
+export default function ProtectedRoute({ loadingVariant = 'default' }: { loadingVariant?: 'default' | 'candidate' }) {
   const { isAuthenticated, loading } = useAuth()
   const location = useLocation()
 
   // Wait for auth restoration to complete before making routing decisions
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-500">Đang tải...</p>
-        </div>
-      </div>
-    )
+    if (loadingVariant === 'candidate') return <CandidateRouteFallback />
+    return <WorkspaceRouteFallback />
   }
 
   if (!isAuthenticated) {

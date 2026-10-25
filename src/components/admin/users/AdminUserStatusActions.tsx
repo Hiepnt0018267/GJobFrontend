@@ -1,4 +1,4 @@
-import { CheckCircle2, LoaderCircle, ShieldAlert, XCircle } from 'lucide-react'
+import { CheckCircle2, Clock3, LoaderCircle, ShieldAlert, XCircle } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { adminUserService } from '../../../services/adminUserService'
 import type { AdminUserDetail } from '../../../types/adminUser'
@@ -82,6 +82,10 @@ export default function AdminUserStatusActions({ user, isCurrentUser, onUpdated,
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (user.account_status === 'PENDING') {
+    return <div className="rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900 ring-1 ring-amber-200"><p className="flex items-start gap-2 font-semibold"><Clock3 size={17} className="mt-0.5 shrink-0" aria-hidden="true" />Đang chờ xác minh email</p><p className="mt-2 text-amber-800">Tài khoản chưa thể sử dụng hệ thống. Trạng thái sẽ tự cập nhật sau khi người dùng xác minh email.</p></div>
   }
 
   if (isCurrentUser) {

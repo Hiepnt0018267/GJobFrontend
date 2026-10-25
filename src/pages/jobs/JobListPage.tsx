@@ -40,7 +40,7 @@ const messageFor = (error: unknown) =>
 
 function Skeleton() {
   return (
-    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3" aria-busy="true" aria-label="Đang tải danh sách việc làm">
+    <div className="grid gap-5 md:grid-cols-2" aria-busy="true" aria-label="Đang tải danh sách việc làm">
       {Array.from({ length: 6 }, (_, index) => (
         <div key={index} className="flex h-64 flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
           <div className="space-y-3">
@@ -321,7 +321,7 @@ export default function JobListPage() {
               </div>
             ) : data ? (
               <>
-                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-5 md:grid-cols-2">
                   {data.items.map((job) => (
                     <JobCard key={job.id} job={job} />
                   ))}

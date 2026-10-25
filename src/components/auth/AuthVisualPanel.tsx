@@ -1,8 +1,8 @@
 import { useEffect, useRef, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { Zap } from 'lucide-react'
 import authLoginBanner from '../../assets/auth/auth_login_banner.jpg'
 import authRegisterBanner from '../../assets/auth/auth_register_banner.jpg'
+import GJobLogo from '../brand/GJobLogo'
 
 type AuthVisualPanelProps = {
   isLogin: boolean
@@ -120,12 +120,9 @@ export default function AuthVisualPanel({ isLogin }: AuthVisualPanelProps) {
 
       <Link
         to="/"
-        className="absolute left-8 top-8 z-10 flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-xs font-semibold text-slate-800 shadow-lg backdrop-blur-md transition-[background-color,transform] duration-200 hover:scale-105 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1b5e60] motion-reduce:transform-none"
+        className="absolute left-8 top-8 z-10 flex items-center rounded-2xl bg-white/95 px-3 py-2 shadow-lg backdrop-blur-md transition-[background-color,transform] duration-200 hover:scale-105 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1b5e60] motion-reduce:transform-none"
       >
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#49BBBD] text-white shadow-sm shadow-[#49BBBD]/50">
-          <Zap size={12} strokeWidth={3} aria-hidden="true" />
-        </span>
-        <span>G<span className="text-[#49BBBD]">Job</span></span>
+        <GJobLogo className="h-7 w-auto" />
       </Link>
 
       <div

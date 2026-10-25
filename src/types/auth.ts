@@ -11,6 +11,7 @@ export interface User {
   email_verified: boolean
   email_verified_at: string | null
   created_at: string
+  has_local_password: boolean
   // Extended profile fields (present when fetched via GET/PATCH /api/v1/users/me)
   phone?: string | null
   avatar_url?: string | null
@@ -62,6 +63,19 @@ export interface ChangePasswordRequest {
   new_password: string
 }
 
+export interface GoogleAuthenticatedResponse extends LoginResponse { status: 'AUTHENTICATED' }
+export interface GoogleRoleSelectionResponse {
+  status: 'ROLE_SELECTION_REQUIRED'; onboarding_token: string; expires_in: number
+  profile: { email: string; suggested_full_name: string }
+}
+export interface GoogleLinkRequiredResponse {
+  status: 'GOOGLE_ACCOUNT_LINK_REQUIRED'; link_token: string; expires_in: number; email: string
+}
+export interface GoogleVerificationRequiredResponse {
+  status: 'LOCAL_ACCOUNT_VERIFICATION_REQUIRED'; email: string
+}
+export type GoogleAuthResponse = GoogleAuthenticatedResponse | GoogleRoleSelectionResponse | GoogleLinkRequiredResponse | GoogleVerificationRequiredResponse
+
 // ─── Profile Update Payload ───────────────────────────────────────────
 export interface UpdateProfileRequest {
   full_name?: string | null
@@ -82,4 +96,5 @@ export interface AuthContextType {
   logout: () => void
   updateUser: (data: UpdateProfileRequest) => Promise<void>
   updateAuthenticatedUser: (data: Partial<User>) => void
+  acceptAuthSession: (response: LoginResponse) => void
 }

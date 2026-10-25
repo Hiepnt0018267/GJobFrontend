@@ -1,4 +1,4 @@
-export type BillingPeriod = 'NONE' | 'MONTHLY'
+export type BillingPeriod = 'NONE' | 'MONTHLY' | 'YEARLY'
 export type SubscriptionStatus = 'ACTIVE' | 'CANCELLED' | 'EXPIRED'
 export type SubscriptionSource = 'ADMIN' | 'PAYMENT'
 export type RecruiterFeature = 'AI_CANDIDATE_RANKING' | 'DETAILED_CV_JD_MATCH'
@@ -9,6 +9,11 @@ export type SubscriptionPlan = {
   name: string
   description: string | null
   price: string
+  discount_percent: number | null
+  discount_starts_at: string | null
+  discount_ends_at: string | null
+  discount_is_active: boolean
+  discounted_price: string | null
   currency: string
   billing_period: BillingPeriod
   duration_days: number | null
@@ -82,6 +87,9 @@ export type PlanListParams = {
 }
 
 export type AdminRecruiterSubscriptionListParams = {
+  search?: string
+  is_active?: boolean
+  plan_code?: string
   page?: number
   page_size?: number
 }
@@ -91,13 +99,16 @@ export type PlanCreateRequest = {
   name: string
   description: string | null
   price: string
+  discount_percent: number | null
+  discount_starts_at: string | null
+  discount_ends_at: string | null
   currency: string
   billing_period: BillingPeriod
   duration_days: number | null
   is_active: boolean
 }
 
-export type PlanUpdateRequest = Pick<SubscriptionPlan, 'name' | 'description' | 'price' | 'is_active'>
+export type PlanUpdateRequest = Pick<SubscriptionPlan, 'name' | 'description' | 'price' | 'discount_percent' | 'discount_starts_at' | 'discount_ends_at' | 'is_active'>
 
 export type GrantSubscriptionRequest = {
   plan_id: string
@@ -118,6 +129,9 @@ export type PaymentOrder = {
     duration_days: number
   }
   amount: string
+  original_amount: string
+  discount_percent: number
+  discount_amount: string
   currency: string
   payment_code: string
   transfer_content: string

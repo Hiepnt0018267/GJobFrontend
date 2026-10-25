@@ -16,15 +16,18 @@ before(async () => {
 after(async () => { await server?.close() })
 
 const freePlan = {
-  id: 'free', code: 'FREE', name: 'Miễn phí', description: null, price: '0', currency: 'VND',
+  id: 'free', code: 'FREE', name: 'Miễn phí', description: null, price: '0', discount_percent: null,
+  discount_starts_at: null, discount_ends_at: null, discount_is_active: false, discounted_price: null, currency: 'VND',
   billing_period: 'NONE', duration_days: null, is_active: true,
   created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z', features: [],
 }
 const paidPlan = { ...freePlan, id: 'pro', code: 'PRO_MONTHLY', name: 'PRO tháng', price: '99000', billing_period: 'MONTHLY', duration_days: 30 }
+const yearlyPlan = { ...paidPlan, id: 'pro-yearly', code: 'PRO_YEARLY', name: 'PRO năm', price: '1188000', billing_period: 'YEARLY', duration_days: 365 }
 
 test('only an active non-current paid plan exposes the purchase action', () => {
   assert.equal(payment.isPurchasablePlan(freePlan, 'FREE'), false)
   assert.equal(payment.isPurchasablePlan(paidPlan, 'PRO_MONTHLY'), false)
+  assert.equal(payment.isPurchasablePlan(yearlyPlan, 'FREE'), true)
   assert.equal(payment.isPurchasablePlan(paidPlan, 'FREE'), true)
   assert.equal(payment.isPurchasablePlan({ ...paidPlan, is_active: false }, 'FREE'), false)
   assert.equal(payment.isPurchasablePlan({ ...paidPlan, price: '0' }, 'FREE'), false)

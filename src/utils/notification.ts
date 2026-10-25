@@ -38,15 +38,26 @@ export function notificationCenterPath(role: UserRole): string {
 
 export function getNotificationTargetPath({
   role,
+  notificationType,
   targetType,
   targetId,
 }: {
   role: UserRole
+  notificationType?: string
   targetType: string | null
   targetId: string | null
 }): string | null {
-  if (!targetType || !targetId || !UUID_PATTERN.test(targetId)) return null
+  const registrationFallback = role === 'ADMIN' && (
+    notificationType === 'CANDIDATE_REGISTERED'
+    || notificationType === 'RECRUITER_REGISTERED'
+  ) ? '/admin/users' : null
+
+  if (!targetType || !targetId || !UUID_PATTERN.test(targetId)) return registrationFallback
   const id = encodeURIComponent(targetId)
+
+  if (targetType === 'USER') {
+    return role === 'ADMIN' ? `/admin/users/${id}` : null
+  }
 
   if (targetType === 'APPLICATION') {
     if (role === 'CANDIDATE') return `/candidate/applications/${id}`
@@ -65,7 +76,7 @@ export function getNotificationTargetPath({
     if (role === 'ADMIN') return `/admin/cvs/${id}`
   }
 
-  return null
+  return registrationFallback
 }
 
 export function formatNotificationTimestamp(value: string): string {

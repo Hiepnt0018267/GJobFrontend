@@ -18,6 +18,8 @@ test('login submission delegates redirecting to the authenticated route guard', 
 })
 
 test('authenticated route guard redirects from the fresh user role', () => {
-  assert.match(appSource, /const dest = returnTo \?\? dashboardFor\(user\.role\)/)
+  assert.match(appSource, /user\.role === 'RECRUITER' && hasPendingRecruiterOnboarding\(user\.email\)/)
+  assert.match(appSource, /'\/recruiter\/profile\/edit\?onboarding=1'/)
+  assert.match(appSource, /returnTo \?\? dashboardFor\(user\.role\)/)
   assert.match(appSource, /return <Navigate to=\{dest\}/)
 })

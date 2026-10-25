@@ -1,9 +1,10 @@
-import { PanelLeftClose, PanelLeftOpen, Zap } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { recruiterNavigationGroups } from '../../../config/recruiterNavigation'
 import { useAuth } from '../../../hooks/useAuth'
 import RecruiterAccountMenu from './RecruiterAccountMenu'
+import GJobLogo from '../../brand/GJobLogo'
 
 type Props = { collapsed?: boolean; hoverExpanded?: boolean; onHoverChange?: (hovered: boolean) => void; onNavigate?: () => void; onToggleCollapse?: () => void; mobile?: boolean }
 
@@ -33,17 +34,7 @@ export default function RecruiterSidebar({ collapsed = false, hoverExpanded = fa
           aria-label="GJob — Trang chủ tuyển dụng"
           title={compact && !hoverExpanded ? 'GJob' : undefined}
         >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#1C1C1C] text-white shadow-xs transition-transform duration-200 group-hover:scale-105">
-            <Zap className="h-4.5 w-4.5 fill-white/20 text-white" strokeWidth={2.4} aria-hidden="true" />
-          </span>
-          <span className={expanded ? 'min-w-0 leading-tight' : 'sr-only'}>
-            <span className="block text-base font-semibold tracking-tight text-[#1C1C1C] font-[Inter,sans-serif]">
-              GJob
-            </span>
-            <span className="block text-[11px] font-normal text-slate-400 font-[Inter,sans-serif]">
-              Khu nhà tuyển dụng
-            </span>
-          </span>
+          <GJobLogo palette="monochrome" variant={expanded ? 'wordmark' : 'mark'} className={expanded ? 'h-8 w-auto transition-transform duration-200 group-hover:scale-[1.03]' : 'h-9 w-9 transition-transform duration-200 group-hover:scale-105'} />
         </Link>
       </div>
       <nav className={`flex-1 overflow-y-auto py-5 ${expanded ? 'px-3' : 'px-2'}`} aria-label="Các khu vực nhà tuyển dụng">

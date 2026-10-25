@@ -124,8 +124,109 @@
     animation: gjob-page-enter var(--motion-normal) var(--ease-gjob) both;
   }
 
+  /* Candidate pages never start fully transparent. Keeping the previous visual
+     context avoids the white flash that made client-side navigation feel like
+     a document reload. */
+  .motion-page-candidate {
+    animation: gjob-candidate-page-enter 150ms var(--ease-gjob) both;
+  }
+
+  .motion-page-workspace {
+    animation: gjob-workspace-page-enter 140ms var(--ease-gjob) both;
+  }
+
+  .candidate-navigation-progress {
+    pointer-events: none;
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 100;
+    height: 3px;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 100ms ease-out;
+  }
+
+  .candidate-navigation-progress > span {
+    display: block;
+    height: 100%;
+    width: 100%;
+    transform: scaleX(0);
+    transform-origin: left;
+    background: linear-gradient(90deg, #49BBBD, #79d4d5);
+    box-shadow: 0 0 10px rgb(73 187 189 / 0.4);
+  }
+
+  .candidate-navigation-progress.is-loading {
+    opacity: 1;
+  }
+
+  .candidate-navigation-progress.is-loading > span {
+    transform: scaleX(0.82);
+    transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .candidate-navigation-progress.is-complete {
+    opacity: 0;
+    transition-delay: 80ms;
+  }
+
+  .candidate-navigation-progress.is-complete > span {
+    transform: scaleX(1);
+    transition: transform 120ms ease-out;
+  }
+
+  .workspace-navigation-progress {
+    pointer-events: none;
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 100;
+    height: 3px;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 100ms ease-out;
+  }
+
+  .workspace-navigation-progress > span {
+    display: block;
+    height: 100%;
+    width: 100%;
+    transform: scaleX(0);
+    transform-origin: left;
+    background: linear-gradient(90deg, #1c1c1c, #64748b);
+    box-shadow: 0 0 10px rgb(28 28 28 / 0.24);
+  }
+
+  .workspace-navigation-progress.is-loading {
+    opacity: 1;
+  }
+
+  .workspace-navigation-progress.is-loading > span {
+    transform: scaleX(0.82);
+    transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .workspace-navigation-progress.is-complete {
+    opacity: 0;
+    transition-delay: 80ms;
+  }
+
+  .workspace-navigation-progress.is-complete > span {
+    transform: scaleX(1);
+    transition: transform 120ms ease-out;
+  }
+
   .motion-card {
     transition: transform var(--motion-normal) var(--ease-gjob), box-shadow var(--motion-normal) var(--ease-gjob), border-color var(--motion-feedback) ease-out, background-color var(--motion-feedback) ease-out;
+  }
+
+  .motion-plan-period-from-left {
+    animation: gjob-plan-period-enter-left 240ms var(--ease-gjob) both;
+    will-change: opacity, transform;
+  }
+
+  .motion-plan-period-from-right {
+    animation: gjob-plan-period-enter-right 240ms var(--ease-gjob) both;
+    will-change: opacity, transform;
   }
 
   @media (hover: hover) {
@@ -153,6 +254,14 @@
 
   .motion-error {
     animation: gjob-error-enter var(--motion-feedback) var(--ease-gjob) both;
+  }
+
+  .auth-mode-enter-from-left {
+    animation: gjob-auth-enter-from-left 280ms var(--ease-gjob) both;
+  }
+
+  .auth-mode-enter-from-right {
+    animation: gjob-auth-enter-from-right 280ms var(--ease-gjob) both;
   }
 
   /* Shimmer effect for skeletons */
@@ -251,6 +360,26 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes gjob-plan-period-enter-left {
+  from { opacity: 0.72; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes gjob-plan-period-enter-right {
+  from { opacity: 0.72; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes gjob-candidate-page-enter {
+  from { opacity: 0.985; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gjob-workspace-page-enter {
+  from { opacity: 0.99; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes gjob-overlay-enter {
   from { opacity: 0; transform: translateY(-4px) scale(0.985); }
   to { opacity: 1; transform: translateY(0) scale(1); }
@@ -264,6 +393,16 @@
 @keyframes gjob-error-enter {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gjob-auth-enter-from-left {
+  from { opacity: 0; transform: translate3d(-14px, 0, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes gjob-auth-enter-from-right {
+  from { opacity: 0; transform: translate3d(14px, 0, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
 @keyframes gjob-drawer-enter {

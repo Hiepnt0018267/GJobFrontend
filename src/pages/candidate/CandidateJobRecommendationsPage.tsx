@@ -81,6 +81,64 @@ export function RecommendationCvAvailability({
   )
 }
 
+export function RecommendationEmptyState({
+  data,
+  onRetry,
+  onChangeCv,
+}: {
+  data: CandidateJobRecommendationListResponse
+  onRetry: () => void
+  onChangeCv: () => void
+}) {
+  if (data.items.length > 0 || data.candidate_signal_status === 'unavailable') return null
+
+  const isPreparing = data.ranked_count === 0 && data.pending_count > 0
+  const isUnavailable = data.ranked_count === 0
+    && !isPreparing
+    && (data.unavailable_count > 0 || data.error_count > 0)
+  const hasCompletedRanking = data.ranked_count > 0
+
+  const title = isPreparing
+    ? 'Đang chuẩn bị dữ liệu gợi ý'
+    : isUnavailable
+      ? 'Chưa thể tạo gợi ý lúc này'
+      : hasCompletedRanking
+        ? 'Chưa tìm thấy công việc phù hợp với CV này'
+        : 'Chưa có việc làm đủ điều kiện để đối chiếu'
+  const description = isPreparing
+    ? 'Hệ thống đang chuẩn bị dữ liệu để đối chiếu CV với các công việc. Vui lòng thử lại sau.'
+    : isUnavailable
+      ? 'Dữ liệu của các công việc hiện chưa sẵn sàng để xếp hạng. Bạn có thể thử lại sau hoặc xem danh sách việc làm.'
+      : hasCompletedRanking
+        ? 'Hãy cập nhật thêm kỹ năng hoặc thử lại sau.'
+        : 'Bạn có thể chọn CV khác hoặc xem tất cả việc làm đang tuyển.'
+
+  return (
+    <div className="rounded-2xl bg-white px-6 py-14 text-center shadow-xs ring-1 ring-slate-200">
+      {isUnavailable
+        ? <AlertCircle className="mx-auto text-amber-600" size={34} aria-hidden="true" />
+        : isPreparing
+          ? <RefreshCw className="mx-auto animate-spin text-[#49BBBD] motion-reduce:animate-none" size={34} aria-hidden="true" />
+          : <BriefcaseBusiness className="mx-auto text-[#49BBBD]" size={34} aria-hidden="true" />}
+      <h3 className="mt-4 text-lg font-bold text-slate-950">{title}</h3>
+      <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">{description}</p>
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
+        {(isPreparing || isUnavailable) && (
+          <button type="button" onClick={onRetry} className="btn-press inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#49BBBD] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3fa9ab]">
+            <RefreshCw size={16} aria-hidden="true" />Thử lại
+          </button>
+        )}
+        {!isPreparing && (
+          <button type="button" onClick={onChangeCv} className="btn-press inline-flex min-h-11 items-center rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50">
+            Chọn CV khác
+          </button>
+        )}
+        {!isPreparing && <Link to="/jobs" className="inline-flex min-h-11 items-center rounded-xl bg-slate-100 px-5 py-2.5 text-sm font-bold text-slate-800 hover:bg-slate-200">Xem tất cả việc làm</Link>}
+      </div>
+    </div>
+  )
+}
+
 export function RecommendationStartPanel({
   cvs,
   isLoading,
@@ -399,12 +457,7 @@ export default function CandidateJobRecommendationsPage() {
                   </div>
                 </div>
               ) : data?.items.length === 0 ? (
-                <div className="rounded-2xl bg-white px-6 py-14 text-center shadow-xs ring-1 ring-slate-200">
-                  <BriefcaseBusiness className="mx-auto text-[#49BBBD]" size={34} aria-hidden="true" />
-                  <h3 className="mt-4 text-lg font-bold text-slate-950">Chưa có kết quả phù hợp để hiển thị</h3>
-                  <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">Bạn có thể chọn CV khác hoặc tạo lại gợi ý khi dữ liệu việc làm được cập nhật.</p>
-                  <button type="button" onClick={changeCv} className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-[#49BBBD] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3fa9ab]">Chọn CV khác</button>
-                </div>
+                <RecommendationEmptyState data={data} onRetry={() => restartSession()} onChangeCv={changeCv} />
               ) : data ? (
                 <>
                   <div className="grid gap-5 md:grid-cols-2">

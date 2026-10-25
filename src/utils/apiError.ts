@@ -14,6 +14,9 @@ export function recruiterErrorMessage(error: unknown): string {
 
 export function recruiterJobErrorMessage(error: unknown): string {
   if (!axios.isAxiosError(error) || !error.response) return 'Không thể kết nối tới máy chủ.'
+  if (getApiErrorCode(error) === 'RECRUITER_PROFILE_INCOMPLETE') {
+    return 'Hãy hoàn thiện hồ sơ công ty trước khi đăng tin tuyển dụng.'
+  }
   switch (error.response.status) {
     case 401: return 'Phiên đăng nhập đã hết hạn.'
     case 403: return 'Bạn không có quyền thực hiện thao tác này.'

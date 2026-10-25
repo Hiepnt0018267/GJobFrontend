@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { Zap, Shield, Heart } from 'lucide-react'
+import { Shield, Heart } from 'lucide-react'
+import GJobLogo from '../brand/GJobLogo'
 
 const FOOTER_LINKS = {
   discovery: [
@@ -31,13 +32,8 @@ export default function Footer() {
           
           {/* Brand Column */}
           <div className="lg:col-span-2">
-            <Link to="/" className="inline-flex items-center gap-2.5 mb-4" aria-label="GJob">
-              <div className="flex items-center justify-center w-9 h-9 bg-teal-500 rounded-xl shadow-sm text-white">
-                <Zap size={20} className="fill-white" />
-              </div>
-              <span className="text-2xl font-black text-white tracking-tight">
-                G<span className="text-teal-400">Job</span>
-              </span>
+            <Link to="/" className="group mb-4 inline-flex rounded-xl bg-white px-3 py-2 shadow-sm" aria-label="GJob">
+              <GJobLogo className="h-9 w-auto transition-transform duration-200 group-hover:scale-[1.03]" />
             </Link>
             <p className="text-sm text-slate-400 leading-relaxed mb-6 max-w-sm">
               Nền tảng kết nối nhân tài và việc làm ứng dụng AI hàng đầu Việt Nam. Tối ưu hóa hồ sơ, đối chiếu năng lực và kiến tạo cơ hội sự nghiệp bền vững.

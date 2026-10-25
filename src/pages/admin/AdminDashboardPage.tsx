@@ -1,6 +1,6 @@
-import { AlertCircle, BriefcaseBusiness, Clock3, FileText, Files, RefreshCw, Users } from 'lucide-react'
+import { AlertCircle, BriefcaseBusiness, FileText, Files, RefreshCw, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
   AdminApplicationChart,
   AdminJobChart,
@@ -110,24 +110,6 @@ export default function AdminDashboardPage() {
               <AdminApplicationChart data={dashboard.applications} onNavigate={navigate} />
               <AdminTemplateChart data={dashboard.cv_templates} onNavigate={navigate} />
             </section>
-
-            {dashboard.jobs.pending > 0 && (
-              <aside className="flex flex-col gap-3 rounded-2xl border border-amber-200/80 bg-amber-50/80 p-5 text-sm text-amber-950 shadow-xs sm:flex-row sm:items-start sm:justify-between">
-                <div className="flex items-start gap-3">
-                  <Clock3 size={20} className="mt-0.5 shrink-0 text-amber-700" aria-hidden="true" />
-                  <p>
-                    <span className="font-bold text-amber-950">{dashboard.jobs.pending.toLocaleString('vi-VN')} tin đang chờ duyệt.</span>{' '}
-                    Các tin này cần được xem xét và phê duyệt trước khi công khai cho ứng viên trên sàn.
-                  </p>
-                </div>
-                <Link
-                  to="/admin/jobs?status=PENDING"
-                  className="btn-press shrink-0 inline-flex items-center gap-1 rounded-xl bg-amber-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-amber-700"
-                >
-                  Xử lý ngay →
-                </Link>
-              </aside>
-            )}
           </div>
         )}
     </main>

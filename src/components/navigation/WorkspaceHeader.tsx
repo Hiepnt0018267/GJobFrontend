@@ -1,8 +1,9 @@
-import { LogOut, Menu, X, Zap } from 'lucide-react'
+import { LogOut, Menu, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import GJobLogo from '../brand/GJobLogo'
 
 export type WorkspaceNavigationItem = {
   to: string
@@ -42,8 +43,7 @@ export default function WorkspaceHeader({ workspaceLabel, workspaceHome, navigat
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-2">
           <Link to="/" className="flex items-center gap-2" aria-label="GJob - Trang chủ">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-600"><Zap size={17} className="text-white" strokeWidth={2.5} /></span>
-            <span className="text-lg font-bold text-slate-900">G<span className="text-teal-600">Job</span></span>
+            <GJobLogo className="h-8 w-auto" />
           </Link>
           <span className="hidden h-5 w-px bg-slate-200 sm:block" aria-hidden="true" />
           <Link to={workspaceHome} className="hidden text-xs font-semibold text-slate-500 transition-colors hover:text-teal-700 sm:block">{workspaceLabel}</Link>

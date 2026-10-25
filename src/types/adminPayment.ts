@@ -21,6 +21,9 @@ export type AdminPaymentOrder = {
   plan_code: string
   plan_name: string
   amount: string
+  original_amount: string
+  discount_percent: number
+  discount_amount: string
   currency: string
   expires_at: string
   paid_at: string | null

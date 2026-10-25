@@ -1,6 +1,7 @@
 import { Building2, ChevronRight, CreditCard, Settings } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import AccountSecurityForm from '../../components/account/AccountSecurityForm'
+import GoogleAuthPanel from '../../components/auth/GoogleAuthPanel'
 
 const linkClass = 'group flex items-center gap-4 rounded-2xl border border-black/[0.05] bg-white p-5 transition-all duration-150 hover:-translate-y-0.5 hover:border-black/[0.1] hover:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C]'
 
@@ -45,6 +46,7 @@ export default function RecruiterSettingsPage() {
       <section className="mt-8" aria-labelledby="security-settings-title">
         <h2 id="security-settings-title" className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Bảo mật</h2>
         <div className="mt-3"><AccountSecurityForm /></div>
+        <div className="mt-6 rounded-3xl border border-black/[0.05] bg-white p-6"><GoogleAuthPanel sessionLink /></div>
       </section>
     </main>
   )

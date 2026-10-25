@@ -9,6 +9,7 @@ import type {
   RegisterResponse,
   UpdateProfileRequest,
   User,
+  LoginResponse,
 } from '../types/auth'
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -77,6 +78,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser((current) => current ? { ...current, ...data } : current)
   }, [])
 
+  const acceptAuthSession = useCallback((response: LoginResponse) => {
+    tokenStorage.save(response.access_token)
+    setToken(response.access_token)
+    setUser(response.user)
+  }, [])
+
   const value: AuthContextType = {
     user,
     token,
@@ -87,6 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     updateUser,
     updateAuthenticatedUser,
+    acceptAuthSession,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

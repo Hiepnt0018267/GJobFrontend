@@ -8,7 +8,7 @@ export const KNOWN_NOTIFICATION_TYPES = [
 ] as const
 
 export type KnownNotificationType = (typeof KNOWN_NOTIFICATION_TYPES)[number]
-export type NotificationTargetType = 'APPLICATION' | 'JOB' | 'CV'
+export type NotificationTargetType = 'USER' | 'APPLICATION' | 'JOB' | 'CV'
 
 export interface NotificationItem {
   id: string

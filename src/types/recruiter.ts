@@ -10,6 +10,8 @@ export type RecruiterProfile = {
   company_logo_url: string | null
   industry: string | null
   company_size: number | null
+  profile_completed: boolean
+  missing_required_fields: string[]
   created_at: string
   updated_at: string
 }

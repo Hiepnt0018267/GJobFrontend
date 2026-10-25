@@ -1,6 +1,6 @@
 import { CalendarDays, CircleDollarSign, Pencil, ShieldCheck } from 'lucide-react'
 import type { SubscriptionPlan } from '../../types/subscription'
-import { billingPeriodLabel, formatSubscriptionDate, formatVnd, planDisplayName } from '../../utils/subscription'
+import { billingPeriodLabel, effectivePlanPrice, formatSubscriptionDate, formatVnd, hasActivePlanDiscount, planDisplayName } from '../../utils/subscription'
 
 type Props = {
   plans: SubscriptionPlan[]
@@ -10,7 +10,9 @@ type Props = {
 export default function SubscriptionPlanGrid({ plans, onEdit }: Props) {
   return (
     <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" aria-label="Danh mục gói dịch vụ">
-      {plans.map((plan) => (
+      {plans.map((plan) => {
+        const onSale = hasActivePlanDiscount(plan)
+        return (
         <article key={plan.id} className="flex min-h-72 flex-col rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition-shadow hover:shadow-md sm:p-6">
           <header className="flex items-start justify-between gap-4">
             <div className="min-w-0">
@@ -29,8 +31,10 @@ export default function SubscriptionPlanGrid({ plans, onEdit }: Props) {
           </header>
 
           <div className="mt-6">
-            <p className="text-3xl font-semibold tracking-tight text-slate-950 tabular-nums">{formatVnd(plan.price)}</p>
+            {onSale && <div className="mb-1 flex items-center gap-2"><span className="text-sm text-slate-400 line-through">{formatVnd(plan.price)}</span><span className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-bold text-red-600">-{plan.discount_percent}%</span></div>}
+            <p className="text-3xl font-semibold tracking-tight text-slate-950 tabular-nums">{formatVnd(effectivePlanPrice(plan))}</p>
             <p className="mt-1 text-sm text-slate-500">{billingPeriodLabel(plan.billing_period)} · {plan.currency}</p>
+            {!onSale && plan.discount_percent !== null && <p className="mt-2 text-xs font-medium text-amber-700">Khuyến mãi đã lên lịch hoặc đã kết thúc</p>}
           </div>
 
           <p className="mt-5 min-h-12 text-sm leading-6 text-slate-600">{plan.description || 'Chưa có mô tả cho gói dịch vụ này.'}</p>
@@ -50,7 +54,7 @@ export default function SubscriptionPlanGrid({ plans, onEdit }: Props) {
             </div>
           </dl>
         </article>
-      ))}
+      )})}
     </section>
   )
 }

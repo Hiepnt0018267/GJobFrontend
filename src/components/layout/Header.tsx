@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { ChevronDown, LogOut, Menu, Sparkles, X, Zap } from 'lucide-react'
+import { ChevronDown, LogOut, Menu, Sparkles, X } from 'lucide-react'
 import { candidateAccountItems, candidateNavigationGroups, candidateToolsGroup } from '../../config/candidateNavigation'
 import { useAuth } from '../../hooks/useAuth'
 import type { UserRole } from '../../types/auth'
 import NotificationBell from '../notification/NotificationBell'
+import GJobLogo from '../brand/GJobLogo'
 
 type PublicNavItem = { to: string; label: string; end: boolean }
 
@@ -384,14 +385,9 @@ export default function Header() {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center gap-5">
-          {/* Logo with concentric icon container */}
+          {/* GJob brand */}
           <Link to="/" className="group flex shrink-0 items-center gap-2.5" aria-label="GJob - Trang chủ">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#49BBBD] shadow-sm shadow-[#49BBBD]/20 ring-1 ring-[#49BBBD]/30 transition-transform group-hover:scale-105">
-              <Zap size={18} className="text-white" strokeWidth={2.5} aria-hidden="true" />
-            </div>
-            <span className="text-xl font-bold tracking-tight text-slate-950">
-              G<span className="text-[#49BBBD]">Job</span>
-            </span>
+            <GJobLogo className="h-9 w-auto transition-transform duration-200 group-hover:scale-[1.03]" />
           </Link>
 
           {/* Desktop Navigation */}

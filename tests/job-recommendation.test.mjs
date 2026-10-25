@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { createServer } from 'vite'
 
-let server, recommendation, service, applicationService, api, navigation, JobCard, Page, CvAvailability, StartPanel, AuthContext, ToastContext
+let server, recommendation, service, applicationService, api, navigation, JobCard, Page, CvAvailability, EmptyState, StartPanel, AuthContext, ToastContext
 
 before(async () => {
   server = await createServer({ server: { middlewareMode: true, hmr: false }, appType: 'custom', logLevel: 'error' })
@@ -19,6 +19,7 @@ before(async () => {
   const pageModule = await server.ssrLoadModule('/src/pages/candidate/CandidateJobRecommendationsPage.tsx')
   Page = pageModule.default
   CvAvailability = pageModule.RecommendationCvAvailability
+  EmptyState = pageModule.RecommendationEmptyState
   StartPanel = pageModule.RecommendationStartPanel
   AuthContext = (await server.ssrLoadModule('/src/contexts/AuthContext.tsx')).AuthContext
   ToastContext = (await server.ssrLoadModule('/src/contexts/toastContextValue.ts')).ToastContext
@@ -231,6 +232,31 @@ test('explicit unavailable CV and no usable CV have distinct backend-authoritati
     createElement(CvAvailability, { data: { ...base, selected_cv_id: null }, explicitCvId: null })))
   assert.ok(automaticHtml.includes('Bạn cần một CV hợp lệ để nhận gợi ý việc làm'))
   assert.ok(explicitHtml.includes('/candidate/cvs'))
+})
+
+test('empty recommendation states distinguish completed, pending and unavailable ranking', () => {
+  const base = {
+    items: [], page: 1, page_size: 9, total: 0, total_pages: 0,
+    ranking_snapshot: snapshot, selected_cv_id: 'cv-1', candidate_signal_status: 'ranked',
+    ranked_count: 1, pending_count: 0, unavailable_count: 0, error_count: 0,
+  }
+  const renderEmpty = (data) => renderToStaticMarkup(createElement(MemoryRouter, null,
+    createElement(EmptyState, { data, onRetry() {}, onChangeCv() {} })))
+
+  const completed = renderEmpty(base)
+  assert.ok(completed.includes('Chưa tìm thấy công việc phù hợp với CV này'))
+  assert.ok(completed.includes('Hãy cập nhật thêm kỹ năng hoặc thử lại sau.'))
+  assert.ok(completed.includes('Chọn CV khác'))
+  assert.ok(completed.includes('Xem tất cả việc làm'))
+
+  const pending = renderEmpty({ ...base, ranked_count: 0, pending_count: 3 })
+  assert.ok(pending.includes('Hệ thống đang chuẩn bị dữ liệu để đối chiếu CV với các công việc. Vui lòng thử lại sau.'))
+  assert.ok(pending.includes('Thử lại'))
+  assert.equal(pending.includes('Chưa tìm thấy công việc phù hợp với CV này'), false)
+
+  const unavailable = renderEmpty({ ...base, ranked_count: 0, unavailable_count: 2, error_count: 1 })
+  assert.ok(unavailable.includes('Chưa thể tạo gợi ý lúc này'))
+  assert.equal(unavailable.includes('Chưa tìm thấy công việc phù hợp với CV này'), false)
 })
 
 test('404 copy is ownership-neutral and unrelated errors do not leak provider details', () => {

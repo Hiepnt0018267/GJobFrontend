@@ -1,5 +1,8 @@
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
+import WorkspaceRouteFallback from '../components/feedback/WorkspaceRouteFallback'
+import WorkspaceNavigationFeedback from '../components/motion/WorkspaceNavigationFeedback'
+import WorkspaceScrollManager from '../components/motion/WorkspaceScrollManager'
 import AdminMobileDrawer from '../components/admin/layout/AdminMobileDrawer'
 import AdminSidebar from '../components/admin/layout/AdminSidebar'
 import AdminTopbar from '../components/admin/layout/AdminTopbar'
@@ -15,7 +18,7 @@ export default function AdminLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useSidebarCollapsed('gjob.admin.sidebar-collapsed')
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => { setDrawerOpen(false); setSidebarHovered(false); setNotificationOpen(false) })
+    const frame = requestAnimationFrame(() => { setDrawerOpen(false); setNotificationOpen(false) })
     return () => cancelAnimationFrame(frame)
   }, [pathname])
 
@@ -31,6 +34,8 @@ export default function AdminLayout() {
 
   return (
     <div className={`admin-workspace min-h-screen bg-white font-recruiter lg:grid lg:transition-[grid-template-columns] lg:duration-[var(--motion-normal)] lg:ease-[var(--ease-gjob)] ${sidebarCollapsed && !sidebarHovered ? 'lg:grid-cols-[4.5rem_minmax(0,1fr)]' : 'lg:grid-cols-[15rem_minmax(0,1fr)]'}`}>
+      <WorkspaceNavigationFeedback />
+      <WorkspaceScrollManager />
       <AdminSidebar
         collapsed={sidebarCollapsed}
         hoverExpanded={sidebarHovered}
@@ -47,7 +52,7 @@ export default function AdminLayout() {
           onCloseAccount={() => setAccountOpen(false)}
           onNotificationOpenChange={changeNotificationOpen}
         />
-        <div className="min-w-0 flex-1"><PageTransition><Outlet /></PageTransition></div>
+        <div className="min-w-0 flex-1"><PageTransition><Suspense fallback={<WorkspaceRouteFallback />}><Outlet /></Suspense></PageTransition></div>
       </div>
       <AdminMobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </div>

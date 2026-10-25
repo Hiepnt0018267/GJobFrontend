@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { after, before, test } from 'node:test'
+import { readFileSync } from 'node:fs'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router-dom'
@@ -25,7 +26,7 @@ before(async () => {
 
 after(async () => { await server?.close() })
 
-const freePlan = { id: 'free', code: 'FREE', name: 'Miễn phí', description: null, price: '0', currency: 'VND', billing_period: 'NONE', duration_days: null, is_active: true, created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' }
+const freePlan = { id: 'free', code: 'FREE', name: 'Miễn phí', description: null, price: '0', discount_percent: null, discount_starts_at: null, discount_ends_at: null, discount_is_active: false, discounted_price: null, currency: 'VND', billing_period: 'NONE', duration_days: null, is_active: true, created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' }
 const paidPlan = { ...freePlan, id: 'pro', code: 'PRO', name: 'Pro', price: '12345678901234567890', billing_period: 'MONTHLY', duration_days: 30 }
 
 test('money remains a decimal string and formats without Number or parseFloat', () => {
@@ -33,18 +34,22 @@ test('money remains a decimal string and formats without Number or parseFloat', 
   assert.equal(subscription.formatVnd('12345678901234567890'), '12.345.678.901.234.567.890 ₫')
   assert.equal(subscription.formatVnd('0000'), '0 ₫')
   assert.equal(subscription.formatVnd('1.5'), '—')
-  const payload = subscription.buildPlanCreatePayload({ code: 'PRO', name: 'Pro', description: '', price: '12345678901234567890', currency: 'VND', billing_period: 'MONTHLY', duration_days: '30', is_active: true })
+  const payload = subscription.buildPlanCreatePayload({ code: 'PRO', name: 'Pro', description: '', price: '12345678901234567890', discount_enabled: false, discount_percent: '', discount_starts_at: '', discount_ends_at: '', currency: 'VND', billing_period: 'MONTHLY', duration_days: '30', is_active: true })
   assert.equal(typeof payload.price, 'string')
   assert.equal(payload.price, '12345678901234567890')
 })
 
 test('plan form enforces FREE and paid-plan invariants and edit allowlist', () => {
-  assert.equal(subscription.validatePlanForm({ code: 'FREE', name: 'Free', description: '', price: '0', currency: 'VND', billing_period: 'NONE', duration_days: '', is_active: true }, 'create'), null)
-  assert.match(subscription.validatePlanForm({ code: 'PRO', name: 'Pro', description: '', price: '0', currency: 'VND', billing_period: 'MONTHLY', duration_days: '30', is_active: true }, 'create'), /trả phí/)
-  assert.deepEqual(subscription.buildPlanUpdatePayload({ code: 'LOCKED', name: 'Pro 2', description: '', price: '99000', currency: 'USD', billing_period: 'NONE', duration_days: '', is_active: false }), { name: 'Pro 2', description: null, price: '99000', is_active: false })
+  assert.equal(subscription.validatePlanForm({ code: 'FREE', name: 'Free', description: '', price: '0', discount_enabled: false, discount_percent: '', discount_starts_at: '', discount_ends_at: '', currency: 'VND', billing_period: 'NONE', duration_days: '', is_active: true }, 'create'), null)
+  assert.match(subscription.validatePlanForm({ code: 'PRO', name: 'Pro', description: '', price: '0', discount_enabled: false, discount_percent: '', discount_starts_at: '', discount_ends_at: '', currency: 'VND', billing_period: 'MONTHLY', duration_days: '30', is_active: true }, 'create'), /trả phí/)
+  assert.match(subscription.validatePlanForm({ code: 'PRO', name: 'Pro', description: '', price: '99000', discount_enabled: true, discount_percent: '', discount_starts_at: '', discount_ends_at: '', currency: 'VND', billing_period: 'MONTHLY', duration_days: '30', is_active: true }, 'create'), /phần trăm giảm giá/)
+  assert.deepEqual(subscription.buildPlanUpdatePayload({ code: 'LOCKED', name: 'Pro 2', description: '', price: '99000', discount_enabled: false, discount_percent: '', discount_starts_at: '', discount_ends_at: '', currency: 'USD', billing_period: 'NONE', duration_days: '', is_active: false }), { name: 'Pro 2', description: null, price: '99000', discount_percent: null, discount_starts_at: null, discount_ends_at: null, is_active: false })
   const inactive = { ...paidPlan, id: 'inactive', code: 'OLD', name: 'Old', is_active: false }
   assert.deepEqual(subscription.activePaidPlans([freePlan, inactive, paidPlan]).map((plan) => plan.id), ['pro'])
   assert.equal(subscription.planDisplayName({ code: 'FUTURE_UNKNOWN', name: '' }), 'FUTURE_UNKNOWN')
+  assert.equal(subscription.discountedPricePreview('99000', '20'), '79200')
+  assert.equal(subscription.billingPeriodLabel('YEARLY'), 'Hàng năm')
+  assert.equal(subscription.createPlanFormValues().duration_days, '30')
 })
 
 test('datetime-local grant input is converted to ISO and range is bounded', () => {
@@ -73,7 +78,10 @@ test('dynamic catalog, readonly edit fields and paid-only grant options SSR safe
 
   const editHtml = renderToStaticMarkup(createElement(PlanDialog, { mode: 'edit', plan: paidPlan, pending: false, requestError: null, onClose() {}, onSubmit: async () => {} }))
   assert.equal((editHtml.match(/disabled=""/g) ?? []).length, 4)
-  assert.match(editHtml, /Giá mới áp dụng cho các đăng ký hoặc giao dịch trong tương lai/)
+  assert.match(editHtml, /Giá và khuyến mãi mới chỉ áp dụng cho các đơn được tạo trong tương lai/)
+  const createHtml = renderToStaticMarkup(createElement(PlanDialog, { mode: 'create', pending: false, requestError: null, onClose() {}, onSubmit: async () => {} }))
+  assert.match(createHtml, /Hàng tháng/)
+  assert.match(createHtml, /Hàng năm/)
 
   const recruiter = { id: 'r1', email: 'r@example.com', full_name: 'Recruiter', is_active: true, effective_plan: freePlan, subscription: null }
   const grantHtml = renderToStaticMarkup(createElement(GrantDialog, { recruiter, plans: [freePlan, inactive, paidPlan], pending: false, requestError: null, onClose() {}, onSubmit: async () => {} }))
@@ -123,7 +131,7 @@ test('service uses the exact 01A endpoints and opts mutations out of global dupl
     await service.getSubscriptionPlans({ page: 1, page_size: 100 })
     await service.createSubscriptionPlan({})
     await service.updateSubscriptionPlan('plan-a', {})
-    await service.getAdminRecruiters({ page: 2, page_size: 12 })
+    await service.getAdminRecruiters({ page: 2, page_size: 12, search: 'hiep', is_active: true, plan_code: 'PRO_YEARLY' })
     await service.grantOrChangeRecruiterSubscription('recruiter-a', { plan_id: 'plan-a', starts_at: null, expires_at: null })
     await service.revokeRecruiterSubscription('recruiter-a')
     await service.getMyRecruiterSubscription()
@@ -144,6 +152,7 @@ test('service uses the exact 01A endpoints and opts mutations out of global dupl
     ['get', '/api/v1/recruiter/subscription'],
     ['get', '/api/v1/recruiter/subscription-plans'],
   ])
+  assert.deepEqual(calls[3].params, { page: 2, page_size: 12, search: 'hiep', is_active: true, plan_code: 'PRO_YEARLY' })
   for (const call of calls.filter((entry) => entry.method !== 'get')) assert.equal(call.gjobSkipDataRefresh, true)
 })
 
@@ -161,4 +170,14 @@ test('admin navigation exposes one exact monetization route and metadata', () =>
   assert.equal(matches.length, 1)
   assert.equal(matches[0].isActive('/admin/subscription-plans'), true)
   assert.deepEqual(adminNavigation.getAdminPageMeta('/admin/subscription-plans'), { title: 'Quản lý gói dịch vụ', context: 'Thương mại' })
+})
+
+test('recruiter pricing page offers monthly and yearly catalog switching', () => {
+  const source = readFileSync(new URL('../src/pages/recruiter/RecruiterPlansPage.tsx', import.meta.url), 'utf8')
+  assert.match(source, /Chọn chu kỳ thanh toán/)
+  assert.match(source, /\['MONTHLY', 'Hàng tháng'\]/)
+  assert.match(source, /\['YEARLY', 'Hàng năm'\]/)
+  assert.match(source, /plan\.billing_period === 'NONE' \|\| plan\.billing_period === selectedPeriod/)
+  assert.match(source, /transition-transform duration-300/)
+  assert.match(source, /motion-plan-period-from-right/)
 })

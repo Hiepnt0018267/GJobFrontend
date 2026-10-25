@@ -1,7 +1,7 @@
 import { useState, useId } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import {
-  Eye, EyeOff, Loader2, AlertCircle, Zap, KeyRound, CheckCircle2, X,
+  Eye, EyeOff, Loader2, AlertCircle, KeyRound, CheckCircle2, X,
   UserCheck, Building2
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
@@ -10,6 +10,9 @@ import axios from 'axios'
 import AuthVisualPanel from '../../components/auth/AuthVisualPanel'
 import { authService } from '../../services/authService'
 import { getApiErrorCode } from '../../utils/apiError'
+import GoogleAuthPanel from '../../components/auth/GoogleAuthPanel'
+import GJobLogo from '../../components/brand/GJobLogo'
+import { requestRecruiterOnboarding } from '../../utils/recruiterOnboarding'
 
 // ─── Friendly error mapping ───────────────────────────────────────────────────
 function mapError(err: unknown): string {
@@ -138,6 +141,7 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
         password: regPassword,
         role: regRole,
       })
+      if (regRole === 'RECRUITER') requestRecruiterOnboarding(regEmail)
       setRegSuccess(true)
       navigate('/verification-required', { replace: true, state: { email: regEmail.trim() } })
     } catch (err) {
@@ -156,66 +160,24 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
       {/* ── Right column: Form container ────────────────────────────────── */}
       <div className="flex-1 flex flex-col justify-center items-center px-6 py-8 lg:px-12 xl:px-16 min-h-screen bg-white overflow-y-auto">
         {/* Mobile Header / Logo */}
-        <div className="w-full max-w-[460px] flex items-center justify-between mb-4 lg:hidden">
-          <Link to="/" className="flex items-center gap-2 text-slate-900 font-bold text-lg">
-            <div className="w-8 h-8 rounded-xl bg-[#49BBBD] flex items-center justify-center text-white shadow-sm shadow-[#49BBBD]/40">
-              <Zap size={18} strokeWidth={2.5} />
-            </div>
-            <span>
-              G<span className="text-[#49BBBD]">Job</span>
-            </span>
+        <div className="w-full max-w-[400px] flex items-center justify-between mb-4 lg:hidden">
+          <Link to="/" className="group flex items-center" aria-label="GJob - Trang chủ">
+            <GJobLogo className="h-9 w-auto transition-transform duration-200 group-hover:scale-[1.03]" />
           </Link>
         </div>
 
-        <div className="w-full max-w-[460px]">
-          {/* Welcome Text */}
-          <div className="text-center mb-5">
-            <h1 className="text-base sm:text-lg font-medium text-slate-800 mb-3.5 tracking-tight">
-              Chào mừng bạn đến với GJob!
+        <div className="w-full max-w-[400px]">
+          <div className="mb-6 text-left">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#31999b]">GJob</p>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
+              {isLogin ? 'Chào mừng bạn quay lại' : 'Tạo tài khoản của bạn'}
             </h1>
-
-            {/* Figma-style Capsule Pill Segmented Switcher with SLIDING indicator */}
-            <div className="relative inline-flex p-1 rounded-full bg-[#49BBBD]/15 border border-[#49BBBD]/30 shadow-inner w-[250px] sm:w-[270px] h-[48px] select-none">
-              {/* Sliding green pill indicator with smooth spring curve */}
-              <div
-                className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-[#49BBBD] shadow-lg shadow-[#49BBBD]/35 transition-all duration-350 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                  isLogin ? 'left-1' : 'left-[calc(50%+2px)]'
-                }`}
-              />
-
-              {/* Login Tab Button */}
-              <button
-                type="button"
-                id="auth-tab-login"
-                onClick={() => handleSwitchMode('login')}
-                className={`relative z-10 w-1/2 rounded-full text-sm font-semibold transition-colors duration-250 flex items-center justify-center cursor-pointer ${
-                  isLogin ? 'text-white' : 'text-[#1e6365] hover:text-[#0f3f40]'
-                }`}
-              >
-                Đăng nhập
-              </button>
-
-              {/* Register Tab Button */}
-              <button
-                type="button"
-                id="auth-tab-register"
-                onClick={() => handleSwitchMode('register')}
-                className={`relative z-10 w-1/2 rounded-full text-sm font-semibold transition-colors duration-250 flex items-center justify-center cursor-pointer ${
-                  !isLogin ? 'text-white' : 'text-[#1e6365] hover:text-[#0f3f40]'
-                }`}
-              >
-                Đăng ký
-              </button>
-            </div>
+            <p className="mt-2 text-sm leading-6 text-slate-500 transition-all duration-300">
+              {isLogin
+                ? 'Đăng nhập để tiếp tục hành trình nghề nghiệp cùng GJob.'
+                : 'Bắt đầu tìm việc hoặc tuyển dụng nhân tài cùng GJob.'}
+            </p>
           </div>
-
-          {/* Subtitle description */}
-          <p className="text-slate-500 text-xs sm:text-sm leading-relaxed mb-5 text-left transition-all duration-300">
-            {isLogin
-              ? 'Nền tảng tuyển dụng thông minh & kết nối cơ hội sự nghiệp hàng đầu dành cho sinh viên và ứng viên.'
-              : 'Tạo tài khoản nhanh chóng để bắt đầu tìm kiếm cơ hội việc làm hoặc đăng tuyển ứng viên tài năng.'
-            }
-          </p>
 
           {/* Error alert banner */}
           {flashMessage && isLogin && (
@@ -256,15 +218,15 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
                   id="login-form"
                   onSubmit={handleLoginSubmit}
                   noValidate
-                  className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-300 fill-mode-both"
+                  className="auth-mode-enter-from-left space-y-4"
                 >
                   {/* Tên đăng nhập / Email */}
                   <div>
                     <label
                       htmlFor="login-email"
-                      className="block text-xs sm:text-sm font-medium text-slate-800 mb-1.5 ml-2"
+                      className="mb-2 block text-sm font-semibold text-slate-800"
                     >
-                      Tên đăng nhập / Email
+                      Email
                     </label>
                     <input
                       id="login-email"
@@ -272,28 +234,24 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
                       autoComplete="email"
                       value={loginEmail}
                       onChange={(e) => { setLoginEmail(e.target.value); setError(null) }}
-                      placeholder="Nhập tên đăng nhập hoặc email"
+                      placeholder="Nhập địa chỉ email"
                       className={`
-                        w-full px-6 py-3.5 rounded-full border bg-white text-slate-800 text-sm
-                        placeholder:text-slate-400 outline-none transition-all duration-200
-                        focus:scale-[1.008] focus:shadow-md focus:shadow-[#49BBBD]/15
+                        w-full rounded-2xl border bg-slate-50 px-4 py-3.5 text-sm text-slate-900
+                        placeholder:text-slate-400 outline-none transition-[border-color,background-color,box-shadow] duration-200
                         ${loginEmail && !loginEmailValid
-                          ? 'border-red-400 focus:border-red-400 focus:ring-4 focus:ring-red-400/20'
-                          : 'border-[#49BBBD] focus:border-[#49BBBD] focus:ring-4 focus:ring-[#49BBBD]/20'}
+                          ? 'border-red-400 focus:bg-white focus:border-red-400 focus:ring-4 focus:ring-red-400/15'
+                          : 'border-slate-200 focus:border-[#49BBBD] focus:bg-white focus:ring-4 focus:ring-[#49BBBD]/15'}
                       `}
                       required
                     />
                     {loginEmail && !loginEmailValid && (
-                      <p className="mt-1 text-xs text-red-500 ml-4">Vui lòng nhập địa chỉ email hợp lệ.</p>
+                      <p className="mt-1.5 text-xs text-red-500">Vui lòng nhập địa chỉ email hợp lệ.</p>
                     )}
                   </div>
 
                   {/* Mật khẩu */}
                   <div>
-                    <label
-                      htmlFor="login-password"
-                      className="block text-xs sm:text-sm font-medium text-slate-800 mb-1.5 ml-2"
-                    >
+                    <label htmlFor="login-password" className="mb-2 block text-sm font-semibold text-slate-800">
                       Mật khẩu
                     </label>
                     <div className="relative">
@@ -305,26 +263,34 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
                         onChange={(e) => { setLoginPassword(e.target.value); setError(null) }}
                         placeholder="Nhập mật khẩu của bạn"
                         className="
-                          w-full px-6 py-3.5 pr-14 rounded-full border border-[#49BBBD] bg-white text-slate-800 text-sm
-                          placeholder:text-slate-400 outline-none transition-all duration-200
-                          focus:scale-[1.008] focus:shadow-md focus:shadow-[#49BBBD]/15
-                          focus:border-[#49BBBD] focus:ring-4 focus:ring-[#49BBBD]/20
+                          w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 pr-12 text-sm text-slate-900
+                          placeholder:text-slate-400 outline-none transition-[border-color,background-color,box-shadow] duration-200
+                          focus:border-[#49BBBD] focus:bg-white focus:ring-4 focus:ring-[#49BBBD]/15
                         "
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setShowLoginPw((v) => !v)}
-                        className="absolute inset-y-0 right-5 flex items-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                        className="absolute inset-y-0 right-4 flex items-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                         aria-label={showLoginPw ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                       >
                         {showLoginPw ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
+                    <div className="mt-2 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => navigate('/forgot-password', { state: { email: loginEmail } })}
+                        className="text-sm font-semibold text-[#31999b] transition-colors hover:text-[#287f81] hover:underline"
+                      >
+                        Quên mật khẩu?
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Options: Ghi nhớ đăng nhập & Quên mật khẩu? */}
-                  <div className="flex items-center justify-between pt-1 px-2">
+                  {/* Remember login */}
+                  <div className="flex items-center pt-0.5">
                     <label className="flex items-center gap-2 cursor-pointer select-none text-xs sm:text-sm text-slate-600">
                       <input
                         type="checkbox"
@@ -334,24 +300,16 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
                       />
                       <span>Ghi nhớ đăng nhập</span>
                     </label>
-
-                    <button
-                      type="button"
-                      onClick={() => navigate('/forgot-password', { state: { email: loginEmail } })}
-                      className="text-xs sm:text-sm text-[#49BBBD] hover:text-[#3ca8aa] hover:underline transition-colors font-medium cursor-pointer"
-                    >
-                      Quên mật khẩu?
-                    </button>
                   </div>
 
                   {/* Submit Button with smooth success feedback */}
-                  <div className="flex justify-end pt-3">
+                  <div className="pt-2">
                     <button
                       id="login-submit-btn"
                       type="submit"
                       disabled={!canSubmitLogin || loginSuccess}
                       className={`
-                        w-full sm:w-auto min-w-[160px] px-10 py-3.5 rounded-full text-sm font-semibold text-white
+                        w-full rounded-2xl px-10 py-3.5 text-sm font-semibold text-white
                         transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#49BBBD]/30
                         flex items-center justify-center gap-2 cursor-pointer
                         bg-[#49BBBD] hover:bg-[#3ca8aa] active:bg-[#2a8284] shadow-lg shadow-[#49BBBD]/30
@@ -382,13 +340,13 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
                   key="register-form"
                   onSubmit={handleRegisterSubmit}
                   noValidate
-                  className="space-y-3.5 animate-in fade-in slide-in-from-right-4 duration-300 fill-mode-both"
+                  className="auth-mode-enter-from-right space-y-3.5"
                 >
                   {/* Địa chỉ Email */}
                   <div>
                     <label
                       htmlFor={emailId}
-                      className="block text-xs sm:text-sm font-medium text-slate-800 mb-1 ml-2"
+                      className="mb-2 block text-sm font-semibold text-slate-800"
                     >
                       Địa chỉ Email
                     </label>
@@ -400,17 +358,16 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
                       onChange={(e) => { setRegEmail(e.target.value); setError(null) }}
                       placeholder="Nhập địa chỉ email của bạn"
                       className={`
-                        w-full px-6 py-3 rounded-full border bg-white text-slate-800 text-sm
-                        placeholder:text-slate-400 outline-none transition-all duration-200
-                        focus:scale-[1.008] focus:shadow-md focus:shadow-[#49BBBD]/15
+                        w-full rounded-2xl border bg-slate-50 px-4 py-3 text-sm text-slate-900
+                        placeholder:text-slate-400 outline-none transition-[border-color,background-color,box-shadow] duration-200
                         ${regEmail && !regEmailValid
-                          ? 'border-red-400 focus:border-red-400 focus:ring-4 focus:ring-red-400/20'
-                          : 'border-[#49BBBD] focus:border-[#49BBBD] focus:ring-4 focus:ring-[#49BBBD]/20'}
+                          ? 'border-red-400 focus:bg-white focus:border-red-400 focus:ring-4 focus:ring-red-400/15'
+                          : 'border-slate-200 focus:border-[#49BBBD] focus:bg-white focus:ring-4 focus:ring-[#49BBBD]/15'}
                       `}
                       required
                     />
                     {regEmail && !regEmailValid && (
-                      <p className="mt-1 text-xs text-red-500 ml-4">Vui lòng nhập địa chỉ email hợp lệ.</p>
+                      <p className="mt-1.5 text-xs text-red-500">Vui lòng nhập địa chỉ email hợp lệ.</p>
                     )}
                   </div>
 
@@ -418,7 +375,7 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
                   <div>
                     <label
                       htmlFor={fullNameId}
-                      className="block text-xs sm:text-sm font-medium text-slate-800 mb-1 ml-2"
+                      className="mb-2 block text-sm font-semibold text-slate-800"
                     >
                       Họ và tên
                     </label>
@@ -430,10 +387,9 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
                       onChange={(e) => { setRegFullName(e.target.value); setError(null) }}
                       placeholder="Nhập họ và tên của bạn"
                       className="
-                        w-full px-6 py-3 rounded-full border border-[#49BBBD] bg-white text-slate-800 text-sm
-                        placeholder:text-slate-400 outline-none transition-all duration-200
-                        focus:scale-[1.008] focus:shadow-md focus:shadow-[#49BBBD]/15
-                        focus:border-[#49BBBD] focus:ring-4 focus:ring-[#49BBBD]/20
+                        w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900
+                        placeholder:text-slate-400 outline-none transition-[border-color,background-color,box-shadow] duration-200
+                        focus:border-[#49BBBD] focus:bg-white focus:ring-4 focus:ring-[#49BBBD]/15
                       "
                       required
                     />
@@ -441,16 +397,16 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
 
                   {/* Role selector */}
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-slate-800 mb-1.5 ml-2">
+                    <label className="mb-2 block text-sm font-semibold text-slate-800">
                       Bạn tham gia với tư cách
                     </label>
-                    <div className="flex gap-2.5 p-1 rounded-full bg-[#49BBBD]/10 border border-[#49BBBD]/25">
+                    <div className="flex gap-2 p-1 rounded-2xl bg-[#49BBBD]/10 border border-[#49BBBD]/25">
                       <button
                         type="button"
                         id="role-candidate"
                         onClick={() => setRegRole('CANDIDATE')}
                         className={`
-                          flex-1 py-2 px-3 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer
+                          flex-1 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer
                           ${regRole === 'CANDIDATE'
                             ? 'bg-[#49BBBD] text-white shadow-md shadow-[#49BBBD]/30'
                             : 'text-slate-700 hover:text-[#49BBBD] hover:bg-white/70'}
@@ -464,7 +420,7 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
                         id="role-recruiter"
                         onClick={() => setRegRole('RECRUITER')}
                         className={`
-                          flex-1 py-2 px-3 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer
+                          flex-1 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer
                           ${regRole === 'RECRUITER'
                             ? 'bg-[#49BBBD] text-white shadow-md shadow-[#49BBBD]/30'
                             : 'text-slate-700 hover:text-[#49BBBD] hover:bg-white/70'}
@@ -480,7 +436,7 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
                   <div>
                     <label
                       htmlFor={passwordId}
-                      className="block text-xs sm:text-sm font-medium text-slate-800 mb-1 ml-2"
+                      className="mb-2 block text-sm font-semibold text-slate-800"
                     >
                       Mật khẩu
                     </label>
@@ -493,17 +449,16 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
                         onChange={(e) => { setRegPassword(e.target.value); setError(null) }}
                         placeholder="Nhập mật khẩu (tối thiểu 8 ký tự)"
                         className="
-                          w-full px-6 py-3 pr-14 rounded-full border border-[#49BBBD] bg-white text-slate-800 text-sm
-                          placeholder:text-slate-400 outline-none transition-all duration-200
-                          focus:scale-[1.008] focus:shadow-md focus:shadow-[#49BBBD]/15
-                          focus:border-[#49BBBD] focus:ring-4 focus:ring-[#49BBBD]/20
+                          w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-slate-900
+                          placeholder:text-slate-400 outline-none transition-[border-color,background-color,box-shadow] duration-200
+                          focus:border-[#49BBBD] focus:bg-white focus:ring-4 focus:ring-[#49BBBD]/15
                         "
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setShowRegPw((v) => !v)}
-                        className="absolute inset-y-0 right-5 flex items-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                        className="absolute inset-y-0 right-4 flex items-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                         aria-label={showRegPw ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                       >
                         {showRegPw ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -511,7 +466,7 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
                     </div>
                     {/* Subtle strength indicator */}
                     {regPassword && (
-                      <div className="mt-1.5 flex items-center gap-2 ml-3">
+                      <div className="mt-1.5 flex items-center gap-2">
                         <div className="flex gap-1">
                           {[...Array(3)].map((_, i) => (
                             <div
@@ -537,7 +492,7 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
                   <div>
                     <label
                       htmlFor={confirmId}
-                      className="block text-xs sm:text-sm font-medium text-slate-800 mb-1 ml-2"
+                      className="mb-2 block text-sm font-semibold text-slate-800"
                     >
                       Xác nhận mật khẩu
                     </label>
@@ -550,44 +505,43 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
                         onChange={(e) => { setRegConfirm(e.target.value); setError(null) }}
                         placeholder="Nhập lại mật khẩu"
                         className={`
-                          w-full px-6 py-3 pr-14 rounded-full border bg-white text-slate-800 text-sm
-                          placeholder:text-slate-400 outline-none transition-all duration-200
-                          focus:scale-[1.008] focus:shadow-md focus:shadow-[#49BBBD]/15
+                          w-full rounded-2xl border bg-slate-50 px-4 py-3 pr-12 text-sm text-slate-900
+                          placeholder:text-slate-400 outline-none transition-[border-color,background-color,box-shadow] duration-200
                           ${regConfirm && !regPwMatch
-                            ? 'border-red-400 focus:border-red-400 focus:ring-4 focus:ring-red-400/20'
+                            ? 'border-red-400 focus:bg-white focus:border-red-400 focus:ring-4 focus:ring-red-400/15'
                             : regConfirm && regPwMatch
-                              ? 'border-emerald-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/20'
-                              : 'border-[#49BBBD] focus:border-[#49BBBD] focus:ring-4 focus:ring-[#49BBBD]/20'}
+                              ? 'border-emerald-400 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/15'
+                              : 'border-slate-200 focus:border-[#49BBBD] focus:bg-white focus:ring-4 focus:ring-[#49BBBD]/15'}
                         `}
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setShowRegConfirm((v) => !v)}
-                        className="absolute inset-y-0 right-5 flex items-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                        className="absolute inset-y-0 right-4 flex items-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                         aria-label={showRegConfirm ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                       >
                         {showRegConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
                     {regConfirm && !regPwMatch && (
-                      <p className="mt-1 text-xs text-red-500 ml-4">Mật khẩu xác nhận không khớp.</p>
+                      <p className="mt-1.5 text-xs text-red-500">Mật khẩu xác nhận không khớp.</p>
                     )}
                     {regConfirm && regPwMatch && (
-                      <p className="mt-1 text-xs text-emerald-600 flex items-center gap-1 ml-4 font-medium">
+                      <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-emerald-600">
                         <CheckCircle2 size={12} /> Mật khẩu khớp.
                       </p>
                     )}
                   </div>
 
                   {/* Submit Button */}
-                  <div className="flex justify-end pt-2">
+                  <div className="pt-2">
                     <button
                       id="register-submit-btn"
                       type="submit"
                       disabled={!canSubmitReg}
                       className="
-                        w-full sm:w-auto min-w-[160px] px-10 py-3.5 rounded-full text-sm font-semibold text-white
+                        w-full rounded-2xl px-10 py-3.5 text-sm font-semibold text-white
                         bg-[#49BBBD] hover:bg-[#3ca8aa] active:bg-[#2a8284]
                         disabled:opacity-50 disabled:cursor-not-allowed
                         transition-all duration-200 shadow-lg shadow-[#49BBBD]/30
@@ -611,8 +565,23 @@ export default function AuthPage({ initialMode }: AuthPageProps) {
             </div>
           )}
 
+          {!regSuccess && <GoogleAuthPanel />}
+
+          {!regSuccess && (
+            <p className="mt-5 text-center text-sm text-slate-600">
+              {isLogin ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}{' '}
+              <button
+                type="button"
+                onClick={() => handleSwitchMode(isLogin ? 'register' : 'login')}
+                className="font-bold text-[#31999b] transition-colors hover:text-[#287f81] hover:underline"
+              >
+                {isLogin ? 'Đăng ký ngay' : 'Đăng nhập'}
+              </button>
+            </p>
+          )}
+
           {/* Terms info */}
-          <p className="text-center text-[11px] sm:text-xs text-slate-400 mt-4 leading-relaxed">
+          <p className="mt-3 text-center text-[11px] leading-relaxed text-slate-400 sm:text-xs">
             Bằng cách nhấn {isLogin ? 'Đăng nhập' : 'Đăng ký'}, bạn đồng ý với{' '}
             <span className="text-[#49BBBD] hover:text-[#2a8284] underline cursor-pointer font-medium">
               Điều khoản

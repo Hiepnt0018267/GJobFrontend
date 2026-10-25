@@ -6,10 +6,10 @@ import { usePaginatedQuery } from '../../hooks/usePaginatedQuery'
 import { useRecruiterSubscription } from '../../hooks/useRecruiterSubscription'
 import { useToast } from '../../hooks/useToast'
 import { subscriptionService } from '../../services/subscriptionService'
-import type { RecruiterPlanCatalogItem } from '../../types/subscription'
+import type { BillingPeriod, RecruiterPlanCatalogItem } from '../../types/subscription'
 import { paymentErrorMessage, subscriptionErrorMessage } from '../../utils/apiError'
 import { isPurchasablePlan, paymentOrderPath } from '../../utils/payment'
-import { billingPeriodLabel, formatVnd, planDisplayName } from '../../utils/subscription'
+import { billingPeriodLabel, effectivePlanPrice, formatSubscriptionDate, formatVnd, hasActivePlanDiscount, planDisplayName } from '../../utils/subscription'
 
 type PlanCardProps = {
   plan: RecruiterPlanCatalogItem
@@ -19,10 +19,13 @@ type PlanCardProps = {
   onPurchase: () => void
 }
 
+type PaidBillingPeriod = Exclude<BillingPeriod, 'NONE'>
+
 function PlanCard({ plan, current, purchasable, purchasing, onPurchase }: PlanCardProps) {
   const descriptionItems = plan.description
     ? plan.description.split(/\r?\n/).map((item) => item.trim()).filter(Boolean)
     : []
+  const onSale = hasActivePlanDiscount(plan)
 
   return (
     <article
@@ -40,19 +43,25 @@ function PlanCard({ plan, current, purchasable, purchasing, onPurchase }: PlanCa
         </span>
         {current ? (
           <span className="rounded-full bg-[#1C1C1C] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">Đang dùng</span>
+        ) : onSale ? (
+          <span className="rounded-full bg-red-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-red-600 ring-1 ring-red-100">Giảm {plan.discount_percent}%</span>
         ) : null}
       </div>
 
       <h2 className="mt-5 text-2xl font-bold tracking-tight text-slate-950">{planDisplayName(plan)}</h2>
 
       <div className="mt-6 flex items-end gap-2 border-b border-slate-100 pb-6">
-        <strong className="text-[32px] font-extrabold leading-none tracking-[-0.04em] text-slate-950">
-          {formatVnd(plan.price)}
-        </strong>
+        <div>
+          {onSale && <p className="mb-1 text-sm font-medium text-slate-400 line-through">{formatVnd(plan.price)}</p>}
+          <strong className="text-[32px] font-extrabold leading-none tracking-[-0.04em] text-slate-950">
+            {formatVnd(effectivePlanPrice(plan))}
+          </strong>
+        </div>
         <span className="pb-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">
           {billingPeriodLabel(plan.billing_period)}
         </span>
       </div>
+      {onSale && plan.discount_ends_at && <p className="mt-3 text-xs font-medium text-red-600">Ưu đãi đến {formatSubscriptionDate(plan.discount_ends_at)}</p>}
 
       {descriptionItems.length > 0 && (
         <ul className="mt-6 flex-1 space-y-3.5" aria-label={`Quyền lợi gói ${planDisplayName(plan)}`}>
@@ -90,12 +99,16 @@ export default function RecruiterPlansPage() {
   const refreshVersion = useDataRefreshVersion()
   const subscription = useRecruiterSubscription()
   const [purchasingPlanId, setPurchasingPlanId] = useState<string | null>(null)
+  const [selectedPeriod, setSelectedPeriod] = useState<PaidBillingPeriod>('MONTHLY')
   const fetchCatalog = useCallback((signal: AbortSignal) => subscriptionService.getRecruiterPlanCatalog(signal), [])
   const catalog = usePaginatedQuery({ queryKey: 'recruiter-plan-catalog', refreshKey: refreshVersion, fetcher: fetchCatalog })
   const loading = catalog.isInitialLoading || subscription.isInitialLoading
   const error = catalog.error ?? subscription.error
   const plans = catalog.data ?? []
-  const catalogWidth = plans.length <= 1 ? 'max-w-sm' : plans.length === 2 ? 'max-w-[720px] md:grid-cols-2' : 'max-w-5xl md:grid-cols-2 lg:grid-cols-3'
+  const hasPaidPlans = plans.some((plan) => plan.billing_period !== 'NONE')
+  const visiblePlans = plans.filter((plan) => plan.billing_period === 'NONE' || plan.billing_period === selectedPeriod)
+  const selectedPaidPlanCount = visiblePlans.filter((plan) => plan.billing_period === selectedPeriod).length
+  const catalogWidth = visiblePlans.length <= 1 ? 'max-w-sm' : visiblePlans.length === 2 ? 'max-w-[720px] md:grid-cols-2' : 'max-w-5xl md:grid-cols-2 lg:grid-cols-3'
 
   const purchase = async (plan: RecruiterPlanCatalogItem) => {
     if (purchasingPlanId) return
@@ -116,6 +129,29 @@ export default function RecruiterPlansPage() {
         <h1 className="mt-3 text-4xl font-extrabold tracking-[-0.04em] text-[#1C1C1C] sm:text-5xl">Quyền lợi phù hợp cho bạn</h1>
       </header>
 
+      {!loading && !error && hasPaidPlans && (
+        <div className="relative mx-auto mt-8 grid w-fit grid-cols-2 rounded-2xl bg-slate-100 p-1.5 ring-1 ring-slate-200" role="group" aria-label="Chọn chu kỳ thanh toán">
+          <span
+            aria-hidden="true"
+            className={`pointer-events-none absolute bottom-1.5 left-1.5 top-1.5 w-[calc(50%-0.375rem)] rounded-xl bg-slate-950 shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${selectedPeriod === 'YEARLY' ? 'translate-x-full' : 'translate-x-0'}`}
+          />
+          {([
+            ['MONTHLY', 'Hàng tháng'],
+            ['YEARLY', 'Hàng năm'],
+          ] as const).map(([period, label]) => (
+            <button
+              key={period}
+              type="button"
+              aria-pressed={selectedPeriod === period}
+              onClick={() => { if (period !== selectedPeriod) setSelectedPeriod(period) }}
+              className={`relative z-10 min-w-28 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors duration-200 ${selectedPeriod === period ? 'text-white' : 'text-slate-600 hover:text-slate-950'}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {loading ? (
         <section className="mx-auto mt-14 grid max-w-3xl gap-5 md:grid-cols-2" aria-label="Đang tải danh sách gói">
           {[1, 2].map((key) => <div key={key} className="h-[430px] animate-pulse rounded-[22px] bg-slate-100" />)}
@@ -134,21 +170,32 @@ export default function RecruiterPlansPage() {
           <p className="mt-2 text-sm text-slate-500">Vui lòng quay lại sau khi danh mục gói được cập nhật.</p>
         </section>
       ) : (
-        <section className={`mx-auto mt-12 grid gap-5 lg:mt-16 ${catalogWidth}`} aria-label="Danh sách gói dịch vụ">
-          {plans.map((plan) => {
-            const current = subscription.data?.effective_plan.code === plan.code
-            return (
-              <PlanCard
-                key={plan.id}
-                plan={plan}
-                current={current}
-                purchasable={isPurchasablePlan(plan, subscription.data?.effective_plan.code)}
-                purchasing={purchasingPlanId === plan.id}
-                onPurchase={() => void purchase(plan)}
-              />
-            )
-          })}
-        </section>
+        <div
+          key={selectedPeriod}
+          className={selectedPeriod === 'YEARLY' ? 'motion-plan-period-from-right' : 'motion-plan-period-from-left'}
+          aria-live="polite"
+        >
+          {hasPaidPlans && selectedPaidPlanCount === 0 && (
+            <p className="mx-auto mt-8 max-w-xl rounded-2xl bg-slate-50 px-5 py-4 text-center text-sm text-slate-600 ring-1 ring-slate-200">
+              Chưa có gói {selectedPeriod === 'YEARLY' ? 'hàng năm' : 'hàng tháng'} đang mở bán. Quản trị viên có thể tạo gói mới cho chu kỳ này.
+            </p>
+          )}
+          <section className={`mx-auto mt-8 grid gap-5 lg:mt-12 ${catalogWidth}`} aria-label="Danh sách gói dịch vụ">
+            {visiblePlans.map((plan) => {
+              const current = subscription.data?.effective_plan.code === plan.code
+              return (
+                <PlanCard
+                  key={plan.id}
+                  plan={plan}
+                  current={current}
+                  purchasable={isPurchasablePlan(plan, subscription.data?.effective_plan.code)}
+                  purchasing={purchasingPlanId === plan.id}
+                  onPurchase={() => void purchase(plan)}
+                />
+              )
+            })}
+          </section>
+        </div>
       )}
     </main>
   )

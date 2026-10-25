@@ -271,6 +271,13 @@ export default function RecruiterPaymentPage() {
                 <div>
                   <p className="text-sm text-slate-500">Số tiền cần chuyển</p>
                   <p className="mt-1 text-3xl font-extrabold tracking-[-0.04em] text-slate-950">{formatVnd(order.amount)}</p>
+                  {order.discount_percent > 0 && (
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+                      <span className="text-slate-400 line-through">{formatVnd(order.original_amount)}</span>
+                      <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-bold text-red-600">Giảm {order.discount_percent}%</span>
+                      <span className="text-xs font-medium text-emerald-700">Tiết kiệm {formatVnd(order.discount_amount)}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="rounded-2xl bg-slate-100 p-3 text-slate-700"><Landmark size={24} /></div>
               </div>

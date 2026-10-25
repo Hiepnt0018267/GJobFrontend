@@ -61,6 +61,14 @@ export default function JobDetailPage() {
     return () => controller.abort()
   }, [id, refreshVersion, reload])
 
+  useEffect(() => {
+    if (!job || location.hash !== '#apply') return
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById('job-apply')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [job, location.hash])
+
   const retry = () => {
     setError(null)
     setReload((value) => value + 1)
@@ -199,7 +207,7 @@ export default function JobDetailPage() {
           </article>
 
           {/* Sticky Apply Action & Company Column */}
-          <aside className="space-y-6 self-start lg:sticky lg:top-24">
+          <aside id="job-apply" className="scroll-mt-24 space-y-6 self-start lg:sticky lg:top-24">
             <JobApplyAction job={job} />
             <SavedJobButton jobId={job.id} jobStatus={job.status} />
             <CompanyInformationCard company={job.company} fallbackName={job.company_name} />

@@ -1,6 +1,10 @@
+import { lazy } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import { canRestorePathForRole, dashboardFor } from './utils/dashboardFor'
+import { hasPendingRecruiterOnboarding } from './utils/recruiterOnboarding'
+import { candidateRouteModules } from './config/candidateRouteModules'
+import { workspaceRouteModules } from './config/workspaceRouteModules'
 
 // Layouts
 import MainLayout from './layouts/MainLayout'
@@ -8,12 +12,54 @@ import RecruiterLayout from './layouts/RecruiterLayout'
 import AdminLayout from './layouts/AdminLayout'
 import PageTransition from './components/motion/PageTransition'
 
-// Public pages
-import HomePage        from './pages/HomePage'
-import JobListPage     from './pages/jobs/JobListPage'
-import JobDetailPage   from './pages/jobs/JobDetailPage'
-import LoginPage       from './pages/auth/LoginPage'
-import RegisterPage    from './pages/auth/RegisterPage'
+// Candidate/public pages are split by route and prefetched from MainLayout.
+const HomePage = lazy(candidateRouteModules.home)
+const JobListPage = lazy(candidateRouteModules.jobs)
+const JobDetailPage = lazy(candidateRouteModules.jobDetail)
+const CandidateProfilePage = lazy(candidateRouteModules.profile)
+const CandidateProfileEditPage = lazy(candidateRouteModules.profileEdit)
+const CandidateCVsPage = lazy(candidateRouteModules.cvs)
+const CandidateCVCreatePage = lazy(candidateRouteModules.cvCreate)
+const CandidateCVDetailPage = lazy(candidateRouteModules.cvDetail)
+const CandidateCVEditPage = lazy(candidateRouteModules.cvEdit)
+const CandidateCVTemplatesPage = lazy(candidateRouteModules.cvTemplates)
+const CandidateApplicationsPage = lazy(candidateRouteModules.applications)
+const CandidateApplicationDetailPage = lazy(candidateRouteModules.applicationDetail)
+const SavedJobsPage = lazy(candidateRouteModules.savedJobs)
+const CandidateJobRecommendationsPage = lazy(candidateRouteModules.recommendations)
+const CandidateSettingsPage = lazy(candidateRouteModules.settings)
+
+// Recruiter/admin pages are split by route and prefetched from their workspace shell.
+const RecruiterDashboardPage = lazy(workspaceRouteModules.recruiterDashboard)
+const RecruiterProfilePage = lazy(workspaceRouteModules.recruiterProfile)
+const RecruiterProfileEditPage = lazy(workspaceRouteModules.recruiterProfileEdit)
+const RecruiterJobsPage = lazy(workspaceRouteModules.recruiterJobs)
+const RecruiterJobCreatePage = lazy(workspaceRouteModules.recruiterJobCreate)
+const RecruiterJobEditPage = lazy(workspaceRouteModules.recruiterJobEdit)
+const RecruiterJobDetailPage = lazy(workspaceRouteModules.recruiterJobDetail)
+const RecruiterApplicationsPage = lazy(workspaceRouteModules.recruiterApplications)
+const RecruiterApplicationDetailPage = lazy(workspaceRouteModules.recruiterApplicationDetail)
+const RecruiterPlansPage = lazy(workspaceRouteModules.recruiterPlans)
+const RecruiterPaymentPage = lazy(workspaceRouteModules.recruiterPayment)
+const RecruiterSettingsPage = lazy(workspaceRouteModules.recruiterSettings)
+const AdminDashboardPage = lazy(workspaceRouteModules.adminDashboard)
+const AdminJobsPage = lazy(workspaceRouteModules.adminJobs)
+const AdminJobDetailPage = lazy(workspaceRouteModules.adminJobDetail)
+const AdminUsersPage = lazy(workspaceRouteModules.adminUsers)
+const AdminUserDetailPage = lazy(workspaceRouteModules.adminUserDetail)
+const AdminCVTemplatesPage = lazy(workspaceRouteModules.adminCVTemplates)
+const AdminCVTemplateCreatePage = lazy(workspaceRouteModules.adminCVTemplateCreate)
+const AdminCVTemplateDetailPage = lazy(workspaceRouteModules.adminCVTemplateDetail)
+const AdminCVTemplateEditPage = lazy(workspaceRouteModules.adminCVTemplateEdit)
+const AdminApplicationsPage = lazy(workspaceRouteModules.adminApplications)
+const AdminApplicationDetailPage = lazy(workspaceRouteModules.adminApplicationDetail)
+const AdminCandidateCVsPage = lazy(workspaceRouteModules.adminCandidateCVs)
+const AdminCandidateCVDetailPage = lazy(workspaceRouteModules.adminCandidateCVDetail)
+const AdminSubscriptionPlansPage = lazy(workspaceRouteModules.adminSubscriptionPlans)
+const AdminPaymentsPage = lazy(workspaceRouteModules.adminPayments)
+
+// Auth pages
+import AuthPage from './pages/auth/AuthPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 import VerifyEmailPage from './pages/auth/VerifyEmailPage'
@@ -22,46 +68,6 @@ import VerificationRequiredPage from './pages/auth/VerificationRequiredPage'
 // Error pages
 import ForbiddenPage from './pages/errors/ForbiddenPage'
 
-// Protected / role pages
-import CandidateProfilePage   from './pages/candidate/CandidateProfilePage'
-import CandidateProfileEditPage from './pages/candidate/CandidateProfileEditPage'
-import CandidateCVsPage from './pages/candidate/CandidateCVsPage'
-import CandidateCVCreatePage from './pages/candidate/CandidateCVCreatePage'
-import CandidateCVDetailPage from './pages/candidate/CandidateCVDetailPage'
-import CandidateCVEditPage from './pages/candidate/CandidateCVEditPage'
-import CandidateCVTemplatesPage from './pages/candidate/CandidateCVTemplatesPage'
-import CandidateApplicationsPage from './pages/candidate/CandidateApplicationsPage'
-import CandidateApplicationDetailPage from './pages/candidate/CandidateApplicationDetailPage'
-import SavedJobsPage from './pages/candidate/SavedJobsPage'
-import CandidateJobRecommendationsPage from './pages/candidate/CandidateJobRecommendationsPage'
-import CandidateSettingsPage from './pages/candidate/CandidateSettingsPage'
-import RecruiterDashboardPage from './pages/recruiter/RecruiterDashboardPage'
-import RecruiterProfilePage from './pages/recruiter/RecruiterProfilePage'
-import RecruiterProfileEditPage from './pages/recruiter/RecruiterProfileEditPage'
-import RecruiterJobsPage from './pages/recruiter/RecruiterJobsPage'
-import RecruiterJobCreatePage from './pages/recruiter/RecruiterJobCreatePage'
-import RecruiterJobEditPage from './pages/recruiter/RecruiterJobEditPage'
-import RecruiterJobDetailPage from './pages/recruiter/RecruiterJobDetailPage'
-import RecruiterApplicationsPage from './pages/recruiter/RecruiterApplicationsPage'
-import RecruiterApplicationDetailPage from './pages/recruiter/RecruiterApplicationDetailPage'
-import RecruiterPlansPage from './pages/recruiter/RecruiterPlansPage'
-import RecruiterPaymentPage from './pages/recruiter/RecruiterPaymentPage'
-import RecruiterSettingsPage from './pages/recruiter/RecruiterSettingsPage'
-import AdminDashboardPage     from './pages/admin/AdminDashboardPage'
-import AdminJobsPage from './pages/admin/AdminJobsPage'
-import AdminJobDetailPage from './pages/admin/AdminJobDetailPage'
-import AdminUsersPage from './pages/admin/AdminUsersPage'
-import AdminUserDetailPage from './pages/admin/AdminUserDetailPage'
-import AdminCVTemplatesPage from './pages/admin/AdminCVTemplatesPage'
-import AdminCVTemplateCreatePage from './pages/admin/AdminCVTemplateCreatePage'
-import AdminCVTemplateDetailPage from './pages/admin/AdminCVTemplateDetailPage'
-import AdminCVTemplateEditPage from './pages/admin/AdminCVTemplateEditPage'
-import AdminApplicationsPage from './pages/admin/AdminApplicationsPage'
-import AdminApplicationDetailPage from './pages/admin/AdminApplicationDetailPage'
-import AdminCandidateCVsPage from './pages/admin/AdminCandidateCVsPage'
-import AdminCandidateCVDetailPage from './pages/admin/AdminCandidateCVDetailPage'
-import AdminSubscriptionPlansPage from './pages/admin/AdminSubscriptionPlansPage'
-import AdminPaymentsPage from './pages/admin/AdminPaymentsPage'
 import NotificationCenterPage from './pages/notifications/NotificationCenterPage'
 
 // Route guards
@@ -79,7 +85,10 @@ function RedirectIfAuthenticated({ children }: { children: React.ReactNode }) {
     const returnTo = from?.pathname && from.pathname.startsWith('/') && !from.pathname.startsWith('//') && canRestorePathForRole(from.pathname, user.role)
       ? `${from.pathname}${from.search ?? ''}${from.hash ?? ''}`
       : null
-    const dest = returnTo ?? dashboardFor(user.role)
+    const needsRecruiterOnboarding = user.role === 'RECRUITER' && hasPendingRecruiterOnboarding(user.email)
+    const dest = needsRecruiterOnboarding
+      ? '/recruiter/profile/edit?onboarding=1'
+      : (returnTo ?? dashboardFor(user.role))
     const resumeApplicationJobId = returnTo ? state?.resumeApplicationJobId : undefined
     return <Navigate to={dest} state={resumeApplicationJobId ? { resumeApplicationJobId } : null} replace />
   }
@@ -94,7 +103,7 @@ function App() {
         <Route path="/"         element={<HomePage />} />
         <Route path="/jobs"     element={<JobListPage />} />
         <Route path="/jobs/:id" element={<JobDetailPage />} />
-        <Route element={<ProtectedRoute />}>
+        <Route element={<ProtectedRoute loadingVariant="candidate" />}>
           <Route element={<RoleRoute allowedRoles={['CANDIDATE']} />}>
             <Route path="/candidate" element={<Navigate to="/" replace />} />
             <Route path="/candidate/profile" element={<CandidateProfilePage />} />
@@ -116,21 +125,15 @@ function App() {
 
       {/* ── Auth pages (standalone, redirect if already logged in) ── */}
       <Route
-        path="/login"
         element={
           <RedirectIfAuthenticated>
-            <LoginPage />
+            <AuthPage />
           </RedirectIfAuthenticated>
         }
-      />
-      <Route
-        path="/register"
-        element={
-          <RedirectIfAuthenticated>
-            <RegisterPage />
-          </RedirectIfAuthenticated>
-        }
-      />
+      >
+        <Route path="/login" />
+        <Route path="/register" />
+      </Route>
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
