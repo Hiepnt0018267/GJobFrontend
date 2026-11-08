@@ -1,5 +1,6 @@
 import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, CreditCard, Plus, RefreshCw, Search, UsersRound, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { AdminFilterPill, AdminFilterResetButton } from '../../components/admin/AdminFilterControls'
 import AdminRecruiterSubscriptionList from '../../components/subscription/AdminRecruiterSubscriptionList'
 import RecruiterSubscriptionDialog from '../../components/subscription/RecruiterSubscriptionDialog'
 import RevokeSubscriptionDialog from '../../components/subscription/RevokeSubscriptionDialog'
@@ -49,6 +50,26 @@ export default function AdminSubscriptionPlansPage() {
   const plans = useMemo(() => plansQuery.data?.items ?? [], [plansQuery.data])
   const currentQuery = view === 'plans' ? plansQuery : recruitersQuery
   const hasRecruiterFilters = recruiterSearchInput.trim().length > 0 || recruiterAccountStatus !== 'all' || recruiterPlanCode !== ''
+
+  const recruiterAccountStatusOptions = useMemo<Array<{ value: RecruiterAccountStatus; label: string }>>(
+    () => [
+      { value: 'all', label: 'Tất cả trạng thái' },
+      { value: 'active', label: 'Đang hoạt động' },
+      { value: 'inactive', label: 'Đã vô hiệu hóa' },
+    ],
+    []
+  )
+  const recruiterPlanOptions = useMemo(
+    () => [
+      { value: '', label: 'Tất cả gói' },
+      ...plans.map((plan) => ({ value: plan.code, label: `${plan.name} (${plan.code})` })),
+    ],
+    [plans]
+  )
+  const activeRecruiterFilterCount = [
+    recruiterAccountStatus !== 'all',
+    recruiterPlanCode !== '',
+  ].filter(Boolean).length
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -117,11 +138,54 @@ export default function AdminSubscriptionPlansPage() {
     </section>}
 
     {view === 'recruiters' && <section role="tabpanel" className="mt-6">
-      <div className="mb-5 flex flex-wrap items-center gap-3 border-t border-slate-200 pt-5">
-        <label className="relative block w-full sm:w-[27rem]"><span className="sr-only">Tìm theo tên hoặc email</span><Search className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={17} /><input type="search" value={recruiterSearchInput} onChange={(event) => setRecruiterSearchInput(event.target.value)} placeholder="Tìm nhà tuyển dụng, email..." className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-10 text-sm text-slate-950 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200" />{recruiterSearchInput && <button type="button" aria-label="Xóa từ khóa tìm kiếm" onClick={() => { setRecruiterSearchInput(''); setRecruiterSearch(''); setRecruiterPage(1) }} className="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"><X size={15} /></button>}</label>
-        <label className="w-full sm:w-52"><span className="sr-only">Lọc theo trạng thái tài khoản</span><select value={recruiterAccountStatus} onChange={(event) => { setRecruiterAccountStatus(event.target.value as RecruiterAccountStatus); setRecruiterPage(1) }} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"><option value="all">Tất cả trạng thái</option><option value="active">Đang hoạt động</option><option value="inactive">Đã vô hiệu hóa</option></select></label>
-        <label className="w-full sm:w-52"><span className="sr-only">Lọc theo gói hiện tại</span><select value={recruiterPlanCode} onChange={(event) => { setRecruiterPlanCode(event.target.value); setRecruiterPage(1) }} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"><option value="">Tất cả gói</option>{plans.map((plan) => <option key={plan.id} value={plan.code}>{plan.name} ({plan.code})</option>)}</select></label>
-        {hasRecruiterFilters && <button type="button" onClick={resetRecruiterFilters} aria-label="Xóa bộ lọc" title="Xóa bộ lọc" className="btn-press inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 hover:text-slate-950"><X size={17} /></button>}
+      <div className="mb-5 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-5">
+        {/* Compact Search Input */}
+        <div className="relative min-w-[200px] flex-1 sm:max-w-xs md:max-w-sm">
+          <span className="sr-only">Tìm theo tên hoặc email</span>
+          <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+          <input
+            type="search"
+            value={recruiterSearchInput}
+            onChange={(event) => setRecruiterSearchInput(event.target.value)}
+            placeholder="Tìm nhà tuyển dụng, email..."
+            className="h-9 w-full rounded-xl border border-slate-200/90 bg-white py-1.5 pl-8.5 pr-8 text-xs sm:text-sm text-slate-900 shadow-2xs placeholder:text-slate-400 outline-none transition-all duration-150 hover:border-slate-300 focus:border-[#1C1C1C] focus:ring-2 focus:ring-black/10"
+          />
+          {recruiterSearchInput && (
+            <button
+              type="button"
+              aria-label="Xóa từ khóa tìm kiếm"
+              onClick={() => { setRecruiterSearchInput(''); setRecruiterSearch(''); setRecruiterPage(1) }}
+              className="absolute right-2 top-1/2 inline-flex -translate-y-1/2 rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            >
+              <X size={13} aria-hidden="true" />
+            </button>
+          )}
+        </div>
+
+        {/* Account Status Pill */}
+        <AdminFilterPill
+          label="Trạng thái"
+          value={recruiterAccountStatus}
+          options={recruiterAccountStatusOptions}
+          onChange={(val) => { setRecruiterAccountStatus(val as RecruiterAccountStatus); setRecruiterPage(1) }}
+          ariaLabel="Lọc theo trạng thái tài khoản"
+          allValue="all"
+        />
+
+        {/* Plan Pill */}
+        <AdminFilterPill
+          label="Gói dịch vụ"
+          value={recruiterPlanCode}
+          options={recruiterPlanOptions}
+          onChange={(val) => { setRecruiterPlanCode(val); setRecruiterPage(1) }}
+          ariaLabel="Lọc theo gói hiện tại"
+          allValue=""
+        />
+
+        {/* Quick Reset Button */}
+        {hasRecruiterFilters && (
+          <AdminFilterResetButton onClick={resetRecruiterFilters} count={activeRecruiterFilterCount} />
+        )}
       </div>
       <div aria-busy={recruitersQuery.isFetching} className={`transition-opacity ${recruitersQuery.isFetching && recruitersQuery.data ? 'opacity-60' : 'opacity-100'}`}>
       {recruitersQuery.isInitialLoading ? <div className="space-y-3">{[1, 2, 3].map((key) => <div key={key} className="h-32 animate-pulse rounded-2xl bg-slate-200" />)}</div>

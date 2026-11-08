@@ -1,12 +1,21 @@
-import { Camera, ChevronLeft, Plus, Save, Trash2 } from 'lucide-react';
+﻿import { Camera, ChevronLeft, Plus, Save, Trash2 } from 'lucide-react';
+import CVAvatarDialog from './CVAvatarDialog';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { CVCertificateItem, CV, CVCreateRequest, CVEducationItem, CVExperienceItem, CVLanguageItem, CVLanguageProficiency, CVProjectItem, CVTemplateSummary } from '../../types/cv';
+import type { CVCandidatePresentationOverrides, CVCertificateItem, CV, CVCreateRequest, CVEducationItem, CVExperienceItem, CVLanguageItem, CVLanguageProficiency, CVProjectItem, CVTemplateSummary, CVTemplateThemeConfig } from '../../types/cv';
 import { cvService } from '../../services/cvService';
 import { usePrivateMediaUrl } from '../../hooks/usePrivateMediaUrl';
 import CVTemplateRenderer from './CVTemplateRenderer';
-import { resolveCVTheme } from './cvTheme';
+import { resolveCVPresentation } from './cvTheme';
 import { sortCVTemplates } from '../../utils/cvTemplateSort';
+import type { CVRenderPresentation } from './templates/types';
+import CVDesignControls from './CVDesignControls';
+
+export type CVEditorPresentationDraft = {
+    templateId: string;
+    templateConfigSnapshot: Partial<CVTemplateThemeConfig> | null;
+    candidateOverrides: CVCandidatePresentationOverrides;
+};
 type Props = {
     initial: CVCreateRequest;
     currentTemplate: CVTemplateSummary;
@@ -14,12 +23,13 @@ type Props = {
     profileAvatarUrl?: string | null;
     submitLabel: string;
     submitting: boolean;
-    onSave: (data: CVCreateRequest, pendingPhoto?: File) => Promise<void>;
+    onSave: (data: CVCreateRequest, presentation: CVEditorPresentationDraft, pendingPhoto?: File) => Promise<void>;
     onCancel: () => void;
     cvId?: string;
     hasManagedPhoto?: boolean;
     photoVersion?: string | null;
     onPhotoUpdated?: (cv: CV) => void;
+    presentation?: CVRenderPresentation;
 };
 const editClass = 'w-full rounded px-1 py-0.5 text-base outline-none transition hover:bg-teal-50 focus:bg-white focus:ring-2 focus:ring-teal-200';
 const removeAt = <T,>(items: T[], index: number) => items.filter((_, current) => current !== index);
@@ -43,11 +53,15 @@ const normalizeLanguageProficiency = (value: string | null | undefined): CVLangu
     };
     return normalized ? aliases[normalized] ?? null : null;
 };
-export default function CVInlineEditor({ initial, currentTemplate, templates, submitLabel, submitting, onSave, onCancel, cvId, hasManagedPhoto = false, photoVersion, onPhotoUpdated }: Props) {
+const contentFingerprint = (value: CVCreateRequest) => JSON.stringify({ ...value, template_id: undefined });
+export default function CVInlineEditor({ initial, currentTemplate, templates, submitLabel, submitting, onSave, onCancel, cvId, hasManagedPhoto = false, photoVersion, onPhotoUpdated, presentation = {} }: Props) {
     const [data, setData] = useState(initial);
+    const initialPresentation = useRef<CVEditorPresentationDraft>({ templateId: initial.template_id, templateConfigSnapshot: presentation.templateConfigSnapshot ?? currentTemplate.theme_config ?? null, candidateOverrides: presentation.candidateOverrides ?? {} });
+    const [presentationDraft, setPresentationDraft] = useState<CVEditorPresentationDraft>(initialPresentation.current);
     const [validationError, setValidationError] = useState<string | null>(null);
     const [sectionErrors, setSectionErrors] = useState<Record<string, string>>({});
     const [showAvatarEditor, setAvatarEditorState] = useState(false);
+    const [showAvatarDialog, setShowAvatarDialog] = useState(false);
     const [avatarImageFailed, setAvatarImageFailed] = useState(false);
     const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
     const [pendingPhoto, setPendingPhoto] = useState<File | null>(null);
@@ -80,11 +94,24 @@ export default function CVInlineEditor({ initial, currentTemplate, templates, su
     const legacyAvatarUrl = data.personal_info.avatar_url?.trim() || '';
     const avatarUrl = photoPreviewUrl || managedPhotoUrl || legacyAvatarUrl;
     const hasAvatar = Boolean(avatarUrl && (isHttpUrl(avatarUrl) || avatarUrl.startsWith('blob:')) && !avatarImageFailed);
-    const theme = useMemo(() => resolveCVTheme(selectedTemplate.layout_key, selectedTemplate.theme_config), [selectedTemplate]);
-    const isClassic = selectedTemplate.layout_key === 'CLASSIC';
-    const isMinimal = selectedTemplate.layout_key === 'MINIMAL';
+    const theme = useMemo(() => resolveCVPresentation(selectedTemplate.layout_key, presentationDraft.templateConfigSnapshot, presentationDraft.candidateOverrides), [presentationDraft, selectedTemplate.layout_key]);
+    const contentDirty = useMemo(() => contentFingerprint(data) !== contentFingerprint(initial), [data, initial]);
+    const presentationDirty = useMemo(() => JSON.stringify(presentationDraft) !== JSON.stringify(initialPresentation.current), [presentationDraft]);
+    const changeTemplate = (templateId: string) => {
+        const nextTemplate = availableTemplates.find((template) => template.id === templateId);
+        if (!nextTemplate) return;
+        setData((current) => ({ ...current, template_id: templateId }));
+        setPresentationDraft((current) => ({
+            templateId,
+            templateConfigSnapshot: templateId === initialPresentation.current.templateId
+                ? initialPresentation.current.templateConfigSnapshot
+                : nextTemplate.theme_config ?? null,
+            candidateOverrides: current.candidateOverrides.section_visibility ? { section_visibility: current.candidateOverrides.section_visibility } : {},
+        }));
+        setValidationError(null);
+    };
     const choosePhoto = () => {
-        pickerRef.current?.click();
+        setShowAvatarDialog(true);
     };
     const uploadPhoto = useCallback(async (file: File) => {
         if (photoUploading)
@@ -186,28 +213,42 @@ export default function CVInlineEditor({ initial, currentTemplate, templates, su
             return;
         }
         setValidationError(null);
-        void onSave({ ...data, languages: normalizedLanguages }, pendingPhoto ?? undefined);
+        void onSave({ ...data, languages: normalizedLanguages }, presentationDraft, pendingPhoto ?? undefined);
     };
     const section = (name: string, children: ReactNode) => <section className={theme.sectionSpacingClass}>
 <div style={{ color: theme.primary_color, borderColor: theme.primary_color }} className={`${theme.headingClass} text-xs font-bold tracking-[0.08em]`}>{name}</div>{children}{sectionErrors[name] && <p role="alert" className="mt-2 text-xs font-medium text-red-600">{sectionErrors[name]}</p>}</section>;
     const removeButton = (onDelete: () => void) => <button type="button" onClick={onDelete} aria-label="Xoá mục" className="opacity-0 text-slate-400 transition hover:text-red-600 focus:opacity-100 group-hover:opacity-100">
 <Trash2 size={14}/>
 </button>;
+    const handleAvatarConfirm = (file: File) => {
+        void uploadPhoto(file);
+    };
     return <div className="min-h-screen bg-slate-100">
+    {showAvatarDialog && (
+        <CVAvatarDialog
+            currentUrl={hasAvatar ? avatarUrl : null}
+            onConfirm={handleAvatarConfirm}
+            onRemove={() => void removePhoto()}
+            onClose={() => setShowAvatarDialog(false)}
+        />
+    )}
     <div className="sticky top-0 z-30 border-b border-slate-200 bg-white">
 <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-4 py-3">
 <button type="button" onClick={onCancel} className="inline-flex items-center gap-1 text-sm font-semibold text-slate-600 hover:text-[#49BBBD]">
 <ChevronLeft size={16}/>CV của tôi</button>
 <input value={data.title} required maxLength={255} onChange={(event) => patch({ title: event.target.value })} className={`min-w-48 flex-1 rounded border bg-white px-2 py-1 text-sm font-bold outline-none hover:border-slate-200 focus:border-teal-500 ${sectionErrors.TITLE ? 'border-red-400 text-red-950' : 'border-transparent text-slate-900'}`} placeholder="Tên CV" aria-label="Tên CV" aria-invalid={Boolean(sectionErrors.TITLE)}/>
-<label className="text-xs font-semibold text-slate-500">Đổi mẫu<select value={data.template_id} onChange={(event) => patch({ template_id: event.target.value })} className="ml-1 rounded border border-slate-200 bg-white px-1.5 py-1 text-slate-700 outline-none focus:border-teal-500">{availableTemplates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}</select>
+<label className="text-xs font-semibold text-slate-500">Đổi mẫu<select value={data.template_id} onChange={(event) => changeTemplate(event.target.value)} className="ml-1 rounded border border-slate-200 bg-white px-1.5 py-1 text-slate-700 outline-none focus:border-teal-500">{availableTemplates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}</select>
 </label>
 <button type="button" disabled={submitting} onClick={save} className="ml-auto inline-flex items-center gap-2 rounded-lg bg-[#49BBBD] px-4 py-2 text-sm font-semibold text-white hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80 disabled:opacity-60">
 <Save size={16}/>{submitting ? 'Đang lưu...' : submitLabel}</button>
 </div>{validationError && <p role="alert" className="mx-auto max-w-5xl border-t border-red-100 bg-red-50 px-4 py-2 text-sm text-red-700">Không thể lưu CV. {validationError}</p>}{sectionErrors.TITLE && <p className="mx-auto max-w-5xl px-4 pb-2 text-xs font-medium text-red-600">{sectionErrors.TITLE}</p>}</div>
-    <main className="mx-auto max-w-4xl p-4 sm:p-8">
-<CVTemplateRenderer cv={data} template={selectedTemplate} mode="edit" className="mx-auto min-h-[1120px] max-w-[794px] p-7 shadow-xl sm:p-12">
-<header style={isMinimal ? undefined : { borderColor: theme.primary_color }} className={`${isMinimal ? '' : isClassic ? 'border-b' : 'border-b-2'} pb-6 ${isClassic ? 'text-center' : ''}`}>
-<div className={`flex gap-5 ${isClassic ? 'flex-col items-center' : 'items-start'}`}>
+    <main className="mx-auto max-w-[1440px] p-4 sm:p-8">
+<div className="grid items-start gap-6 xl:grid-cols-[minmax(360px,0.72fr)_minmax(0,1.28fr)]">
+<div className="space-y-6">
+<CVDesignControls layoutKey={selectedTemplate.layout_key} snapshot={presentationDraft.templateConfigSnapshot} overrides={presentationDraft.candidateOverrides} onChange={(candidateOverrides) => setPresentationDraft((current) => ({ ...current, candidateOverrides }))} />
+<section aria-label="Nội dung CV" className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+<header style={{ borderColor: theme.primary_color }} className="border-b-2 pb-6">
+<div className="flex items-start gap-5">
 <div className="relative shrink-0">
 <button type="button" onClick={() => setAvatarEditorState((current) => !current)} aria-expanded={showAvatarEditor} aria-label="Quản lý ảnh CV" className="group relative block h-28 w-20 overflow-hidden rounded-md border border-slate-300 bg-slate-50 text-slate-500 outline-none ring-offset-2 focus:ring-2 focus:ring-teal-500">{hasAvatar ? <img src={avatarUrl} alt="Ảnh CV" onError={() => setAvatarImageFailed(true)} className="h-full w-full object-cover"/> : <span className="flex h-full flex-col items-center justify-center gap-1 text-[10px] font-bold tracking-wide">
 <Camera size={18}/>
@@ -265,7 +306,14 @@ export default function CVInlineEditor({ initial, currentTemplate, templates, su
 <input value={item.name} maxLength={100} onChange={(event) => updateItem<CVLanguageItem>('languages', index, { name: event.target.value })} className={`${editClass} font-semibold`} placeholder="Ngôn ngữ"/>
 <input value={item.proficiency ?? ''} onChange={(event) => updateItem<CVLanguageItem>('languages', index, { proficiency: event.target.value as CVLanguageItem['proficiency'] })} className={editClass} placeholder="Trình độ, ví dụ: Giao tiếp"/>
 </div>}/>)}
-    </CVTemplateRenderer>
+    </section></div>
+<aside aria-label="Xem trước CV trực tiếp" className="min-w-0 xl:sticky xl:top-20">
+<div className="mb-3 flex items-center justify-between"><div><h2 className="font-bold text-slate-950">Xem trước trực tiếp</h2><p className="text-xs text-slate-500">Nội dung và mẫu chỉ được lưu khi bạn nhấn Lưu.</p>{(contentDirty || presentationDirty) && <p className="mt-1 text-xs font-semibold text-amber-700">Chưa lưu: {[contentDirty && 'nội dung', presentationDirty && 'thiết kế'].filter(Boolean).join(', ')}</p>}</div></div>
+<div className="overflow-auto rounded-2xl bg-slate-200/70 p-3 sm:p-5">
+<CVTemplateRenderer cv={data} template={selectedTemplate} presentation={{ templateConfigSnapshot: presentationDraft.templateConfigSnapshot, candidateOverrides: presentationDraft.candidateOverrides }} mode="editor-preview" photoUrl={hasAvatar ? avatarUrl : null} className="mx-auto shadow-xl" />
+</div>
+</aside>
+</div>
 </main>
   </div>;
 }

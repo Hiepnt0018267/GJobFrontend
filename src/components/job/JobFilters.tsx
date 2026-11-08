@@ -1,14 +1,18 @@
-import { Briefcase, ChevronDown, Clock, DollarSign, Eye, GraduationCap, Layers, SlidersHorizontal, X } from 'lucide-react'
-import { useEffect, useId, useRef, useState } from 'react'
+import { Briefcase, ChevronDown, Clock, DollarSign, Eye, GraduationCap, Layers, SlidersHorizontal, UserCheck, X } from 'lucide-react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { jobSortLabels, salaryFilterOptions, type SalaryFilter } from '../../config/jobSearchFilters'
-import { EMPLOYMENT_TYPES, EXPERIENCE_REQUIREMENTS, INDUSTRIES, JOB_LEVELS, JOB_SORT_OPTIONS, WORK_MODES } from '../../types/job'
+import { EMPLOYMENT_TYPES, EXPERIENCE_REQUIREMENTS, JOB_LEVELS, JOB_SORT_OPTIONS, WORK_MODES } from '../../types/job'
 import type { EmploymentType, ExperienceRequirement, Industry, JobLevel, JobSortOption, WorkMode } from '../../types/job'
+import type { JobTaxonomyResponse } from '../../types/jobTaxonomy'
+import { allTaxonomyPositions, nextTaxonomyOnIndustryChange, positionsForIndustryGroup } from '../../utils/candidateJobTaxonomy'
 import { trapDialogFocus } from '../../utils/dialogFocus'
-import { employmentLabel, experienceRequirementLabel, industryLabel, levelLabel, workModeLabel } from '../../utils/jobDisplay'
+import { employmentLabel, experienceRequirementLabel, levelLabel, workModeLabel } from '../../utils/jobDisplay'
 
 export type JobFilterValues = {
   employmentType: EmploymentType | ''
   industry: Industry | ''
+  industryGroup?: string
+  jobPosition?: string
   experienceRequirement: ExperienceRequirement | ''
   level: JobLevel | ''
   workMode: WorkMode | ''
@@ -21,6 +25,7 @@ type Props = {
   onChange: (values: JobFilterValues) => void
   onClear: () => void
   showSort?: boolean
+  taxonomy?: JobTaxonomyResponse | null
 }
 
 const selectFieldClass =
@@ -29,11 +34,34 @@ const selectFieldClass =
 function Controls({
   values,
   onChange,
+  taxonomy,
   sidebar = false,
   showSort = true,
-}: Pick<Props, 'values' | 'onChange' | 'showSort'> & { sidebar?: boolean }) {
+}: Pick<Props, 'values' | 'onChange' | 'showSort' | 'taxonomy'> & { sidebar?: boolean }) {
   const update = <K extends keyof JobFilterValues>(key: K, value: JobFilterValues[K]) =>
     onChange({ ...values, [key]: value })
+
+  const industries = useMemo(() => taxonomy?.industries ?? [], [taxonomy?.industries])
+  const availablePositions = useMemo(() => {
+    if (values.industryGroup) {
+      return positionsForIndustryGroup(industries, values.industryGroup)
+    }
+    return allTaxonomyPositions(industries)
+  }, [industries, values.industryGroup])
+
+  const handleIndustryGroupChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextCode = event.target.value
+    const next = nextTaxonomyOnIndustryChange(
+      industries,
+      nextCode,
+      values.jobPosition ?? '',
+    )
+    onChange({
+      ...values,
+      industryGroup: next.industryGroup,
+      jobPosition: next.jobPosition,
+    })
+  }
 
   return (
     <div className={sidebar ? 'space-y-4' : 'grid gap-4 sm:grid-cols-2'}>
@@ -108,14 +136,36 @@ function Controls({
           <Briefcase size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <select
             aria-label="Lọc theo ngành nghề"
-            value={values.industry}
-            onChange={(event) => update('industry', event.target.value as Industry | '')}
+            value={values.industryGroup ?? ''}
+            onChange={handleIndustryGroupChange}
             className={selectFieldClass}
           >
             <option value="">Tất cả ngành nghề</option>
-            {INDUSTRIES.map((val) => (
-              <option key={val} value={val}>
-                {industryLabel(val)}
+            {industries.map((val) => (
+              <option key={val.code} value={val.code}>
+                {val.display_name}
+              </option>
+            ))}
+          </select>
+          <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        </div>
+      </div>
+
+      {/* Vị trí */}
+      <div>
+        <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">Vị trí</label>
+        <div className="relative mt-1.5">
+          <UserCheck size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <select
+            aria-label="Lọc theo vị trí"
+            value={values.jobPosition ?? ''}
+            onChange={(event) => update('jobPosition', event.target.value)}
+            className={selectFieldClass}
+          >
+            <option value="">Tất cả vị trí</option>
+            {availablePositions.map((val) => (
+              <option key={val.code} value={val.code}>
+                {val.display_name}
               </option>
             ))}
           </select>
@@ -215,13 +265,23 @@ function Controls({
   )
 }
 
-export default function JobFilters({ values, onChange, onClear, showSort = true }: Props) {
+export default function JobFilters({ values, onChange, onClear, showSort = true, taxonomy }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const headingId = useId()
-  const activeCount = Object.entries(values).filter(
-    ([key, value]) => (key !== 'sort' && value !== '') || (showSort && key === 'sort' && value !== 'newest')
-  ).length
+  const activeCount = useMemo(() => {
+    let count = 0
+    if (values.industryGroup) count++
+    if (values.jobPosition) count++
+    if (values.industry) count++
+    if (values.experienceRequirement) count++
+    if (values.level) count++
+    if (values.workMode) count++
+    if (values.employmentType) count++
+    if (values.salary) count++
+    if (showSort && values.sort && values.sort !== 'newest') count++
+    return count
+  }, [values, showSort])
   const hasFilters = activeCount > 0
 
   useEffect(() => {
@@ -260,7 +320,7 @@ export default function JobFilters({ values, onChange, onClear, showSort = true 
             </button>
           )}
         </div>
-        <Controls values={values} onChange={onChange} showSort={showSort} sidebar />
+        <Controls values={values} onChange={onChange} taxonomy={taxonomy} showSort={showSort} sidebar />
       </section>
 
       {/* Mobile Open Filter Trigger */}
@@ -329,7 +389,7 @@ export default function JobFilters({ values, onChange, onClear, showSort = true 
               </button>
             </div>
 
-            <Controls values={values} onChange={onChange} showSort={showSort} />
+            <Controls values={values} onChange={onChange} taxonomy={taxonomy} showSort={showSort} />
 
             <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
               <button

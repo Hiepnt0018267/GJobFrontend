@@ -1,4 +1,19 @@
-import { Bookmark, BriefcaseBusiness, FilePlus2, FileText, ListOrdered, Settings, type LucideIcon } from 'lucide-react'
+import {
+  BadgeCheck,
+  Bookmark,
+  Building2,
+  BriefcaseBusiness,
+  Calculator,
+  Code2,
+  FilePlus2,
+  FileText,
+  ListOrdered,
+  Megaphone,
+  Settings,
+  Sparkles,
+  Upload,
+  type LucideIcon,
+} from 'lucide-react'
 
 export type CandidateNavigationItem = {
   to: string
@@ -29,7 +44,7 @@ export const candidateNavigationGroups: CandidateNavigationGroup[] = [
         icon: FileText,
       },
       {
-        to: '/candidate/saved-jobs',
+        to: '/candidate/saved?tab=jobs',
         label: 'Việc làm đã lưu',
         description: 'Xem lại các cơ hội đang quan tâm',
         icon: Bookmark,
@@ -40,10 +55,22 @@ export const candidateNavigationGroups: CandidateNavigationGroup[] = [
     label: 'Tạo CV',
     items: [
       {
-        to: '/candidate/cvs/templates',
-        label: 'Tạo CV mới',
-        description: 'Chọn mẫu và bắt đầu chỉnh sửa',
+        to: '/candidate/cvs/templates/styles?style=SIMPLE',
+        label: 'Mẫu CV đơn giản',
+        description: 'Bố cục rõ ràng, dễ đọc',
         icon: FilePlus2,
+      },
+      {
+        to: '/candidate/cvs/templates/styles?style=IMPRESSIVE',
+        label: 'Mẫu CV ấn tượng',
+        description: 'Thiết kế nổi bật và sáng tạo',
+        icon: Sparkles,
+      },
+      {
+        to: '/candidate/cvs/templates/styles?style=PROFESSIONAL',
+        label: 'Mẫu CV chuyên nghiệp',
+        description: 'Phù hợp môi trường chuyên nghiệp',
+        icon: BadgeCheck,
       },
       {
         to: '/candidate/cvs',
@@ -51,8 +78,48 @@ export const candidateNavigationGroups: CandidateNavigationGroup[] = [
         description: 'Quản lý các CV đã tạo',
         icon: FileText,
       },
+      {
+        to: '/candidate/cvs?upload=1',
+        label: 'Tải CV lên',
+        description: 'Thêm CV PDF hoặc DOCX có sẵn',
+        icon: Upload,
+      },
     ],
   },
+]
+
+export const candidateCVStyleItems: CandidateNavigationItem[] = candidateNavigationGroups[1].items.slice(0, 3)
+
+export const candidateCVPositionItems: CandidateNavigationItem[] = [
+  {
+    to: '/candidate/cvs/templates/positions?job_position=SALES_EXECUTIVE',
+    label: 'Nhân viên kinh doanh',
+    description: 'Mẫu CV dành cho Sales',
+    icon: BriefcaseBusiness,
+  },
+  {
+    to: '/candidate/cvs/templates/positions?job_position=BACKEND_DEVELOPER',
+    label: 'Lập trình viên Backend',
+    description: 'Mẫu CV dành cho công nghệ',
+    icon: Code2,
+  },
+  {
+    to: '/candidate/cvs/templates/positions?job_position=ACCOUNTANT',
+    label: 'Kế toán viên',
+    description: 'Mẫu CV dành cho kế toán',
+    icon: Calculator,
+  },
+  {
+    to: '/candidate/cvs/templates/positions?job_position=DIGITAL_MARKETING',
+    label: 'Digital Marketing',
+    description: 'Mẫu CV dành cho marketing',
+    icon: Megaphone,
+  },
+]
+
+export const candidateCVActionItems: CandidateNavigationItem[] = [
+  candidateNavigationGroups[1].items[3],
+  candidateNavigationGroups[1].items[4],
 ]
 
 export const candidateToolsGroup: CandidateNavigationGroup = {
@@ -93,9 +160,15 @@ export const candidateAccountItems: CandidateNavigationItem[] = [
     icon: BriefcaseBusiness,
   },
   {
-    to: '/candidate/saved-jobs',
+    to: '/candidate/saved?tab=jobs',
     label: 'Việc làm đã lưu',
     description: 'Xem các vị trí bạn đã lưu',
     icon: Bookmark,
+  },
+  {
+    to: '/candidate/saved?tab=companies',
+    label: 'Công ty đang theo dõi',
+    description: 'Xem các công ty bạn quan tâm',
+    icon: Building2,
   },
 ]

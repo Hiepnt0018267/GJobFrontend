@@ -13,8 +13,11 @@ import {
   createReadNotificationPage,
   createNotificationListParams,
   getNotificationTargetPath,
+  getStoredReadFeedbackIds,
   notificationPageFromSearch,
   notificationRequestKey,
+  saveAllStoredReadFeedbackIds,
+  saveStoredReadFeedbackId,
   updateNotificationSearch,
 } from '../../utils/notification'
 
@@ -84,14 +87,34 @@ export default function NotificationCenterPage() {
 
   const fetcher = useCallback(async (signal: AbortSignal): Promise<IdentityBoundResponse> => {
     if (!identityId) throw new Error('Notification identity is unavailable')
-    const result = readOnly
+    let result = readOnly
       ? await fetchReadNotifications(page, signal)
       : await notificationService.getNotifications(
         createNotificationListParams({ page, pageSize: PAGE_SIZE, unreadOnly: true }),
         signal,
       )
+
+    if (!readOnly && user?.role === 'ADMIN') {
+      const readIds = getStoredReadFeedbackIds()
+      if (readIds.size > 0) {
+        const filtered = result.items.filter(
+          (it) => !(it.target_type === 'FEEDBACK' && it.target_id && readIds.has(it.target_id))
+        )
+        if (filtered.length !== result.items.length) {
+          const diff = result.items.length - filtered.length
+          const nextTotal = Math.max(0, result.total - diff)
+          result = {
+            ...result,
+            items: filtered,
+            total: nextTotal,
+            total_pages: nextTotal === 0 ? 0 : Math.ceil(nextTotal / result.page_size),
+          }
+        }
+      }
+    }
+
     return { identityId, result }
-  }, [identityId, page, readOnly])
+  }, [identityId, page, readOnly, user?.role])
 
   const { data: boundData, error, isFetching, isInitialLoading, refetch, replaceData } = usePaginatedQuery({
     queryKey,
@@ -121,9 +144,20 @@ export default function NotificationCenterPage() {
     if (!user || !identityId) return
     const requestIdentity = identityId
     const targetPath = getNotificationTargetPath({ role: user.role, notificationType: item.type, targetType: item.target_type, targetId: item.target_id })
+
+    if (item.target_type === 'FEEDBACK' && item.target_id) {
+      saveStoredReadFeedbackId(item.target_id)
+    }
+
     if (!item.is_read) {
       try {
-        const updated = await notifications.markOne(item)
+        let updated: NotificationItemType
+        if (!item.id.startsWith('feedback-')) {
+          updated = await notifications.markOne(item)
+        } else {
+          updated = { ...item, is_read: true, read_at: new Date().toISOString() }
+        }
+
         if (activeIdentityRef.current !== requestIdentity || !data) return
         if (readOnly) {
           replaceData({ identityId: requestIdentity, result: { ...data, items: data.items.map((entry) => entry.id === updated.id ? updated : entry) } })
@@ -152,6 +186,14 @@ export default function NotificationCenterPage() {
     if (!identityId) return
     const requestIdentity = identityId
     try {
+      if (user?.role === 'ADMIN' && data?.items) {
+        const feedbackIds = data.items
+          .filter((it) => it.target_type === 'FEEDBACK' && it.target_id)
+          .map((it) => it.target_id as string)
+        if (feedbackIds.length > 0) {
+          saveAllStoredReadFeedbackIds(feedbackIds)
+        }
+      }
       await notifications.markAll()
       if (activeIdentityRef.current !== requestIdentity || !data) return
       replaceData({

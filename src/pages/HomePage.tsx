@@ -29,7 +29,7 @@ const CORE_FEATURES = [
     badgeColor: 'bg-teal-100 text-[#49BBBD]',
     title: 'Phân tích & Tối ưu CV',
     description: 'Hệ thống AI tự động phát hiện thế mạnh, từ khóa then chốt và đề xuất cải thiện hồ sơ theo tiêu chuẩn ATS quốc tế.',
-    to: '/candidate/cvs/templates',
+    to: '/candidate/cvs/templates/styles',
     actionLabel: 'Tạo CV ngay',
   },
   {
@@ -103,7 +103,7 @@ function ctaFor(role: UserRole | undefined) {
     return {
       title: 'Sẵn sàng cho nấc thang sự nghiệp tiếp theo?',
       description: 'Hoàn thiện hồ sơ chuyên nghiệp và tiếp cận các vị trí công việc có mức đãi ngộ xứng đáng.',
-      primary: { label: 'Tạo CV ngay', to: '/candidate/cvs/templates' },
+      primary: { label: 'Tạo CV ngay', to: '/candidate/cvs/templates/styles' },
       secondary: { label: 'Khám phá việc làm', to: '/jobs' },
     }
   if (role === 'RECRUITER')

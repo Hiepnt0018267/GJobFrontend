@@ -1,8 +1,9 @@
-import { Search, X, RotateCcw } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { Search, X } from 'lucide-react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { RecruiterJob } from '../../types/job'
 import { RECRUITER_APPLICATION_STATUSES, type RecruiterApplicationStatus } from '../../types/recruiterApplication'
 import { recruiterApplicationStatusLabels } from '../../utils/recruiterApplicationDisplay'
+import { RecruiterFilterPill, RecruiterFilterResetButton } from './RecruiterFilterControls'
 
 export type RecruiterApplicationStatusFilter = RecruiterApplicationStatus | 'ALL'
 
@@ -16,9 +17,24 @@ type Props = {
   onSearchChange: (value: string) => void
   onStatusChange: (value: RecruiterApplicationStatusFilter) => void
   onJobChange: (value: string) => void
+  showRankingSort?: boolean
+  sort?: string
+  onSortChange?: (value: string) => void
+  onReset?: () => void
 }
 
-export default function RecruiterApplicationFilters({ search, status, jobId, jobs, jobsLoading, showJobFilter, onSearchChange, onStatusChange, onJobChange }: Props) {
+export default function RecruiterApplicationFilters({
+  search,
+  status,
+  jobId,
+  jobs,
+  jobsLoading,
+  showJobFilter,
+  onSearchChange,
+  onStatusChange,
+  onJobChange,
+  onReset,
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const timer = useRef<number | null>(null)
 
@@ -43,81 +59,89 @@ export default function RecruiterApplicationFilters({ search, status, jobId, job
     onSearchChange('')
   }
 
-  const hasActiveFilters = Boolean(search || status !== 'ALL' || (showJobFilter && jobId))
+  const jobOptions = useMemo(() => [
+    { value: '', label: jobsLoading ? 'Đang tải tin…' : 'Tất cả tin tuyển dụng' },
+    ...jobs.map((job) => ({ value: job.id, label: job.title })),
+  ], [jobs, jobsLoading])
+
+  const statusOptions = useMemo(() => [
+    { value: 'ALL' as RecruiterApplicationStatusFilter, label: 'Tất cả trạng thái' },
+    ...RECRUITER_APPLICATION_STATUSES.map((item) => ({
+      value: item as RecruiterApplicationStatusFilter,
+      label: recruiterApplicationStatusLabels[item],
+    })),
+  ], [])
+
+  const activeFilterCount = [
+    status !== 'ALL',
+    Boolean(showJobFilter && jobId),
+  ].filter(Boolean).length
+
+  const hasActiveFilters = Boolean(search || activeFilterCount > 0)
 
   const handleReset = () => {
-    clearSearch()
-    onStatusChange('ALL')
-    if (showJobFilter) onJobChange('')
+    if (timer.current !== null) window.clearTimeout(timer.current)
+    if (inputRef.current) inputRef.current.value = ''
+    if (onReset) {
+      onReset()
+    } else {
+      clearSearch()
+      onStatusChange('ALL')
+      if (showJobFilter) onJobChange('')
+    }
   }
 
   return (
     <section className="mt-5 flex flex-wrap items-center gap-2" aria-label="Tìm kiếm và lọc ứng viên">
-      <label className="relative min-w-0 w-full sm:w-60">
+      {/* Compact Search Input */}
+      <div className="relative min-w-[200px] flex-1 sm:max-w-xs md:max-w-sm">
         <span className="sr-only">Tìm theo ứng viên, email, công việc hoặc CV</span>
-        <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+        <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
         <input
           ref={inputRef}
           defaultValue={search}
           onChange={(event) => scheduleSearch(event.target.value)}
           placeholder="Tìm ứng viên, email, CV..."
-          className="h-9 w-full rounded-xl border border-black/[0.08] bg-white shadow-2xs py-1.5 pl-8 pr-7 text-xs text-[#1C1C1C] placeholder:text-slate-400 outline-none transition-all duration-150 hover:border-black/[0.15] focus:border-[#1C1C1C] focus:ring-1 focus:ring-[#1C1C1C]/10"
+          className="h-9 w-full rounded-xl border border-slate-200/90 bg-white py-1.5 pl-8.5 pr-8 text-xs sm:text-sm text-slate-900 shadow-2xs placeholder:text-slate-400 outline-none transition-all duration-150 hover:border-slate-300 focus:border-[#1C1C1C] focus:ring-2 focus:ring-black/10"
         />
-        <button
-          type="button"
-          onClick={clearSearch}
-          aria-label="Xóa từ khóa tìm kiếm"
-          className="pointer-events-auto absolute right-2 top-1/2 inline-flex -translate-y-1/2 rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-200/70 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C] peer-placeholder-shown:pointer-events-none peer-placeholder-shown:opacity-0"
-        >
-          <X size={13} aria-hidden="true" />
-        </button>
-      </label>
-
-      {showJobFilter && (
-        <label className="min-w-0 max-w-xs flex-1 sm:flex-initial">
-          <span className="sr-only">Lọc theo tin tuyển dụng</span>
-          <select
-            value={jobId ?? ''}
-            disabled={jobsLoading}
-            onChange={(event) => onJobChange(event.target.value)}
-            className="h-9 w-full rounded-xl border border-black/[0.08] bg-white shadow-2xs px-3 text-xs font-normal text-[#1C1C1C] outline-none transition-all duration-150 hover:border-black/[0.15] focus:border-[#1C1C1C] focus:ring-1 focus:ring-[#1C1C1C]/10 disabled:cursor-wait disabled:bg-slate-50 disabled:text-slate-400"
+        {search && (
+          <button
+            type="button"
+            onClick={clearSearch}
+            aria-label="Xóa từ khóa tìm kiếm"
+            className="absolute right-2 top-1/2 inline-flex -translate-y-1/2 rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
           >
-            <option value="">{jobsLoading ? 'Đang tải tin…' : 'Tất cả tin tuyển dụng'}</option>
-            {jobs.map((job) => (
-              <option key={job.id} value={job.id}>
-                {job.title}
-              </option>
-            ))}
-          </select>
-        </label>
+            <X size={13} aria-hidden="true" />
+          </button>
+        )}
+      </div>
+
+      {/* Job Filter Pill */}
+      {showJobFilter && (
+        <RecruiterFilterPill
+          label="Tin tuyển dụng"
+          value={jobId ?? ''}
+          options={jobOptions}
+          onChange={onJobChange}
+          ariaLabel="Lọc theo tin tuyển dụng"
+          allValue=""
+          disabled={jobsLoading}
+        />
       )}
 
-      <label className="min-w-0 w-44">
-        <span className="sr-only">Lọc trạng thái đơn ứng tuyển</span>
-        <select
-          value={status}
-          onChange={(event) => onStatusChange(event.target.value as RecruiterApplicationStatusFilter)}
-          className="h-9 w-full rounded-xl border border-black/[0.08] bg-white shadow-2xs px-3 text-xs font-normal text-[#1C1C1C] outline-none transition-all duration-150 hover:border-black/[0.15] focus:border-[#1C1C1C] focus:ring-1 focus:ring-[#1C1C1C]/10"
-        >
-          <option value="ALL">Tất cả trạng thái</option>
-          {RECRUITER_APPLICATION_STATUSES.map((item) => (
-            <option key={item} value={item}>
-              {recruiterApplicationStatusLabels[item]}
-            </option>
-          ))}
-        </select>
-      </label>
+      {/* Status Filter Pill */}
+      <RecruiterFilterPill
+        label="Trạng thái"
+        value={status}
+        options={statusOptions}
+        onChange={onStatusChange}
+        ariaLabel="Lọc trạng thái đơn ứng tuyển"
+        allValue="ALL"
+      />
 
+      {/* Quick Reset Button */}
       {hasActiveFilters && (
-        <button
-          type="button"
-          onClick={handleReset}
-          className="inline-flex items-center gap-1.5 h-9 px-2.5 text-xs font-normal text-slate-500 hover:text-red-600 hover:bg-red-50/80 rounded-xl transition-colors ml-auto sm:ml-0"
-          title="Đặt lại toàn bộ bộ lọc"
-        >
-          <RotateCcw size={12} />
-          <span>Xóa lọc</span>
-        </button>
+        <RecruiterFilterResetButton onClick={handleReset} count={activeFilterCount} />
       )}
     </section>
   )

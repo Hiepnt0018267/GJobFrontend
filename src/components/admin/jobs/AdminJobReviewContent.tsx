@@ -3,7 +3,7 @@ import AdminJobModerationActions from './AdminJobModerationActions'
 import AdminJobPublisherInfo from './AdminJobPublisherInfo'
 import AdminJobStatusBadge from './AdminJobStatusBadge'
 import type { AdminJob } from '../../../types/adminJob'
-import { employmentLabel, formatJobTimestamp, formatSalary, industryLabel, levelLabel, workModeLabel } from '../../../utils/jobDisplay'
+import { employmentLabel, formatJobTimestamp, formatSalary, getJobTaxonomyDisplay, levelLabel, workModeLabel } from '../../../utils/jobDisplay'
 
 type AdminJobReviewContentProps = {
   job: AdminJob
@@ -12,6 +12,7 @@ type AdminJobReviewContentProps = {
 }
 
 export default function AdminJobReviewContent({ job, onUpdated, onConflict }: AdminJobReviewContentProps) {
+  const taxonomyDisplay = getJobTaxonomyDisplay(job)
   return (
     <div className="space-y-6">
       <section className="rounded-2xl bg-slate-900 p-6 text-white shadow-sm sm:p-8">
@@ -66,7 +67,7 @@ export default function AdminJobReviewContent({ job, onUpdated, onConflict }: Ad
           <aside className="rounded-2xl bg-white p-6 ring-1 ring-slate-200">
             <h2 className="text-lg font-bold text-slate-950">Thông tin kiểm duyệt</h2>
             <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-1">
-              <div><dt className="text-slate-500">Ngành nghề trên tin</dt><dd className="mt-1 font-semibold text-slate-900">{industryLabel(job.industry)}</dd></div>
+              <div><dt className="text-slate-500">Ngành nghề & Vị trí</dt><dd className="mt-1 flex items-center gap-2 font-semibold text-slate-900"><span>{taxonomyDisplay.primaryName}</span>{taxonomyDisplay.isInactive && <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-200">Danh mục tạm ẩn</span>}</dd></div>
               <div><dt className="text-slate-500">Cấp bậc</dt><dd className="mt-1 font-semibold text-slate-900">{levelLabel(job.level)}</dd></div>
               <div><dt className="text-slate-500">Cách thức làm việc</dt><dd className="mt-1 font-semibold text-slate-900">{workModeLabel(job.work_mode)}</dd></div>
               <div><dt className="flex items-center gap-1.5 text-slate-500"><Banknote size={15} aria-hidden="true" />Mức lương</dt><dd className="mt-1 font-semibold text-emerald-700">{formatSalary(job)}</dd></div>

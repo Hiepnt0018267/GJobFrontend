@@ -11,7 +11,7 @@ const FOOTER_LINKS = {
   ],
   candidates: [
     { label: 'Khám phá việc làm', to: '/jobs' },
-    { label: 'Tạo CV chuyên nghiệp', to: '/candidate/cvs/templates' },
+    { label: 'Tạo CV chuyên nghiệp', to: '/candidate/cvs/templates/styles' },
     { label: 'Đăng nhập ứng viên', to: '/login' },
     { label: 'Đăng ký tài khoản', to: '/register' },
   ],

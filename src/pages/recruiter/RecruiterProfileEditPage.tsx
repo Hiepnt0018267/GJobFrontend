@@ -1,4 +1,4 @@
-import { AlertCircle, ArrowLeft, Building2, CheckCircle2 } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Building2, CheckCircle2, ExternalLink } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import RecruiterProfileForm from '../../components/recruiter/RecruiterProfileForm'
@@ -59,8 +59,7 @@ export default function RecruiterProfileEditPage() {
             </div>
           )}
 
-          {!onboarding && <h1 className="text-2xl font-bold text-slate-900">Cập nhật hồ sơ công ty</h1>}
-          {!onboarding && <p className="mt-2 text-sm text-slate-500">Hoàn thiện thông tin để doanh nghiệp của bạn được nhận diện rõ ràng hơn.</p>}
+          {!onboarding && <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><div><h1 className="text-2xl font-bold text-slate-900">Cập nhật hồ sơ công ty</h1><p className="mt-2 text-sm leading-6 text-slate-500">Hoàn thiện thông tin công khai để ứng viên hiểu rõ hơn về doanh nghiệp của bạn.</p></div>{profile && <Link to={`/companies/${profile.id}`} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"><ExternalLink size={16} />Xem trang công ty</Link>}</div>}
 
           <div className={onboarding ? '' : 'mt-8'}>
             {!profile && !error && <Skeleton />}

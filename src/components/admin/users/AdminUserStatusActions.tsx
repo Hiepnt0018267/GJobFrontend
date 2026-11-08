@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { adminUserService } from '../../../services/adminUserService'
 import type { AdminUserDetail } from '../../../types/adminUser'
 import { adminUserErrorMessage, getApiErrorStatus } from '../../../utils/apiError'
+import AdminViewportPortal from '../AdminViewportPortal'
 
 type UserStatusAction = 'activate' | 'deactivate'
 
@@ -38,7 +39,7 @@ function ConfirmationDialog({ action, isSubmitting, onCancel, onConfirm }: Confi
   }, [isSubmitting, onCancel])
 
   return (
-    <div className="motion-backdrop fixed inset-0 z-50 flex items-end bg-slate-950/45 p-4 sm:items-center sm:justify-center" role="presentation">
+    <AdminViewportPortal><div className="motion-backdrop fixed inset-0 z-[100] flex min-h-dvh items-end overflow-y-auto overscroll-contain bg-slate-950/45 p-4 sm:items-center sm:justify-center" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !isSubmitting) onCancel() }}>
       <section role="dialog" aria-modal="true" aria-labelledby="user-status-dialog-title" aria-describedby="user-status-dialog-description" className="motion-dialog w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
         <h2 id="user-status-dialog-title" className="text-lg font-bold text-slate-950">{title}</h2>
         <p id="user-status-dialog-description" className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
@@ -50,7 +51,7 @@ function ConfirmationDialog({ action, isSubmitting, onCancel, onConfirm }: Confi
           </button>
         </div>
       </section>
-    </div>
+    </div></AdminViewportPortal>
   )
 }
 

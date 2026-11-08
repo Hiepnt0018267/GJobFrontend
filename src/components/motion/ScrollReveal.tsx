@@ -13,17 +13,14 @@ export default function ScrollReveal({
   delayMs = 0,
   direction = 'up',
 }: Props) {
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
   const domRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const el = domRef.current
     if (!el) return
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setIsVisible(true)
-      return
-    }
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     const observer = new IntersectionObserver(
       (entries) => {

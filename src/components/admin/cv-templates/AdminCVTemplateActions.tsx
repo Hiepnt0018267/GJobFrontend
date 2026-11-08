@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { adminCVTemplateService } from '../../../services/adminCVTemplateService'
 import type { AdminCVTemplate } from '../../../types/adminCVTemplate'
 import { adminCVTemplateErrorMessage, getApiErrorStatus } from '../../../utils/apiError'
+import AdminViewportPortal from '../AdminViewportPortal'
 
 type Action = 'activate' | 'deactivate' | 'feature' | 'unfeature' | 'delete'
 
@@ -95,7 +96,7 @@ export default function AdminCVTemplateActions({ template, onUpdated, onDeleted,
       {error && <p role="alert" className="mt-3 text-sm font-medium text-red-700">{error}</p>}
 
       {pending && (
-        <div className="fixed inset-0 z-50 flex items-end bg-slate-950/45 p-4 sm:items-center sm:justify-center">
+        <AdminViewportPortal><div className="fixed inset-0 z-[100] flex min-h-dvh items-end overflow-y-auto overscroll-contain bg-slate-950/45 p-4 sm:items-center sm:justify-center" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) setPending(null) }}>
           <section role="dialog" aria-modal="true" aria-labelledby="template-action-title" className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
             <h2 id="template-action-title" className="text-lg font-bold text-slate-950">{labels[pending]}?</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -113,7 +114,7 @@ export default function AdminCVTemplateActions({ template, onUpdated, onDeleted,
               </button>
             </div>
           </section>
-        </div>
+        </div></AdminViewportPortal>
       )}
     </div>
   )

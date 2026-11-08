@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, ClipboardList, CreditCard, FileText, LayoutDashboard, PanelsTopLeft, ReceiptText, UsersRound, type LucideIcon } from 'lucide-react'
+import { BriefcaseBusiness, ClipboardList, CreditCard, FileText, FolderTree, LayoutDashboard, MessageSquare, PanelsTopLeft, ReceiptText, UsersRound, type LucideIcon } from 'lucide-react'
 
 export type AdminNavigationItem = {
   label: string
@@ -29,6 +29,7 @@ export const adminNavigationGroups: AdminNavigationGroup[] = [
     items: [
       { label: 'Người dùng', to: '/admin/users', icon: UsersRound, isActive: within('/admin/users') },
       { label: 'CV ứng viên', to: '/admin/cvs', icon: FileText, isActive: within('/admin/cvs') },
+      { label: 'Góp ý sản phẩm', to: '/admin/feedbacks', icon: MessageSquare, isActive: within('/admin/feedbacks') },
     ],
   },
   {
@@ -38,7 +39,10 @@ export const adminNavigationGroups: AdminNavigationGroup[] = [
       { label: 'Lịch sử giao dịch', to: '/admin/payments', icon: ReceiptText, isActive: within('/admin/payments') },
     ],
   },
-  { label: 'Nội dung', items: [{ label: 'Mẫu CV', to: '/admin/cv-templates', icon: PanelsTopLeft, isActive: within('/admin/cv-templates') }] },
+  { label: 'Nội dung', items: [
+    { label: 'Danh mục nghề nghiệp', to: '/admin/job-taxonomy', icon: FolderTree, isActive: within('/admin/job-taxonomy') },
+    { label: 'Mẫu CV', to: '/admin/cv-templates', icon: PanelsTopLeft, isActive: within('/admin/cv-templates') },
+  ] },
 ]
 
 export type AdminPageMeta = { title: string; context: string }
@@ -57,6 +61,8 @@ const pageMeta: Array<{ matches: (pathname: string) => boolean; meta: AdminPageM
   { matches: exact('/admin/cvs'), meta: { title: 'CV ứng viên', context: 'Người dùng' } },
   { matches: within('/admin/cvs'), meta: { title: 'Chi tiết CV ứng viên', context: 'Người dùng' } },
   { matches: exact('/admin/cv-templates/new'), meta: { title: 'Thêm mẫu CV', context: 'Nội dung' } },
+  { matches: exact('/admin/job-taxonomy'), meta: { title: 'Danh mục nghề nghiệp', context: 'Nội dung' } },
+  { matches: within('/admin/feedbacks'), meta: { title: 'Quản lý góp ý sản phẩm', context: 'Người dùng' } },
   { matches: (pathname) => /^\/admin\/cv-templates\/[^/]+\/edit$/.test(pathname), meta: { title: 'Chỉnh sửa mẫu CV', context: 'Nội dung' } },
   { matches: exact('/admin/cv-templates'), meta: { title: 'Mẫu CV', context: 'Nội dung' } },
   { matches: within('/admin/cv-templates'), meta: { title: 'Chi tiết mẫu CV', context: 'Nội dung' } },

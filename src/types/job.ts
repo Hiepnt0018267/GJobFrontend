@@ -2,7 +2,7 @@ export const EMPLOYMENT_TYPES = ['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSH
 export const EXPERIENCE_LEVELS = ['ENTRY', 'MID', 'SENIOR', 'LEAD', 'MANAGER'] as const
 export const JOB_SORT_OPTIONS = ['newest', 'oldest', 'salary_high', 'salary_low'] as const
 export const JOB_STATUSES = ['PENDING', 'APPROVED', 'REJECTED', 'CLOSED'] as const
-export const JOB_LEVELS = ['INTERN', 'JUNIOR', 'STAFF', 'SENIOR', 'LEAD', 'MANAGER'] as const
+export const JOB_LEVELS = ['INTERN', 'JUNIOR', 'STAFF', 'SENIOR', 'LEAD', 'MANAGER', 'DIRECTOR', 'EXECUTIVE'] as const
 export const EXPERIENCE_REQUIREMENTS = ['NO_EXPERIENCE', 'LESS_THAN_ONE_YEAR', 'ONE_TO_THREE_YEARS', 'THREE_TO_FIVE_YEARS', 'MORE_THAN_FIVE_YEARS'] as const
 export const WORK_MODES = ['ONSITE', 'HYBRID', 'REMOTE'] as const
 export const SALARY_TYPES = ['RANGE', 'FIXED', 'NEGOTIABLE'] as const
@@ -20,6 +20,13 @@ export type SalaryType = (typeof SALARY_TYPES)[number]
 export type Industry = (typeof INDUSTRIES)[number]
 export type RecruiterJobSortOption = (typeof RECRUITER_JOB_SORT_OPTIONS)[number]
 
+export type JobTaxonomyReference = {
+  id: string
+  code: string
+  display_name: string
+  is_active: boolean
+}
+
 export type Job = {
   id: string
   title: string
@@ -30,11 +37,16 @@ export type Job = {
   salary_min: number | null
   salary_max: number | null
   employment_type: EmploymentType | null
+  /** @deprecated Legacy field maintained for backward compatibility. Use level and experience_requirement. */
   experience_level: ExperienceLevel | null
   level: JobLevel | null
   experience_requirement: ExperienceRequirement | null
   work_mode: WorkMode | null
   industry: Industry | null
+  industry_group_id: string | null
+  job_position_id: string | null
+  industry_group_taxonomy?: JobTaxonomyReference | null
+  job_position_taxonomy?: JobTaxonomyReference | null
   vacancies: number
   salary_type: SalaryType | null
   salary_fixed: number | null
@@ -48,6 +60,7 @@ export type Job = {
 }
 
 export type PublicCompanySummary = {
+  id: string
   name: string
   logo_url: string | null
   description: string | null
@@ -89,8 +102,11 @@ export type JobSearchParams = {
   search?: string
   location?: string
   employment_type?: EmploymentType
+  /** @deprecated Legacy query param maintained for backward compatibility. Use level and experience_requirement. */
   experience_level?: ExperienceLevel
   industry?: Industry
+  industry_group?: string
+  job_position?: string
   experience_requirement?: ExperienceRequirement
   level?: JobLevel
   work_mode?: WorkMode
@@ -106,12 +122,15 @@ export type CandidateJobRecommendationParams = Omit<JobSearchParams, 'sort'> & {
   skill?: string
   ranking_snapshot?: string
 }
-export type RecruiterJob = Job & { recruiter_id: string }
+export type RecruiterJob = Job & {
+  recruiter_id: string
+}
 export type JobCreateRequest = {
   title: string; description: string; company_name: string; location: string | null
   employment_type: EmploymentType | null; level: JobLevel | null
   experience_requirement: ExperienceRequirement | null; work_mode: WorkMode | null
-  industry: Industry | null; vacancies: number; salary_type: SalaryType
+  industry: Industry | null; industry_group_id: string | null; job_position_id: string | null
+  vacancies: number; salary_type: SalaryType
   salary_min: number | null; salary_max: number | null; salary_fixed: number | null
   salary_currency: string; skills: string[]; requirements: string; benefits: string | null
 }

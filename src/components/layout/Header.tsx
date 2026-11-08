@@ -1,9 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { ChevronDown, LogOut, Menu, Sparkles, X } from 'lucide-react'
-import { candidateAccountItems, candidateNavigationGroups, candidateToolsGroup } from '../../config/candidateNavigation'
+import { ArrowRight, ChevronDown, LogOut, Menu, Sparkles, X } from 'lucide-react'
+import {
+  candidateAccountItems,
+  candidateCVActionItems,
+  candidateCVPositionItems,
+  candidateCVStyleItems,
+  candidateNavigationGroups,
+  candidateToolsGroup,
+} from '../../config/candidateNavigation'
 import { useAuth } from '../../hooks/useAuth'
+import { jobTaxonomyService } from '../../services/jobTaxonomyService'
 import type { UserRole } from '../../types/auth'
+import type { JobTaxonomyResponse } from '../../types/jobTaxonomy'
 import NotificationBell from '../notification/NotificationBell'
 import GJobLogo from '../brand/GJobLogo'
 
@@ -53,6 +62,65 @@ function roleBadgeColor(role: UserRole) {
   return 'bg-slate-100 text-slate-800 ring-1 ring-slate-300'
 }
 
+function useDropdownAnchor() {
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const [anchorX, setAnchorX] = useState(0)
+  const [panelLeft, setPanelLeft] = useState(16)
+  const [widePanelLeft, setWidePanelLeft] = useState(16)
+  const updateAnchor = () => {
+    const bounds = triggerRef.current?.getBoundingClientRect()
+    if (bounds) setAnchorX(bounds.left + bounds.width / 2)
+
+    const primaryTrigger = document.querySelector<HTMLElement>('[data-candidate-menu-origin="true"]')
+    const preferredLeft = primaryTrigger?.getBoundingClientRect().left ?? 16
+    const panelWidth = Math.min(760, window.innerWidth - 32)
+    const maximumLeft = window.innerWidth - panelWidth - 16
+    setPanelLeft(Math.max(16, Math.min(preferredLeft, maximumLeft)))
+
+    const widePanelWidth = Math.min(1000, window.innerWidth - 32)
+    const wideMaximumLeft = window.innerWidth - widePanelWidth - 16
+    setWidePanelLeft(Math.max(16, Math.min(preferredLeft, wideMaximumLeft)))
+  }
+  return { triggerRef, anchorX, panelLeft, widePanelLeft, updateAnchor }
+}
+
+function useDropdownInteraction(
+  onOpen: () => void,
+  onToggle: () => void,
+  onClose: () => void,
+  updateAnchor: () => void,
+) {
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const cancelPendingClose = () => {
+    if (closeTimerRef.current !== null) {
+      clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
+    }
+  }
+
+  useEffect(() => () => cancelPendingClose(), [])
+
+  const openOnHover = () => {
+    cancelPendingClose()
+    updateAnchor()
+    onOpen()
+  }
+
+  const toggleOnClick = () => {
+    cancelPendingClose()
+    updateAnchor()
+    onToggle()
+  }
+
+  const closeWithGrace = () => {
+    cancelPendingClose()
+    closeTimerRef.current = setTimeout(onClose, 220)
+  }
+
+  return { openOnHover, toggleOnClick, closeWithGrace }
+}
+
 function CandidateDropdown({
   groupIndex,
   isOpen,
@@ -68,14 +136,23 @@ function CandidateDropdown({
 }) {
   const group = candidateNavigationGroups[groupIndex]
   const menuId = `candidate-navigation-${groupIndex}`
+  const { triggerRef, anchorX, panelLeft, updateAnchor } = useDropdownAnchor()
+  const { openOnHover, toggleOnClick, closeWithGrace } = useDropdownInteraction(
+    onOpen,
+    onToggle,
+    onClose,
+    updateAnchor,
+  )
 
   return (
-    <div className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
+    <div className="relative" onMouseEnter={openOnHover} onMouseLeave={closeWithGrace}>
       <button
+        ref={triggerRef}
+        data-candidate-menu-origin={group.label === 'Việc làm' ? 'true' : undefined}
         type="button"
         aria-expanded={isOpen}
         aria-controls={menuId}
-        onClick={onToggle}
+        onClick={toggleOnClick}
         className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] ${
           isOpen ? 'bg-slate-100/80 text-[#49BBBD]' : 'text-slate-700 hover:bg-slate-100/60 hover:text-slate-900'
         }`}
@@ -88,7 +165,15 @@ function CandidateDropdown({
         />
       </button>
       {isOpen && (
-        <div className="absolute left-1/2 top-full w-84 -translate-x-1/2 pt-2">
+        <div
+          style={{ left: panelLeft }}
+          className="fixed top-16 w-[min(32rem,calc(100vw-2rem))] pt-1"
+        >
+          <span
+            aria-hidden="true"
+            style={{ left: anchorX }}
+            className="fixed top-[4.25rem] z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rotate-45 border-l border-t border-slate-200/80 bg-white"
+          />
           <div
             id={menuId}
             role="menu"
@@ -120,6 +205,301 @@ function CandidateDropdown({
   )
 }
 
+function CandidateJobsDropdown({
+  isOpen,
+  onOpen,
+  onToggle,
+  onClose,
+}: {
+  isOpen: boolean
+  onOpen: () => void
+  onToggle: () => void
+  onClose: () => void
+}) {
+  const [taxonomy, setTaxonomy] = useState<JobTaxonomyResponse | null>(null)
+  const [taxonomyLoading, setTaxonomyLoading] = useState(true)
+  const [taxonomyError, setTaxonomyError] = useState(false)
+  const { triggerRef, anchorX, widePanelLeft, updateAnchor } = useDropdownAnchor()
+  const { openOnHover, toggleOnClick, closeWithGrace } = useDropdownInteraction(
+    onOpen,
+    onToggle,
+    onClose,
+    updateAnchor,
+  )
+
+  useEffect(() => {
+    const controller = new AbortController()
+    jobTaxonomyService
+      .getActive(controller.signal)
+      .then(setTaxonomy)
+      .catch(() => {
+        if (!controller.signal.aborted) setTaxonomyError(true)
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setTaxonomyLoading(false)
+      })
+
+    return () => controller.abort()
+  }, [])
+
+  const mainItems = [
+    ...candidateNavigationGroups[0].items,
+    {
+      ...candidateToolsGroup.items[0],
+      label: 'Việc làm phù hợp',
+      description: 'Gợi ý dựa trên CV của bạn',
+    },
+  ]
+  const industries = (taxonomy?.industries ?? []).slice(0, 5)
+  const positions = (taxonomy?.industries ?? [])
+    .flatMap((industry) => industry.positions)
+    .filter((position, index, all) => all.findIndex((item) => item.code === position.code) === index)
+    .slice(0, 6)
+
+  return (
+    <div className="relative" onMouseEnter={openOnHover} onMouseLeave={closeWithGrace}>
+      <button
+        ref={triggerRef}
+        data-candidate-menu-origin="true"
+        type="button"
+        aria-expanded={isOpen}
+        aria-controls="candidate-jobs-mega-menu"
+        onClick={toggleOnClick}
+        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] ${
+          isOpen ? 'bg-teal-50 text-[#15999B]' : 'text-slate-700 hover:bg-slate-100/60 hover:text-slate-900'
+        }`}
+      >
+        Việc làm
+        <ChevronDown
+          size={14}
+          className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#15999B]' : 'text-slate-400'}`}
+          aria-hidden="true"
+        />
+      </button>
+
+      {isOpen && (
+        <div
+          style={{ left: widePanelLeft }}
+          className="fixed top-16 w-[min(1000px,calc(100vw-2rem))] pt-1"
+        >
+          <span
+            aria-hidden="true"
+            style={{ left: anchorX }}
+            className="fixed top-[4.25rem] z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rotate-45 border-l border-t border-slate-200/80 bg-white"
+          />
+          <div
+            id="candidate-jobs-mega-menu"
+            role="menu"
+            aria-label="Khám phá việc làm"
+            className="motion-dropdown grid overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-premium ring-1 ring-slate-900/5 md:grid-cols-[220px_1fr_0.85fr]"
+          >
+            <section className="border-b border-slate-100 p-4 md:border-b-0 md:border-r" aria-labelledby="candidate-jobs-main-title">
+              <h2 id="candidate-jobs-main-title" className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+                Việc làm
+              </h2>
+              <div className="mt-2 space-y-1">
+                {mainItems.map(({ to, label, icon: Icon }) => (
+                  <Link
+                    key={`${to}-${label}`}
+                    to={to}
+                    role="menuitem"
+                    onClick={onClose}
+                    className="group flex min-h-9 items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-teal-50 hover:text-[#15999B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD]"
+                  >
+                    <Icon size={16} className="shrink-0 text-slate-500 transition-colors group-hover:text-[#15999B]" aria-hidden="true" />
+                    <span className="min-w-0 flex-1">{label}</span>
+                    <ArrowRight
+                      data-menu-hover-arrow
+                      size={15}
+                      className="shrink-0 -translate-x-1 text-[#15999B] opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                ))}
+              </div>
+            </section>
+
+            <section className="border-b border-slate-100 p-4 md:border-b-0 md:border-r" aria-labelledby="candidate-jobs-position-title">
+              <Link
+                id="candidate-jobs-position-title"
+                to="/jobs"
+                onClick={onClose}
+                className="inline-flex items-center gap-1 text-[13px] font-bold text-[#15999B] hover:text-[#117D7F]"
+              >
+                Việc làm theo vị trí <ArrowRight size={15} aria-hidden="true" />
+              </Link>
+              <div className="mt-2 grid gap-x-3 gap-y-0.5 lg:grid-cols-2">
+                {positions.map((position) => (
+                  <Link
+                    key={position.id}
+                    to={`/jobs?job_position=${encodeURIComponent(position.code)}`}
+                    role="menuitem"
+                    onClick={onClose}
+                    className="group flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-[13px] font-medium leading-snug text-slate-700 transition-colors hover:bg-slate-50 hover:text-[#15999B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD]"
+                  >
+                    <span className="min-w-0">{position.display_name}</span>
+                    <ArrowRight
+                      data-menu-hover-arrow
+                      size={15}
+                      className="shrink-0 -translate-x-1 text-[#15999B] opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                ))}
+              </div>
+            </section>
+
+            <section className="p-4" aria-labelledby="candidate-jobs-industry-title">
+              <Link
+                id="candidate-jobs-industry-title"
+                to="/jobs"
+                onClick={onClose}
+                className="inline-flex items-center gap-1 text-[13px] font-bold text-[#15999B] hover:text-[#117D7F]"
+              >
+                Việc làm theo ngành nghề <ArrowRight size={15} aria-hidden="true" />
+              </Link>
+              <div className="mt-2 space-y-0.5">
+                {industries.map((industry) => (
+                  <Link
+                    key={industry.id}
+                    to={`/jobs?industry_group=${encodeURIComponent(industry.code)}`}
+                    role="menuitem"
+                    onClick={onClose}
+                    className="group flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-[13px] font-medium leading-snug text-slate-700 transition-colors hover:bg-slate-50 hover:text-[#15999B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD]"
+                  >
+                    <span className="min-w-0">{industry.display_name}</span>
+                    <ArrowRight
+                      data-menu-hover-arrow
+                      size={15}
+                      className="shrink-0 -translate-x-1 text-[#15999B] opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                ))}
+              </div>
+            </section>
+
+            {(taxonomyLoading || taxonomyError) && (
+              <div className="col-span-full border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
+                {taxonomyLoading
+                  ? 'Đang tải vị trí và ngành nghề...'
+                  : 'Chưa thể tải danh mục. Bạn vẫn có thể mở trang Tìm việc làm để tìm kiếm.'}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function CandidateCVDropdown({
+  isOpen,
+  onOpen,
+  onToggle,
+  onClose,
+}: {
+  isOpen: boolean
+  onOpen: () => void
+  onToggle: () => void
+  onClose: () => void
+}) {
+  const { triggerRef, anchorX, panelLeft, updateAnchor } = useDropdownAnchor()
+  const { openOnHover, toggleOnClick, closeWithGrace } = useDropdownInteraction(
+    onOpen,
+    onToggle,
+    onClose,
+    updateAnchor,
+  )
+  const renderLink = ({ to, label, icon: Icon }: (typeof candidateCVStyleItems)[number]) => (
+    <Link
+      key={to}
+      to={to}
+      role="menuitem"
+      onClick={onClose}
+      className="group flex min-h-9 items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-teal-50 hover:text-[#15999B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD]"
+    >
+      <Icon size={16} className="shrink-0 text-slate-500 transition-colors group-hover:text-[#15999B]" aria-hidden="true" />
+      <span className="min-w-0 flex-1">{label}</span>
+      <ArrowRight
+        data-menu-hover-arrow
+        size={15}
+        className="shrink-0 -translate-x-1 text-[#15999B] opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100"
+        aria-hidden="true"
+      />
+    </Link>
+  )
+
+  return (
+    <div className="relative" onMouseEnter={openOnHover} onMouseLeave={closeWithGrace}>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-expanded={isOpen}
+        aria-controls="candidate-cv-mega-menu"
+        onClick={toggleOnClick}
+        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] ${
+          isOpen ? 'bg-teal-50 text-[#15999B]' : 'text-slate-700 hover:bg-slate-100/60 hover:text-slate-900'
+        }`}
+      >
+        Tạo CV
+        <ChevronDown
+          size={14}
+          className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#15999B]' : 'text-slate-400'}`}
+          aria-hidden="true"
+        />
+      </button>
+      {isOpen && (
+        <div
+          style={{ left: panelLeft }}
+          className="fixed top-16 w-[min(680px,calc(100vw-2rem))] pt-1"
+        >
+          <span
+            aria-hidden="true"
+            style={{ left: anchorX }}
+            className="fixed top-[4.25rem] z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rotate-45 border-l border-t border-slate-200/80 bg-white"
+          />
+          <div
+            id="candidate-cv-mega-menu"
+            role="menu"
+            aria-label="Tạo và quản lý CV"
+            className="motion-dropdown grid overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-premium ring-1 ring-slate-900/5 md:grid-cols-[1.15fr_1fr]"
+          >
+            <div className="space-y-4 p-4">
+              <section aria-labelledby="candidate-cv-style-title">
+                <Link
+                  id="candidate-cv-style-title"
+                  to="/candidate/cvs/templates/styles"
+                  onClick={onClose}
+                  className="inline-flex items-center gap-1 text-[13px] font-bold text-[#15999B] hover:text-[#117D7F]"
+                >
+                  Mẫu CV theo phong cách <ArrowRight size={15} aria-hidden="true" />
+                </Link>
+                <div className="mt-2 space-y-1">{candidateCVStyleItems.map(renderLink)}</div>
+              </section>
+              <section aria-labelledby="candidate-cv-position-title">
+                <Link
+                  id="candidate-cv-position-title"
+                  to="/candidate/cvs/templates/positions"
+                  onClick={onClose}
+                  className="inline-flex items-center gap-1 text-[13px] font-bold text-[#15999B] hover:text-[#117D7F]"
+                >
+                  Mẫu CV theo vị trí ứng tuyển <ArrowRight size={15} aria-hidden="true" />
+                </Link>
+                <div className="mt-2 space-y-1">{candidateCVPositionItems.map(renderLink)}</div>
+              </section>
+            </div>
+            <div className="border-t border-slate-100 bg-slate-50/55 p-4 md:border-l md:border-t-0">
+              <p className="px-3 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">CV của bạn</p>
+              <div className="mt-2 space-y-1">{candidateCVActionItems.map(renderLink)}</div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function CandidateAccountMenu({
   name,
   email,
@@ -137,14 +517,23 @@ function CandidateAccountMenu({
   onClose: () => void
   onLogout: () => void
 }) {
+  const { triggerRef, anchorX, updateAnchor } = useDropdownAnchor()
+  const { openOnHover, toggleOnClick, closeWithGrace } = useDropdownInteraction(
+    onOpen,
+    onToggle,
+    onClose,
+    updateAnchor,
+  )
+
   return (
-    <div className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
+    <div className="relative" onMouseEnter={openOnHover} onMouseLeave={closeWithGrace}>
       <button
+        ref={triggerRef}
         id="user-menu-button"
         type="button"
         aria-expanded={isOpen}
         aria-controls="candidate-account-menu"
-        onClick={onToggle}
+        onClick={toggleOnClick}
         className="btn-press flex items-center gap-2.5 rounded-xl border border-slate-200/60 bg-white/60 px-3 py-1.5 shadow-xs transition-colors hover:border-slate-300 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD]"
       >
         <UserAvatar name={name} />
@@ -160,6 +549,11 @@ function CandidateAccountMenu({
       </button>
       {isOpen && (
         <div className="absolute right-0 top-full w-72 pt-2">
+          <span
+            aria-hidden="true"
+            style={{ left: anchorX }}
+            className="fixed top-[4.25rem] z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rotate-45 border-l border-t border-slate-200/80 bg-white"
+          />
           <div
             id="candidate-account-menu"
             role="menu"
@@ -213,13 +607,21 @@ function ToolsDropdown({
   onToggle: () => void
   onClose: () => void
 }) {
+  const { triggerRef, anchorX, panelLeft, updateAnchor } = useDropdownAnchor()
+  const { openOnHover, toggleOnClick, closeWithGrace } = useDropdownInteraction(
+    onOpen,
+    onToggle,
+    onClose,
+    updateAnchor,
+  )
   return (
-    <div className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
+    <div className="relative" onMouseEnter={openOnHover} onMouseLeave={closeWithGrace}>
       <button
+        ref={triggerRef}
         type="button"
         aria-expanded={isOpen}
         aria-controls="candidate-tools-menu"
-        onClick={onToggle}
+        onClick={toggleOnClick}
         className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD] ${
           isOpen ? 'bg-slate-100/80 text-[#49BBBD]' : 'text-slate-700 hover:bg-slate-100/60 hover:text-slate-900'
         }`}
@@ -233,7 +635,15 @@ function ToolsDropdown({
         />
       </button>
       {isOpen && (
-        <div className="absolute left-1/2 top-full w-76 -translate-x-1/2 pt-2">
+        <div
+          style={{ left: panelLeft }}
+          className="fixed top-16 w-[min(28rem,calc(100vw-2rem))] pt-1"
+        >
+          <span
+            aria-hidden="true"
+            style={{ left: anchorX }}
+            className="fixed top-[4.25rem] z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rotate-45 border-l border-t border-slate-200/80 bg-white"
+          />
           <div
             id="candidate-tools-menu"
             role="menu"
@@ -245,17 +655,23 @@ function ToolsDropdown({
                 to={to}
                 role="menuitem"
                 onClick={onClose}
-                className="group flex items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD]"
+                className="group flex items-start gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49BBBD]"
               >
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#49BBBD]/10 text-[#49BBBD] transition-colors group-hover:bg-[#49BBBD] group-hover:text-white">
-                  <Icon size={16} aria-hidden="true" />
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#49BBBD]/10 text-[#49BBBD] transition-colors group-hover:bg-[#49BBBD] group-hover:text-white">
+                  <Icon size={15} aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold text-slate-800 transition-colors group-hover:text-[#49BBBD]">
+                  <span className="block text-[13px] font-semibold text-slate-800 transition-colors group-hover:text-[#49BBBD]">
                     {label}
                   </span>
                   <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">{description}</span>
                 </span>
+                <ArrowRight
+                  data-menu-hover-arrow
+                  size={15}
+                  className="mt-2 shrink-0 -translate-x-1 text-[#15999B] opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100"
+                  aria-hidden="true"
+                />
               </Link>
             ))}
           </div>
@@ -383,36 +799,56 @@ export default function Header() {
           : 'border-b border-slate-200/60 bg-white/85 shadow-xs backdrop-blur-xl'
       }`}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center gap-5">
-          {/* GJob brand */}
+      <div className="px-4 sm:px-6 lg:px-10 xl:px-16">
+        <div className="flex h-16 items-center">
+          {/* LEFT: GJob brand */}
           <Link to="/" className="group flex shrink-0 items-center gap-2.5" aria-label="GJob - Trang chủ">
             <GJobLogo className="h-9 w-auto transition-transform duration-200 group-hover:scale-[1.03]" />
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden min-w-0 items-center md:ml-6 md:flex lg:ml-8">
+          {/* CENTER: Desktop Navigation */}
+          <div className="hidden min-w-0 flex-1 items-center md:ml-6 md:flex lg:ml-8">
             {loading ? (
               <div className="h-5 w-72 animate-pulse rounded-lg bg-slate-100" aria-label="Đang tải điều hướng" />
             ) : isCandidatePlatform ? (
               <nav className="flex items-center gap-1.5" aria-label="Điều hướng ứng viên">
                 {candidateNavigationGroups.map((group, index) => (
-                  <CandidateDropdown
-                    key={group.label}
-                    groupIndex={index}
-                    isOpen={openMenu === `candidate-${index}`}
-                    onOpen={() => setOpenMenu(`candidate-${index}`)}
-                    onToggle={() =>
-                      setOpenMenu((current) => (current === `candidate-${index}` ? null : `candidate-${index}`))
-                    }
-                    onClose={() => setOpenMenu(null)}
-                  />
+                  group.label === 'Việc làm' ? (
+                    <CandidateJobsDropdown
+                      key={group.label}
+                      isOpen={openMenu === 'candidate-jobs'}
+                      onOpen={() => setOpenMenu('candidate-jobs')}
+                      onToggle={() => setOpenMenu((current) => (current === 'candidate-jobs' ? null : 'candidate-jobs'))}
+                      onClose={() => setOpenMenu((current) => (current === 'candidate-jobs' ? null : current))}
+                    />
+                  ) : group.label === 'Tạo CV' ? (
+                    <CandidateCVDropdown
+                      key={group.label}
+                      isOpen={openMenu === 'candidate-cv'}
+                      onOpen={() => setOpenMenu('candidate-cv')}
+                      onToggle={() => setOpenMenu((current) => (current === 'candidate-cv' ? null : 'candidate-cv'))}
+                      onClose={() => setOpenMenu((current) => (current === 'candidate-cv' ? null : current))}
+                    />
+                  ) : (
+                    <CandidateDropdown
+                      key={group.label}
+                      groupIndex={index}
+                      isOpen={openMenu === `candidate-${index}`}
+                      onOpen={() => setOpenMenu(`candidate-${index}`)}
+                      onToggle={() =>
+                        setOpenMenu((current) => (current === `candidate-${index}` ? null : `candidate-${index}`))
+                      }
+                      onClose={() =>
+                        setOpenMenu((current) => (current === `candidate-${index}` ? null : current))
+                      }
+                    />
+                  )
                 ))}
                 <ToolsDropdown
                   isOpen={openMenu === 'tools'}
                   onOpen={() => setOpenMenu('tools')}
                   onToggle={() => setOpenMenu((current) => (current === 'tools' ? null : 'tools'))}
-                  onClose={() => setOpenMenu(null)}
+                  onClose={() => setOpenMenu((current) => (current === 'tools' ? null : current))}
                 />
               </nav>
             ) : (
@@ -426,33 +862,32 @@ export default function Header() {
             )}
           </div>
 
-          {!loading && isAuthenticated && user?.role === 'CANDIDATE' && (
-            <div className="ml-auto">
-              <NotificationBell
-                open={openMenu === 'notifications'}
-                onOpenChange={(open) => {
-                  setOpenMenu(open ? 'notifications' : null)
-                  if (open) setMobileOpen(false)
-                }}
-              />
-            </div>
-          )}
-
-          {/* Auth Actions / User Menu */}
-          <div className={`${!isAuthenticated || user?.role !== 'CANDIDATE' ? 'ml-auto' : ''} hidden shrink-0 items-center gap-3 md:flex`}>
+          {/* RIGHT: Notification Bell + Auth Actions / User Menu */}
+          <div className="ml-auto hidden shrink-0 items-center gap-3 md:flex">
             {loading ? (
               <AuthSkeleton />
             ) : isAuthenticated && user ? (
               user.role === 'CANDIDATE' ? (
-                <CandidateAccountMenu
-                  name={user.full_name}
-                  email={user.email}
-                  isOpen={openMenu === 'account'}
-                  onOpen={() => setOpenMenu('account')}
-                  onToggle={() => setOpenMenu((current) => (current === 'account' ? null : 'account'))}
-                  onClose={() => setOpenMenu(null)}
-                  onLogout={handleLogout}
-                />
+                <>
+                  <NotificationBell
+                    open={openMenu === 'notifications'}
+                    onOpenChange={(open) => {
+                      setOpenMenu((current) =>
+                        open ? 'notifications' : current === 'notifications' ? null : current,
+                      )
+                      if (open) setMobileOpen(false)
+                    }}
+                  />
+                  <CandidateAccountMenu
+                    name={user.full_name}
+                    email={user.email}
+                    isOpen={openMenu === 'account'}
+                    onOpen={() => setOpenMenu('account')}
+                    onToggle={() => setOpenMenu((current) => (current === 'account' ? null : 'account'))}
+                    onClose={() => setOpenMenu((current) => (current === 'account' ? null : current))}
+                    onLogout={handleLogout}
+                  />
+                </>
               ) : (
                 <div className="flex items-center gap-3">
                   <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${roleBadgeColor(user.role)}`}>
@@ -489,7 +924,7 @@ export default function Header() {
           {/* Mobile hamburger button */}
           <button
             type="button"
-            className="btn-press flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 md:hidden"
+            className="btn-press ml-auto flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 md:hidden"
             onClick={() => { setOpenMenu(null); setMobileOpen((open) => !open) }}
             aria-expanded={mobileOpen}
             aria-label={mobileOpen ? 'Đóng menu' : 'Mở menu'}

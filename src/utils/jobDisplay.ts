@@ -4,7 +4,7 @@ const employmentLabels: Record<EmploymentType, string> = { FULL_TIME: 'Toàn th�
 const experienceLabels: Record<ExperienceLevel, string> = { ENTRY: 'Mới bắt đầu', MID: 'Trung cấp', SENIOR: 'Cao cấp', LEAD: 'Trưởng nhóm', MANAGER: 'Quản lý' }
 const experienceRequirementLabels: Record<ExperienceRequirement, string> = { NO_EXPERIENCE: 'Chưa có kinh nghiệm', LESS_THAN_ONE_YEAR: 'Dưới 1 năm', ONE_TO_THREE_YEARS: '1 – 3 năm', THREE_TO_FIVE_YEARS: '3 – 5 năm', MORE_THAN_FIVE_YEARS: 'Trên 5 năm' }
 const industryLabels: Record<Industry, string> = { INFORMATION_TECHNOLOGY: 'Công nghệ thông tin', FINANCE_BANKING: 'Tài chính – Ngân hàng', MARKETING_ADVERTISING: 'Marketing – Quảng cáo', SALES: 'Kinh doanh – Bán hàng', HUMAN_RESOURCES: 'Nhân sự', EDUCATION: 'Giáo dục', HEALTHCARE: 'Y tế', MANUFACTURING: 'Sản xuất', LOGISTICS: 'Logistics', OTHER: 'Khác' }
-const levelLabels: Record<JobLevel, string> = { INTERN: 'Thực tập sinh', JUNIOR: 'Mới tốt nghiệp / Junior', STAFF: 'Chuyên viên', SENIOR: 'Chuyên viên cao cấp / Senior', LEAD: 'Trưởng nhóm / Lead', MANAGER: 'Quản lý' }
+const levelLabels: Record<JobLevel, string> = { INTERN: 'Thực tập sinh', JUNIOR: 'Mới tốt nghiệp / Junior', STAFF: 'Chuyên viên', SENIOR: 'Chuyên viên cao cấp / Senior', LEAD: 'Trưởng nhóm / Lead', MANAGER: 'Quản lý', DIRECTOR: 'Giám đốc', EXECUTIVE: 'Lãnh đạo cấp cao' }
 const workModeLabels: Record<WorkMode, string> = { ONSITE: 'Tại văn phòng', HYBRID: 'Hybrid', REMOTE: 'Từ xa' }
 export const employmentLabel = (value: EmploymentType | null) => value ? employmentLabels[value] : 'Không xác định'
 export const experienceLabel = (value: ExperienceLevel | null) => value ? experienceLabels[value] : 'Không yêu cầu'
@@ -16,3 +16,38 @@ type SalaryDisplayFields = Pick<Job, 'salary_currency' | 'salary_type' | 'salary
 export function formatSalary(job: SalaryDisplayFields): string { const formatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: job.salary_currency || 'VND', maximumFractionDigits: 0 }); if (job.salary_type === 'FIXED' && job.salary_fixed !== null) return formatter.format(job.salary_fixed); if (job.salary_type === 'NEGOTIABLE' || (job.salary_min === null && job.salary_max === null)) return 'Thỏa thuận'; if (job.salary_min === null) return `Tối đa ${formatter.format(job.salary_max ?? 0)}`; if (job.salary_max === null) return `Từ ${formatter.format(job.salary_min)}`; return `${formatter.format(job.salary_min)} – ${formatter.format(job.salary_max)}` }
 export function postedDate(date: string): string { const days = Math.floor((Date.now() - new Date(date).getTime()) / 86_400_000); return days <= 0 ? 'Đăng hôm nay' : days === 1 ? 'Đăng hôm qua' : `Đăng ${days} ngày trước` }
 export function formatJobTimestamp(value: string): string { return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) }
+
+export type JobTaxonomyDisplayInfo = {
+  positionName: string | null
+  industryName: string | null
+  primaryName: string
+  isInactive: boolean
+  hasNewTaxonomy: boolean
+}
+
+export function getJobTaxonomyDisplay(job: {
+  industry?: Industry | null
+  industry_group_taxonomy?: { display_name: string; is_active: boolean } | null
+  job_position_taxonomy?: { display_name: string; is_active: boolean } | null
+}): JobTaxonomyDisplayInfo {
+  const positionName = job.job_position_taxonomy?.display_name ?? null
+  const industryName = job.industry_group_taxonomy?.display_name ?? null
+  const hasNewTaxonomy = Boolean(positionName || industryName)
+  const isInactive = Boolean(
+    (job.job_position_taxonomy && !job.job_position_taxonomy.is_active) ||
+    (job.industry_group_taxonomy && !job.industry_group_taxonomy.is_active)
+  )
+
+  const fallback = industryLabel(job.industry ?? null)
+  const primaryName = positionName && industryName
+    ? `${positionName} · ${industryName}`
+    : (positionName || industryName || fallback)
+
+  return {
+    positionName,
+    industryName,
+    primaryName,
+    isInactive,
+    hasNewTaxonomy,
+  }
+}

@@ -34,3 +34,5 @@ dist-ssr
 
 # Private Task 15C browser captures from the existing candidate account
 .impeccable/review/job-recommendation-*.png
+
+.tmp/

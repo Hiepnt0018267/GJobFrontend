@@ -1,6 +1,6 @@
 import { AlertCircle, Eye, FilePlus2, FileText, LoaderCircle, Pencil, RefreshCw, Star, Trash2, Upload } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import CVUploadDialog from '../../components/cv/CVUploadDialog'
 import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 import { usePaginatedQuery } from '../../hooks/usePaginatedQuery'
@@ -17,15 +17,25 @@ const formatDate = (value: string) => new Intl.DateTimeFormat('vi-VN', { dateSty
 const uploadedCVStatus = (cv: CVListItem) => candidateCVReadinessMeta[getCandidateCVReadiness(cv)]
 
 export default function CandidateCVsPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const refreshVersion = useDataRefreshVersion()
   const { success: toastSuccess, info: toastInfo, error: toastError } = useToast()
   const [busy, setBusy] = useState<string | null>(null)
   const [extractionBusy, setExtractionBusy] = useState<string | null>(null)
   const extractionLock = useRef(false)
-  const [uploadOpen, setUploadOpen] = useState(false)
+  const [uploadOpenedManually, setUploadOpenedManually] = useState(false)
+  const uploadOpen = uploadOpenedManually || searchParams.get('upload') === '1'
   const { data, error, isInitialLoading, isFetching, refetch, replaceData } = usePaginatedQuery<CVListResponse>({ queryKey: 'candidate-cvs', refreshKey: refreshVersion, fetcher: useCallback(() => cvService.getCVs(), []) })
   const items = data?.items ?? []
   const replace = (updated: CV) => replaceData({ items: items.map((item) => item.id === updated.id ? updated : { ...item, is_default: updated.is_default }), total: data?.total ?? items.length })
+
+  const closeUpload = () => {
+    setUploadOpenedManually(false)
+    if (!searchParams.has('upload')) return
+    const next = new URLSearchParams(searchParams)
+    next.delete('upload')
+    setSearchParams(next, { replace: true })
+  }
 
   const processExtraction = (id: string, updateExisting = true) => runExtractionExclusive(extractionLock, async () => {
     if (extractionBusy !== null) return
@@ -101,13 +111,13 @@ export default function CandidateCVsPage() {
             <p className="mt-2 text-sm text-slate-600">Tạo CV trên GJob hoặc tải lên CV PDF/DOCX có sẵn.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link to="/candidate/cvs/templates" className="inline-flex items-center gap-2 rounded-lg bg-[#49BBBD] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80">
+            <Link to="/candidate/cvs/templates/styles" className="inline-flex items-center gap-2 rounded-lg bg-[#49BBBD] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#49BBBD]/90 active:bg-[#49BBBD]/80">
               <FilePlus2 size={16} />Tạo CV
             </Link>
             <button
               type="button"
               disabled={extractionBusy !== null}
-              onClick={() => setUploadOpen(true)}
+              onClick={() => setUploadOpenedManually(true)}
               className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60"
             >
               {extractionBusy ? <LoaderCircle size={16} className="animate-spin" /> : <Upload size={16} />}
@@ -201,7 +211,7 @@ export default function CandidateCVsPage() {
           </section>
         )}
 
-        {uploadOpen && <CVUploadDialog onClose={() => setUploadOpen(false)} onUpload={upload} />}
+        {uploadOpen && <CVUploadDialog onClose={closeUpload} onUpload={upload} />}
       </main>
     </div>
   )

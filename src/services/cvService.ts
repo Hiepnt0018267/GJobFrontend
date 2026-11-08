@@ -1,6 +1,6 @@
 import api from './api'
 import type { AxiosResponse } from 'axios'
-import type { CV, CVCreateRequest, CVExtraction, CVExtractionConfirmationResponse, CVListResponse, CVStructuredData, CVUpdateRequest } from '../types/cv'
+import type { CV, CVContentUpdateRequest, CVCreateRequest, CVExtraction, CVExtractionConfirmationResponse, CVListResponse, CVPresentationUpdateRequest, CVStructuredData, CVTemplateRecommendationRequest, CVTemplateRecommendationResponse, CVUpdateRequest } from '../types/cv'
 import { extractionRequestTimeout } from '../utils/extractionOperation'
 
 const BASE = '/api/v1/candidate/cvs'
@@ -8,6 +8,7 @@ const BASE = '/api/v1/candidate/cvs'
 export const cvService = {
   async getCVs(signal?: AbortSignal): Promise<CVListResponse> { return (await api.get<CVListResponse>(BASE, { signal })).data },
   async getCV(id: string, signal?: AbortSignal): Promise<CV> { return (await api.get<CV>(`${BASE}/${id}`, { signal })).data },
+  async recommendTemplates(data: CVTemplateRecommendationRequest, signal?: AbortSignal): Promise<CVTemplateRecommendationResponse> { return (await api.post<CVTemplateRecommendationResponse>(`${BASE}/template-recommendations`, data, { signal, timeout: 35_000, gjobSkipDataRefresh: true })).data },
   async createCV(data: CVCreateRequest): Promise<CV> { return (await api.post<CV>(BASE, data)).data },
   async uploadCV(title: string, file: File): Promise<CV> {
     const data = new FormData()
@@ -16,6 +17,8 @@ export const cvService = {
     return (await api.post<CV>(`${BASE}/upload`, data, { gjobSkipDataRefresh: true })).data
   },
   async updateCV(id: string, data: CVUpdateRequest): Promise<CV> { return (await api.patch<CV>(`${BASE}/${id}`, data)).data },
+  async updateCVContent(id: string, data: CVContentUpdateRequest): Promise<CV> { return (await api.patch<CV>(`${BASE}/${id}/content`, data)).data },
+  async updateCVPresentation(id: string, data: CVPresentationUpdateRequest): Promise<CV> { return (await api.patch<CV>(`${BASE}/${id}/presentation`, data)).data },
   async deleteCV(id: string): Promise<void> { await api.delete(`${BASE}/${id}`) },
   async setDefaultCV(id: string): Promise<CV> { return (await api.patch<CV>(`${BASE}/${id}/default`)).data },
   async getCVFile(id: string): Promise<AxiosResponse<Blob>> { return api.get<Blob>(`${BASE}/${id}/file`, { responseType: 'blob' }) },

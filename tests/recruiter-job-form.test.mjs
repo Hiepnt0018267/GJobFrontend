@@ -55,4 +55,6 @@ test('recruiter job edit form renders employment and work-mode options', () => {
   assert.match(html, /value="HYBRID" selected=""/)
   assert.match(html, />Toàn thời gian</)
   assert.match(html, />Kết hợp</)
+  assert.match(html, /value="DIRECTOR">Giám đốc</)
+  assert.match(html, /value="EXECUTIVE">Lãnh đạo cấp cao</)
 })

@@ -2,6 +2,7 @@ import { Loader2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import type { AdminRecruiterSubscriptionItem, GrantSubscriptionRequest, SubscriptionPlan } from '../../types/subscription'
 import { trapDialogFocus } from '../../utils/dialogFocus'
+import AdminViewportPortal from '../admin/AdminViewportPortal'
 import { activePaidPlans, buildGrantPayload, formatVnd, planDisplayName, validGrantDateRange } from '../../utils/subscription'
 
 type Props = {
@@ -43,8 +44,8 @@ export default function RecruiterSubscriptionDialog({ recruiter, plans, pending,
   }
 
   return (
-    <div className="motion-backdrop fixed inset-0 z-[80] flex items-end bg-slate-950/45 sm:items-center sm:justify-center sm:p-5" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !pending) onClose() }}>
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="grant-subscription-title" tabIndex={-1} onKeyDown={trapDialogFocus} className="motion-dialog max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-2xl outline-none sm:max-w-xl sm:rounded-2xl">
+    <AdminViewportPortal><div className="motion-backdrop fixed inset-0 z-[100] flex min-h-dvh items-end overflow-y-auto overscroll-contain bg-slate-950/45 sm:items-center sm:justify-center sm:p-5" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !pending) onClose() }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="grant-subscription-title" tabIndex={-1} onKeyDown={trapDialogFocus} className="motion-dialog max-h-[calc(100dvh-2.5rem)] w-full overflow-y-auto rounded-t-2xl bg-white shadow-2xl outline-none sm:max-w-xl sm:rounded-2xl">
         <header className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:px-6">
           <div><h2 id="grant-subscription-title" className="text-lg font-semibold text-slate-950">Cấp hoặc đổi gói</h2><p className="mt-1 text-sm text-slate-500">{recruiter.full_name} · {recruiter.email}</p></div>
           <button type="button" disabled={pending} onClick={onClose} className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 disabled:opacity-50" aria-label="Đóng hộp thoại"><X size={19} /></button>
@@ -65,6 +66,6 @@ export default function RecruiterSubscriptionDialog({ recruiter, plans, pending,
           <footer className="flex flex-col-reverse gap-2 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end"><button type="button" disabled={pending} onClick={onClose} className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-50">Hủy</button><button type="submit" disabled={pending || paidPlans.length === 0} className="btn-press inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white hover:bg-black disabled:cursor-not-allowed disabled:opacity-50">{pending && <Loader2 size={16} className="animate-spin" />}{pending ? 'Đang lưu…' : 'Xác nhận gói'}</button></footer>
         </form>
       </div>
-    </div>
+    </div></AdminViewportPortal>
   )
 }

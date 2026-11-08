@@ -1,17 +1,25 @@
-import { useEffect, useId, useRef } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Bell, BellOff, CheckCheck, LoaderCircle, RefreshCw } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useNotifications } from '../../hooks/useNotifications'
 import { useToast } from '../../hooks/useToast'
+import { feedbackService } from '../../services/feedbackService'
+import { FEEDBACK_TOPIC_LABELS } from '../../types/feedback'
 import {
   getNotificationTargetPath,
+  getStoredReadFeedbackIds,
   notificationBadgeText,
   notificationBellLabel,
   notificationCenterPath,
+  saveAllStoredReadFeedbackIds,
+  saveStoredReadFeedbackId,
 } from '../../utils/notification'
+import { playNotificationSound } from '../../utils/notificationSound'
 import type { NotificationItem as NotificationItemType } from '../../types/notification'
 import NotificationItem from './NotificationItem'
+
+export const STORAGE_KEY_READ_FEEDBACKS = 'gjob_admin_read_feedback_ids'
 
 type Props = {
   open: boolean
@@ -34,7 +42,86 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
   const closeTimerRef = useRef<number | null>(null)
   const mouseInsideRef = useRef(false)
   const previousIdentityRef = useRef(identityId)
-  const badge = notificationBadgeText(notifications.unreadCount)
+
+  const [adminFeedbackItems, setAdminFeedbackItems] = useState<NotificationItemType[]>([])
+  const [adminFeedbackCount, setAdminFeedbackCount] = useState(0)
+  const previousEffectiveUnreadRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (user?.role !== 'ADMIN') return
+    let cancelled = false
+    feedbackService
+      .getFeedbacksAdmin({ status: 'NEW', page: 1, page_size: 10 })
+      .then((res) => {
+        if (cancelled) return
+        const readIds = getStoredReadFeedbackIds()
+        const unreadFeedbacks = res.items.filter((fb) => !readIds.has(fb.id))
+        setAdminFeedbackCount(unreadFeedbacks.length)
+        const items: NotificationItemType[] = unreadFeedbacks.slice(0, 5).map((fb) => ({
+          id: `feedback-${fb.id}`,
+          type: 'FEEDBACK_RECEIVED',
+          title: `Góp ý sản phẩm: ${FEEDBACK_TOPIC_LABELS[fb.topic] || 'Ý kiến người dùng'}`,
+          message: fb.sender
+            ? `${fb.sender.full_name} (${fb.rating}⭐): ${fb.content}`
+            : `Khách vãng lai (${fb.rating}⭐): ${fb.content}`,
+          read_at: null,
+          is_read: false,
+          target_type: 'FEEDBACK',
+          target_id: fb.id,
+          created_at: fb.created_at,
+        }))
+        setAdminFeedbackItems(items)
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+    }
+  }, [user?.role, open])
+
+  const effectiveUnreadCount = useMemo(() => {
+    if (user?.role !== 'ADMIN') return notifications.unreadCount
+    const base = notifications.unreadCount ?? 0
+    const existingFeedbackNotificationsCount = notifications.previewItems.filter(
+      (it) => it.target_type === 'FEEDBACK' || it.type === 'FEEDBACK_RECEIVED'
+    ).length
+    const remainingAdminFeedbackCount = Math.max(0, adminFeedbackCount - existingFeedbackNotificationsCount)
+    return base + remainingAdminFeedbackCount
+  }, [user?.role, notifications.unreadCount, notifications.previewItems, adminFeedbackCount])
+
+  // Play notification chime when unread notifications increase
+  useEffect(() => {
+    if (user?.role !== 'ADMIN') return
+    if (
+      previousEffectiveUnreadRef.current !== null &&
+      effectiveUnreadCount !== null &&
+      effectiveUnreadCount > previousEffectiveUnreadRef.current
+    ) {
+      playNotificationSound()
+    }
+    previousEffectiveUnreadRef.current = effectiveUnreadCount
+  }, [effectiveUnreadCount, user?.role])
+
+  const displayItems = useMemo(() => {
+    if (user?.role !== 'ADMIN' || adminFeedbackItems.length === 0) {
+      return notifications.previewItems
+    }
+    const readIds = getStoredReadFeedbackIds()
+    const existingIds = new Set(
+      notifications.previewItems
+        .filter((it) => it.target_type === 'FEEDBACK' || it.type === 'FEEDBACK_RECEIVED')
+        .map((it) => it.target_id)
+    )
+    const newFeedbacks = adminFeedbackItems.filter(
+      (it) => !existingIds.has(it.target_id) && !readIds.has(it.target_id || '')
+    )
+    const merged = [...newFeedbacks, ...notifications.previewItems]
+    return merged.sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
+  }, [user?.role, adminFeedbackItems, notifications.previewItems])
+
+  const badge = notificationBadgeText(effectiveUnreadCount)
 
   const cancelScheduledClose = () => {
     if (closeTimerRef.current === null) return
@@ -108,11 +195,29 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
     const requestIdentity = identityId
     const targetPath = getNotificationTargetPath({ role: user.role, notificationType: item.type, targetType: item.target_type, targetId: item.target_id })
     if (!item.is_read) {
-      try {
-        await notifications.markOne(item)
-      } catch (error) {
-        if (!isAbortError(error)) toast.error('Chưa thể đánh dấu thông báo đã đọc. Vui lòng thử lại.')
-        return
+      let realItem = item
+      if (item.target_type === 'FEEDBACK' || item.id.startsWith('feedback-')) {
+        const feedbackId = item.target_id || item.id.replace('feedback-', '')
+        saveStoredReadFeedbackId(feedbackId)
+        setAdminFeedbackItems((prev) => prev.filter((p) => p.id !== item.id && p.target_id !== feedbackId))
+        setAdminFeedbackCount((prev) => Math.max(0, prev - 1))
+
+        if (item.id.startsWith('feedback-')) {
+          const matching = notifications.previewItems.find(
+            (it) => (it.target_type === 'FEEDBACK' || it.type === 'FEEDBACK_RECEIVED') && it.target_id === feedbackId
+          )
+          if (matching) {
+            realItem = matching
+          }
+        }
+      }
+      if (!realItem.id.startsWith('feedback-')) {
+        try {
+          await notifications.markOne(realItem)
+        } catch (error) {
+          if (!isAbortError(error)) toast.error('Chưa thể đánh dấu thông báo đã đọc. Vui lòng thử lại.')
+          return
+        }
       }
     }
     if (previousIdentityRef.current !== requestIdentity) return
@@ -121,6 +226,17 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
   }
 
   const handleMarkAll = async () => {
+    if (user.role === 'ADMIN') {
+      const idsToMark = [
+        ...adminFeedbackItems.map((it) => it.target_id || it.id.replace('feedback-', '')),
+        ...notifications.previewItems
+          .filter((it) => it.target_type === 'FEEDBACK' && it.target_id)
+          .map((it) => it.target_id as string),
+      ]
+      saveAllStoredReadFeedbackIds(idsToMark)
+      setAdminFeedbackItems([])
+      setAdminFeedbackCount(0)
+    }
     try {
       await notifications.markAll()
       toast.success('Đã đánh dấu tất cả thông báo là đã đọc.')
@@ -146,7 +262,7 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
       <button
         ref={triggerRef}
         type="button"
-        aria-label={notificationBellLabel(notifications.unreadCount)}
+        aria-label={notificationBellLabel(effectiveUnreadCount)}
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={panelId}
@@ -165,12 +281,17 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
       </button>
 
       {open && (
-        <section
-          id={panelId}
-          role="dialog"
-          aria-label="Thông báo gần đây"
-          className="motion-dropdown fixed inset-x-3 top-[4.5rem] z-[70] overflow-hidden rounded-2xl border border-slate-200/80 bg-white/98 shadow-premium ring-1 ring-slate-900/5 backdrop-blur-xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[25rem]"
-        >
+        <div className="fixed inset-x-3 top-[4.5rem] z-[70] sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:w-[25rem] sm:pt-1">
+          <span
+            aria-hidden="true"
+            className="absolute right-[14px] top-1 z-10 hidden h-3.5 w-3.5 -translate-y-1/2 rotate-45 border-l border-t border-slate-200/80 bg-white sm:block"
+          />
+          <section
+            id={panelId}
+            role="dialog"
+            aria-label="Thông báo gần đây"
+            className="motion-dropdown overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-premium ring-1 ring-slate-900/5"
+          >
           <header className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3.5">
             <div>
               <h2 className="text-sm font-extrabold text-slate-950 font-[Plus_Jakarta_Sans,sans-serif]">Thông báo</h2>
@@ -178,7 +299,7 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
             </div>
             <button
               type="button"
-              disabled={notifications.markAllPending || notifications.unreadCount === 0}
+              disabled={notifications.markAllPending || (effectiveUnreadCount ?? 0) === 0}
               onClick={() => void handleMarkAll()}
               className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${actionClass}`}
             >
@@ -188,11 +309,11 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
           </header>
 
           <div className="max-h-[min(26rem,calc(100vh-10rem))] divide-y divide-slate-100 overflow-y-auto overscroll-contain">
-            {notifications.previewLoading && notifications.previewItems.length === 0 ? (
+            {notifications.previewLoading && displayItems.length === 0 ? (
               <div className="space-y-3 p-4" aria-label="Đang tải thông báo">
                 {[0, 1, 2].map((item) => <div key={item} className="h-16 animate-pulse rounded-xl bg-slate-100" />)}
               </div>
-            ) : notifications.previewError && notifications.previewItems.length === 0 ? (
+            ) : notifications.previewError && displayItems.length === 0 ? (
               <div className="px-5 py-9 text-center" role="alert">
                 <BellOff size={25} className="mx-auto text-slate-400" aria-hidden="true" />
                 <p className="mt-3 text-sm font-bold text-slate-800">Không thể tải thông báo</p>
@@ -200,13 +321,13 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
                   <RefreshCw size={13} aria-hidden="true" /> Thử lại
                 </button>
               </div>
-            ) : notifications.previewItems.length === 0 ? (
+            ) : displayItems.length === 0 ? (
               <div className="px-5 py-10 text-center">
                 <Bell size={25} className="mx-auto text-slate-300" aria-hidden="true" />
                 <p className="mt-3 text-sm font-bold text-slate-800">Không còn thông báo chưa đọc</p>
                 <p className="mt-1 text-xs leading-5 text-slate-500">Thông báo đã đọc vẫn được lưu trong trung tâm thông báo.</p>
               </div>
-            ) : notifications.previewItems.map((item) => (
+            ) : displayItems.map((item) => (
               <NotificationItem
                 key={item.id}
                 item={item}
@@ -224,7 +345,8 @@ export default function NotificationBell({ open, onOpenChange }: Props) {
               Xem tất cả thông báo
             </Link>
           </footer>
-        </section>
+          </section>
+        </div>
       )}
     </div>
   )

@@ -1,8 +1,9 @@
-import { AlertCircle, ArrowLeft, ArrowRight, BriefcaseBusiness, CalendarDays, Eye, FilePenLine, LockKeyhole, MapPin, Plus, RotateCcw, Search, Trash2, UsersRound, X } from 'lucide-react'
+import { AlertCircle, ArrowLeft, ArrowRight, BriefcaseBusiness, CalendarDays, Eye, FilePenLine, LockKeyhole, MapPin, Plus, Search, Trash2, UsersRound, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import QueryFetchFeedback from '../../components/feedback/QueryFetchFeedback'
 import JobStatusBadge from '../../components/recruiter/JobStatusBadge'
+import { RecruiterFilterPill, RecruiterFilterResetButton } from '../../components/recruiter/RecruiterFilterControls'
 import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 import { usePaginatedQuery } from '../../hooks/usePaginatedQuery'
 import { recruiterJobService } from '../../services/recruiterJobService'
@@ -12,6 +13,20 @@ import { employmentLabel, industryLabel, workModeLabel } from '../../utils/jobDi
 
 const PAGE_SIZE = 10
 const formatDate = (value: string) => new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(value))
+
+const statusFilterOptions = [
+  { value: '', label: 'Tất cả trạng thái' },
+  { value: 'PENDING', label: 'Chờ duyệt' },
+  { value: 'APPROVED', label: 'Đã duyệt' },
+  { value: 'REJECTED', label: 'Bị từ chối' },
+  { value: 'CLOSED', label: 'Đã đóng' },
+]
+
+const sortFilterOptions = [
+  { value: 'newest', label: 'Mới nhất' },
+  { value: 'oldest', label: 'Cũ nhất' },
+  { value: 'updated', label: 'Vừa cập nhật' },
+]
 
 function RecruiterJobSearchInput({ initialValue, onSearchChange }: { initialValue: string; onSearchChange: (value: string) => void }) {
   const [value, setValue] = useState(initialValue)
@@ -23,13 +38,13 @@ function RecruiterJobSearchInput({ initialValue, onSearchChange }: { initialValu
   }, [initialValue, onSearchChange, value])
 
   return (
-    <label className="relative min-w-0 w-full sm:w-60">
+    <div className="relative min-w-[200px] flex-1 sm:max-w-xs md:max-w-sm">
       <span className="sr-only">Tìm tin tuyển dụng</span>
-      <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+      <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
       <input
         value={value}
         onChange={(event) => setValue(event.target.value)}
-        className="h-9 w-full rounded-xl border border-black/[0.08] bg-white shadow-2xs py-1.5 pl-8 pr-7 text-xs text-[#1C1C1C] placeholder:text-slate-400 outline-none transition-all duration-150 hover:border-black/[0.15] focus:border-[#1C1C1C] focus:ring-1 focus:ring-[#1C1C1C]/10"
+        className="h-9 w-full rounded-xl border border-slate-200/90 bg-white py-1.5 pl-8.5 pr-8 text-xs sm:text-sm text-slate-900 shadow-2xs placeholder:text-slate-400 outline-none transition-all duration-150 hover:border-slate-300 focus:border-[#1C1C1C] focus:ring-2 focus:ring-black/10"
         placeholder="Tìm tiêu đề, địa điểm..."
       />
       {value && (
@@ -40,12 +55,12 @@ function RecruiterJobSearchInput({ initialValue, onSearchChange }: { initialValu
             onSearchChange('')
           }}
           aria-label="Xóa từ khóa tìm kiếm"
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-200/70 hover:text-slate-700"
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
         >
           <X size={13} aria-hidden="true" />
         </button>
       )}
-    </label>
+    </div>
   )
 }
 
@@ -129,38 +144,30 @@ export default function RecruiterJobsPage() {
 
       <section className="mt-5 flex flex-wrap items-center gap-2" aria-label="Tìm kiếm và bộ lọc tin tuyển dụng">
         <RecruiterJobSearchInput key={keyword} initialValue={keyword} onSearchChange={setKeyword} />
-        <select
-          aria-label="Lọc trạng thái"
+
+        <RecruiterFilterPill
+          label="Trạng thái"
           value={jobStatus ?? ''}
-          onChange={(event) => updateParams({ status: event.target.value || null })}
-          className="h-9 rounded-xl border border-black/[0.08] bg-white shadow-2xs px-3 text-xs font-normal text-[#1C1C1C] outline-none transition-all duration-150 hover:border-black/[0.15] focus:border-[#1C1C1C] focus:ring-1 focus:ring-[#1C1C1C]/10"
-        >
-          <option value="">Tất cả trạng thái</option>
-          <option value="PENDING">Chờ duyệt</option>
-          <option value="APPROVED">Đã duyệt</option>
-          <option value="REJECTED">Bị từ chối</option>
-          <option value="CLOSED">Đã đóng</option>
-        </select>
-        <select
-          aria-label="Sắp xếp"
+          options={statusFilterOptions}
+          onChange={(val) => updateParams({ status: val || null })}
+          ariaLabel="Lọc trạng thái"
+          allValue=""
+        />
+
+        <RecruiterFilterPill
+          label="Sắp xếp"
           value={sort}
-          onChange={(event) => updateParams({ sort: event.target.value === 'newest' ? null : event.target.value })}
-          className="h-9 rounded-xl border border-black/[0.08] bg-white shadow-2xs px-3 text-xs font-normal text-[#1C1C1C] outline-none transition-all duration-150 hover:border-black/[0.15] focus:border-[#1C1C1C] focus:ring-1 focus:ring-[#1C1C1C]/10"
-        >
-          <option value="newest">Mới nhất</option>
-          <option value="oldest">Cũ nhất</option>
-          <option value="updated">Vừa cập nhật</option>
-        </select>
+          options={sortFilterOptions}
+          onChange={(val) => updateParams({ sort: val === 'newest' ? null : val })}
+          ariaLabel="Sắp xếp"
+          allValue="newest"
+        />
+
         {(keyword || jobStatus || sort !== 'newest') && (
-          <button
-            type="button"
+          <RecruiterFilterResetButton
             onClick={() => updateParams({ keyword: null, status: null, sort: null })}
-            className="inline-flex items-center gap-1.5 h-9 px-2.5 text-xs font-normal text-slate-500 hover:text-red-600 hover:bg-red-50/80 rounded-xl transition-colors ml-auto sm:ml-0"
-            title="Đặt lại toàn bộ bộ lọc"
-          >
-            <RotateCcw size={12} />
-            <span>Xóa lọc</span>
-          </button>
+            count={[Boolean(jobStatus), sort !== 'newest'].filter(Boolean).length}
+          />
         )}
       </section>
 

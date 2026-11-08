@@ -61,9 +61,21 @@ export async function enableNotificationSound(): Promise<void> {
 
 export function playNotificationSound(): void {
   const context = getAudioContext()
-  if (!context || context.state !== 'running') return
+  if (!context) return
 
-  const startsAt = context.currentTime + 0.01
-  scheduleNote(context, 784, startsAt, 0.24, NOTE_VOLUME)
-  scheduleNote(context, 1046.5, startsAt + 0.1, 0.32, NOTE_VOLUME * 0.82)
+  const play = () => {
+    const startsAt = context.currentTime + 0.01
+    scheduleNote(context, 784, startsAt, 0.24, NOTE_VOLUME)
+    scheduleNote(context, 1046.5, startsAt + 0.1, 0.32, NOTE_VOLUME * 0.82)
+  }
+
+  if (context.state === 'running') {
+    play()
+  } else if (context.state === 'suspended') {
+    context.resume().then(() => {
+      if (context.state === 'running') {
+        play()
+      }
+    }).catch(() => {})
+  }
 }

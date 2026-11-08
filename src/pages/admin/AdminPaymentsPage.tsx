@@ -4,8 +4,9 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { createPortal } from 'react-dom'
 import { useSearchParams } from 'react-router-dom'
+import { AdminFilterPill, AdminFilterResetButton } from '../../components/admin/AdminFilterControls'
+import AdminViewportPortal from '../../components/admin/AdminViewportPortal'
 import { adminPaymentService } from '../../services/adminPaymentService'
 import { subscriptionService } from '../../services/subscriptionService'
 import type {
@@ -39,16 +40,14 @@ function SummaryCard({ label, value, hint, icon: Icon }: { label: string; value:
 function DetailDrawer({ detail, loading, onClose }: { detail: Detail | null; loading: boolean; onClose: () => void }) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Khoá scroll trang nền và reset vị trí cuộn bên trong modal
+  // Reset vị trí cuộn bên trong modal và hỗ trợ đóng bằng bàn phím.
   useEffect(() => {
     if (!detail && !loading) return
-    document.body.style.overflow = 'hidden'
     scrollRef.current?.scrollTo({ top: 0 })
     const close = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
     document.addEventListener('keydown', close)
     return () => {
       document.removeEventListener('keydown', close)
-      document.body.style.overflow = ''
     }
   }, [detail, loading, onClose])
 
@@ -56,9 +55,8 @@ function DetailDrawer({ detail, loading, onClose }: { detail: Detail | null; loa
   const transaction = detail?.kind === 'transaction' ? detail.value : null
   const order = detail?.kind === 'order' ? detail.value : transaction?.order
 
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
+  return <AdminViewportPortal><div
+      className="fixed inset-0 z-[100] flex min-h-dvh items-center justify-center overflow-y-auto overscroll-contain bg-slate-950/50 p-4 backdrop-blur-sm"
       role="presentation"
       onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}
     >
@@ -140,9 +138,7 @@ function DetailDrawer({ detail, loading, onClose }: { detail: Detail | null; loa
           )}
         </div>
       </div>
-    </div>,
-    document.body
-  )
+    </div></AdminViewportPortal>
 }
 
 export default function AdminPaymentsPage() {
@@ -200,6 +196,44 @@ export default function AdminPaymentsPage() {
     return () => controller.abort()
   }, [filters, refreshKey, view])
 
+  const dispositionOptions = useMemo(
+    () => [
+      { value: '', label: 'Mọi kết quả' },
+      ...Object.entries(paymentDispositionLabel).map(([value, label]) => ({ value, label })),
+    ],
+    []
+  )
+  const orderStatusOptions = useMemo(
+    () => [
+      { value: '', label: 'Mọi trạng thái đơn' },
+      ...Object.entries(paymentOrderStatusLabel).map(([value, label]) => ({ value, label })),
+    ],
+    []
+  )
+  const planOptions = useMemo(
+    () => [
+      { value: '', label: 'Mọi gói dịch vụ' },
+      ...plans.map((p) => ({ value: p.code, label: p.name })),
+    ],
+    [plans]
+  )
+
+  const activeFilterCount = [
+    Boolean(params.get('search')),
+    view === 'transactions' && Boolean(params.get('disposition')),
+    Boolean(params.get('status')),
+    Boolean(params.get('plan')),
+    Boolean(params.get('from')),
+    Boolean(params.get('to')),
+  ].filter(Boolean).length
+
+  const handleResetFilters = () => {
+    setSearchInput('')
+    const next = new URLSearchParams()
+    if (view === 'orders') next.set('view', 'orders')
+    setParams(next)
+  }
+
   const updateParam = (key: string, value: string) => {
     const next = new URLSearchParams(params)
     if (value) next.set(key, value); else next.delete(key)
@@ -235,13 +269,88 @@ export default function AdminPaymentsPage() {
 
     <section className="mt-6 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
       <div className="border-b border-slate-200 p-4 sm:p-5"><div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between"><div className="inline-flex w-fit rounded-xl bg-slate-100 p-1" role="tablist"><button type="button" role="tab" aria-selected={view === 'transactions'} onClick={() => changeView('transactions')} className={`rounded-lg px-4 py-2 text-sm font-semibold ${view === 'transactions' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500'}`}>Giao dịch ngân hàng</button><button type="button" role="tab" aria-selected={view === 'orders'} onClick={() => changeView('orders')} className={`rounded-lg px-4 py-2 text-sm font-semibold ${view === 'orders' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500'}`}>Đơn thanh toán</button></div><span className="text-sm text-slate-500"><strong className="tabular-nums text-slate-950">{total}</strong> kết quả</span></div>
-        <form onSubmit={submitSearch} className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-6"><label className="relative xl:col-span-2"><span className="sr-only">Tìm kiếm</span><Search className="absolute left-3 top-3 text-slate-400" size={17} /><input value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Mã giao dịch, mã đơn, email..." className="h-11 w-full rounded-xl border border-slate-200 pl-10 pr-3 text-sm outline-none focus:border-slate-400" /></label>
-          {view === 'transactions' && <select aria-label="Kết quả xử lý" value={params.get('disposition') ?? ''} onChange={(event) => updateParam('disposition', event.target.value)} className="h-11 rounded-xl border border-slate-200 px-3 text-sm"><option value="">Mọi kết quả</option>{Object.entries(paymentDispositionLabel).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>}
-          <select aria-label="Trạng thái đơn" value={params.get('status') ?? ''} onChange={(event) => updateParam('status', event.target.value)} className="h-11 rounded-xl border border-slate-200 px-3 text-sm"><option value="">Mọi trạng thái đơn</option>{Object.entries(paymentOrderStatusLabel).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
-          <select aria-label="Gói dịch vụ" value={params.get('plan') ?? ''} onChange={(event) => updateParam('plan', event.target.value)} className="h-11 rounded-xl border border-slate-200 px-3 text-sm"><option value="">Mọi gói dịch vụ</option>{plans.map((plan) => <option key={plan.id} value={plan.code}>{plan.name}</option>)}</select>
-          <button type="submit" className="h-11 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white">Tìm kiếm</button>
+        <form onSubmit={submitSearch} className="mt-4 flex flex-wrap items-center gap-2">
+          {/* Compact Search Input */}
+          <div className="relative min-w-[200px] flex-1 sm:max-w-xs md:max-w-sm">
+            <span className="sr-only">Tìm kiếm</span>
+            <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+            <input
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="Mã GD, mã đơn, email..."
+              className="h-9 w-full rounded-xl border border-slate-200/90 bg-white py-1.5 pl-8.5 pr-8 text-xs sm:text-sm text-slate-900 shadow-2xs placeholder:text-slate-400 outline-none transition-all duration-150 hover:border-slate-300 focus:border-[#1C1C1C] focus:ring-2 focus:ring-black/10"
+            />
+            {searchInput && (
+              <button
+                type="button"
+                onClick={() => { setSearchInput(''); updateParam('search', '') }}
+                className="absolute right-2 top-1/2 inline-flex -translate-y-1/2 rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Xóa từ khóa tìm kiếm"
+              >
+                <X size={13} aria-hidden="true" />
+              </button>
+            )}
+          </div>
+
+          {/* Disposition Pill (transactions only) */}
+          {view === 'transactions' && (
+            <AdminFilterPill
+              label="Kết quả xử lý"
+              value={params.get('disposition') ?? ''}
+              options={dispositionOptions}
+              onChange={(value) => updateParam('disposition', value)}
+              ariaLabel="Lọc kết quả xử lý"
+              allValue=""
+            />
+          )}
+
+          {/* Order Status Pill */}
+          <AdminFilterPill
+            label="Trạng thái đơn"
+            value={params.get('status') ?? ''}
+            options={orderStatusOptions}
+            onChange={(value) => updateParam('status', value)}
+            ariaLabel="Lọc trạng thái đơn"
+            allValue=""
+          />
+
+          {/* Plan Pill */}
+          <AdminFilterPill
+            label="Gói dịch vụ"
+            value={params.get('plan') ?? ''}
+            options={planOptions}
+            onChange={(value) => updateParam('plan', value)}
+            ariaLabel="Lọc gói dịch vụ"
+            allValue=""
+          />
+
+          {/* Date range pickers */}
+          <div className="flex items-center gap-1.5">
+            <label className="group relative inline-flex h-9 items-center rounded-xl border border-slate-200/90 bg-white px-2.5 text-xs text-slate-700 shadow-2xs transition-all duration-150 hover:border-slate-300">
+              <span className="text-slate-400 mr-1.5">Từ:</span>
+              <input
+                type="date"
+                value={params.get('from') ?? ''}
+                onChange={(event) => updateParam('from', event.target.value)}
+                className="bg-transparent text-xs text-slate-900 outline-none cursor-pointer"
+              />
+            </label>
+            <label className="group relative inline-flex h-9 items-center rounded-xl border border-slate-200/90 bg-white px-2.5 text-xs text-slate-700 shadow-2xs transition-all duration-150 hover:border-slate-300">
+              <span className="text-slate-400 mr-1.5">Đến:</span>
+              <input
+                type="date"
+                value={params.get('to') ?? ''}
+                onChange={(event) => updateParam('to', event.target.value)}
+                className="bg-transparent text-xs text-slate-900 outline-none cursor-pointer"
+              />
+            </label>
+          </div>
+
+          {/* Quick Reset Button */}
+          {activeFilterCount > 0 && (
+            <AdminFilterResetButton onClick={handleResetFilters} count={activeFilterCount} />
+          )}
         </form>
-        <div className="mt-3 flex flex-wrap items-center gap-3"><label className="text-xs font-medium text-slate-500">Từ ngày <input type="date" value={params.get('from') ?? ''} onChange={(event) => updateParam('from', event.target.value)} className="ml-2 h-9 rounded-lg border border-slate-200 px-2 text-sm text-slate-700" /></label><label className="text-xs font-medium text-slate-500">Đến ngày <input type="date" value={params.get('to') ?? ''} onChange={(event) => updateParam('to', event.target.value)} className="ml-2 h-9 rounded-lg border border-slate-200 px-2 text-sm text-slate-700" /></label></div>
       </div>
 
       {error && <div role="alert" className="m-5 flex items-center justify-between gap-4 rounded-xl bg-red-50 p-4 text-sm text-red-700"><span>{error}</span><button type="button" onClick={() => setRefreshKey((key) => key + 1)} className="font-semibold underline">Thử lại</button></div>}

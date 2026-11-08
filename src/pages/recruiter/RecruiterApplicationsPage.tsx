@@ -196,7 +196,18 @@ export default function RecruiterApplicationsPage() {
 
       {entitlementNotice && <p role="status" className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-200">{entitlementNotice} <Link to="/recruiter/plans" className="font-semibold underline">Xem các gói</Link></p>}
 
-      <RecruiterApplicationFilters search={search} status={statusFilter} jobId={selectedJobId} jobs={jobOptions?.items ?? []} jobsLoading={!isJobScoped && isJobsLoading} showJobFilter={!isJobScoped} onSearchChange={setSearch} onStatusChange={setStatus} onJobChange={setJob} />
+      <RecruiterApplicationFilters
+        search={search}
+        status={statusFilter}
+        jobId={selectedJobId}
+        jobs={jobOptions?.items ?? []}
+        jobsLoading={!isJobScoped && isJobsLoading}
+        showJobFilter={!isJobScoped}
+        onSearchChange={setSearch}
+        onStatusChange={setStatus}
+        onJobChange={setJob}
+        onReset={() => updateParams({ search: null, status: null, job_id: isJobScoped ? (selectedJobId ?? null) : null })}
+      />
       {showRanking && (
         <div className="mt-4 flex flex-col justify-between gap-2 text-xs leading-5 text-slate-600 sm:flex-row sm:items-start">
           <p className="max-w-2xl">Xếp hạng AI chỉ hỗ trợ sắp xếp. Nhà tuyển dụng vẫn cần xem hồ sơ trước khi quyết định.</p>

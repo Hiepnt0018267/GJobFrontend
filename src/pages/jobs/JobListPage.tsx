@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { AlertCircle, BriefcaseBusiness, ChevronLeft, ChevronRight, RefreshCw, X } from 'lucide-react'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import QueryFetchFeedback from '../../components/feedback/QueryFetchFeedback'
 import JobCard from '../../components/job/JobCard'
@@ -10,6 +10,9 @@ import JobSearchBar from '../../components/job/JobSearchBar'
 import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 import { usePaginatedQuery } from '../../hooks/usePaginatedQuery'
 import { jobService } from '../../services/jobService'
+import { jobTaxonomyService } from '../../services/jobTaxonomyService'
+import { allTaxonomyPositions } from '../../utils/candidateJobTaxonomy'
+import type { JobTaxonomyResponse } from '../../types/jobTaxonomy'
 import {
   EMPLOYMENT_TYPES,
   EXPERIENCE_REQUIREMENTS,
@@ -69,14 +72,26 @@ function Skeleton() {
 
 export default function JobListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const [taxonomy, setTaxonomy] = useState<JobTaxonomyResponse | null>(null)
   const refreshVersion = useDataRefreshVersion()
   const query = searchParams.toString()
   const parsedParams = useMemo(() => new URLSearchParams(query), [query])
   const search = (parsedParams.get('search') ?? parsedParams.get('keyword') ?? '').trim()
   const location = (parsedParams.get('location') ?? '').trim()
 
+  useEffect(() => {
+    const controller = new AbortController()
+    jobTaxonomyService
+      .getActive(controller.signal)
+      .then(setTaxonomy)
+      .catch(() => {})
+    return () => controller.abort()
+  }, [])
+
   const filters = useMemo<JobFilterValues>(() => {
     const industry = parsedParams.get('industry')
+    const industryGroup = (parsedParams.get('industry_group') ?? '').trim()
+    const jobPosition = (parsedParams.get('job_position') ?? '').trim()
     const experienceRequirement = parsedParams.get('experience_requirement')
     const level = parsedParams.get('level')
     const workMode = parsedParams.get('work_mode')
@@ -85,6 +100,8 @@ export default function JobListPage() {
     const salary = parsedParams.get('salary')
     return {
       industry: hasValue(INDUSTRIES, industry) ? industry : '',
+      industryGroup,
+      jobPosition,
       experienceRequirement: hasValue(EXPERIENCE_REQUIREMENTS, experienceRequirement) ? experienceRequirement : '',
       level: hasValue(JOB_LEVELS, level) ? level : '',
       workMode: hasValue(WORK_MODES, workMode) ? workMode : '',
@@ -100,6 +117,8 @@ export default function JobListPage() {
     if (search) params.search = search
     if (location) params.location = location
     if (filters.industry) params.industry = filters.industry
+    if (filters.industryGroup) params.industry_group = filters.industryGroup
+    if (filters.jobPosition) params.job_position = filters.jobPosition
     if (filters.experienceRequirement) params.experience_requirement = filters.experienceRequirement
     if (filters.level) params.level = filters.level
     if (filters.workMode) params.work_mode = filters.workMode
@@ -139,10 +158,33 @@ export default function JobListPage() {
     (value) => value === 1 || value === data?.total_pages || Math.abs(value - (data?.page ?? 1)) <= 1
   )
 
+  const allPositions = useMemo(
+    () => allTaxonomyPositions(taxonomy?.industries ?? []),
+    [taxonomy],
+  )
+  const selectedIndustry = useMemo(
+    () => taxonomy?.industries.find((item) => item.code === filters.industryGroup),
+    [taxonomy, filters.industryGroup],
+  )
+  const selectedPosition = useMemo(
+    () => allPositions.find((item) => item.code === filters.jobPosition),
+    [allPositions, filters.jobPosition],
+  )
+
   const chips = [
     search && { key: 'search', label: `Từ khóa: ${search}`, remove: () => updateParams({ search: null, keyword: null }) },
     location && { key: 'location', label: `Địa điểm: ${location}`, remove: () => updateParams({ location: null }) },
     filters.industry && { key: 'industry', label: jobFilterLabel.industry(filters.industry), remove: () => updateParams({ industry: null }) },
+    filters.industryGroup && {
+      key: 'industry_group',
+      label: selectedIndustry ? `Ngành nghề: ${selectedIndustry.display_name}` : `Ngành nghề: ${filters.industryGroup}`,
+      remove: () => updateParams({ industry_group: null, job_position: null }),
+    },
+    filters.jobPosition && {
+      key: 'job_position',
+      label: selectedPosition ? `Vị trí: ${selectedPosition.display_name}` : `Vị trí: ${filters.jobPosition}`,
+      remove: () => updateParams({ job_position: null }),
+    },
     filters.experienceRequirement && {
       key: 'experience_requirement',
       label: jobFilterLabel.experienceRequirement(filters.experienceRequirement),
@@ -201,9 +243,12 @@ export default function JobListPage() {
         {/* Sidebar Filters */}
         <JobFilters
           values={filters}
+          taxonomy={taxonomy}
           onChange={(next) =>
             updateParams({
               industry: next.industry || null,
+              industry_group: next.industryGroup || null,
+              job_position: next.jobPosition || null,
               experience_requirement: next.experienceRequirement || null,
               level: next.level || null,
               work_mode: next.workMode || null,

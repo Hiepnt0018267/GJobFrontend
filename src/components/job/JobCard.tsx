@@ -6,7 +6,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
 import { savedJobService } from '../../services/savedJobService'
 import type { Job, JobRecommendationReason, JobRecommendationStatus } from '../../types/job'
-import { experienceRequirementLabel, formatSalary, industryLabel, levelLabel, postedDate, workModeLabel } from '../../utils/jobDisplay'
+import { experienceRequirementLabel, formatSalary, getJobTaxonomyDisplay, levelLabel, postedDate, workModeLabel } from '../../utils/jobDisplay'
 import { recommendationStatusCopy } from '../../utils/jobRecommendation'
 import { safeImageUrl } from '../../utils/publicUrl'
 
@@ -49,6 +49,7 @@ export default function JobCard({ job, recommendation, returnTo }: { job: Job; r
 
   const logoUrl = safeImageUrl(job.company_logo_url)
   const companyInitial = job.company_name ? job.company_name.trim().charAt(0).toUpperCase() : 'G'
+  const taxonomyDisplay = getJobTaxonomyDisplay(job)
 
   const tags = [
     job.work_mode ? workModeLabel(job.work_mode) : null,
@@ -277,10 +278,15 @@ export default function JobCard({ job, recommendation, returnTo }: { job: Job; r
           </span>
         </div>
 
-        {/* Work mode, level & industry */}
+        {/* Work mode, level & industry / taxonomy */}
         <div className="mt-3 flex items-center gap-2 text-xs font-medium text-slate-500">
           <BriefcaseBusiness size={13} className="shrink-0 text-slate-400" aria-hidden="true" />
-          <span className="truncate">{industryLabel(job.industry)}</span>
+          <span className="truncate">{taxonomyDisplay.primaryName}</span>
+          {taxonomyDisplay.isInactive && (
+            <span className="shrink-0 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-200">
+              Danh mục cũ
+            </span>
+          )}
         </div>
 
         {/* Metadata Tags */}

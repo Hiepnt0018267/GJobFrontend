@@ -5,10 +5,12 @@ export const KNOWN_NOTIFICATION_TYPES = [
   'APPLICATION_WITHDRAWN',
   'JOB_APPROVED',
   'JOB_REJECTED',
+  'COMPANY_NEW_JOB',
+  'FEEDBACK_RECEIVED',
 ] as const
 
 export type KnownNotificationType = (typeof KNOWN_NOTIFICATION_TYPES)[number]
-export type NotificationTargetType = 'USER' | 'APPLICATION' | 'JOB' | 'CV'
+export type NotificationTargetType = 'USER' | 'APPLICATION' | 'JOB' | 'CV' | 'FEEDBACK'
 
 export interface NotificationItem {
   id: string

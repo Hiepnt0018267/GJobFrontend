@@ -4,6 +4,7 @@ import {
   FileCheck2,
   FileClock,
   FileX2,
+  MessageSquare,
   UserRoundCheck,
 } from 'lucide-react'
 import { notificationVisualCategory } from '../../utils/notification'
@@ -15,6 +16,7 @@ const categoryStyles = {
   withdrawn: 'bg-amber-50 text-amber-700',
   approved: 'bg-[#49BBBD]/12 text-[#49BBBD]',
   rejected: 'bg-rose-50 text-rose-700',
+  feedback: 'bg-indigo-50 text-indigo-700',
 } as const
 
 const neutralWorkspaceCategoryStyles = {
@@ -22,6 +24,7 @@ const neutralWorkspaceCategoryStyles = {
   application: 'bg-slate-100 text-slate-700',
   status: 'bg-slate-100 text-slate-700',
   approved: 'bg-slate-100 text-slate-700',
+  feedback: 'bg-slate-100 text-slate-700',
 } as const
 
 export type NotificationTone = 'teal' | 'neutral'
@@ -39,7 +42,9 @@ export default function NotificationGlyph({ type, compact = false, tone = 'teal'
           ? FileCheck2
           : category === 'rejected'
             ? CircleAlert
-            : BellRing
+            : category === 'feedback'
+              ? MessageSquare
+              : BellRing
 
   return (
     <span

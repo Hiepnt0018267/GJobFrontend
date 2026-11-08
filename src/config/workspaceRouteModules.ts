@@ -20,12 +20,14 @@ export const workspaceRouteModules = {
   adminCVTemplateCreate: () => import('../pages/admin/AdminCVTemplateCreatePage'),
   adminCVTemplateDetail: () => import('../pages/admin/AdminCVTemplateDetailPage'),
   adminCVTemplateEdit: () => import('../pages/admin/AdminCVTemplateEditPage'),
+  adminJobTaxonomy: () => import('../pages/admin/AdminJobTaxonomyPage'),
   adminApplications: () => import('../pages/admin/AdminApplicationsPage'),
   adminApplicationDetail: () => import('../pages/admin/AdminApplicationDetailPage'),
   adminCandidateCVs: () => import('../pages/admin/AdminCandidateCVsPage'),
   adminCandidateCVDetail: () => import('../pages/admin/AdminCandidateCVDetailPage'),
   adminSubscriptionPlans: () => import('../pages/admin/AdminSubscriptionPlansPage'),
   adminPayments: () => import('../pages/admin/AdminPaymentsPage'),
+  adminFeedbacks: () => import('../pages/admin/AdminFeedbacksPage'),
 }
 
 type WorkspaceRouteLoader = () => Promise<unknown>
@@ -53,6 +55,7 @@ const workspaceRoutePreloaders: Array<[RegExp, WorkspaceRouteLoader]> = [
   [/^\/admin\/cv-templates\/[^/]+\/edit\/?$/, workspaceRouteModules.adminCVTemplateEdit],
   [/^\/admin\/cv-templates\/[^/]+\/?$/, workspaceRouteModules.adminCVTemplateDetail],
   [/^\/admin\/cv-templates\/?$/, workspaceRouteModules.adminCVTemplates],
+  [/^\/admin\/job-taxonomy\/?$/, workspaceRouteModules.adminJobTaxonomy],
   [/^\/admin\/applications\/[^/]+\/?$/, workspaceRouteModules.adminApplicationDetail],
   [/^\/admin\/applications\/?$/, workspaceRouteModules.adminApplications],
   [/^\/admin\/cvs\/[^/]+\/?$/, workspaceRouteModules.adminCandidateCVDetail],

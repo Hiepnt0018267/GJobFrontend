@@ -8,7 +8,7 @@ import SavedJobButton from '../../components/jobs/SavedJobButton'
 import { useDataRefreshVersion } from '../../hooks/useDataRefreshVersion'
 import { jobService } from '../../services/jobService'
 import type { JobDetail } from '../../types/job'
-import { employmentLabel, experienceLabel, formatSalary, postedDate } from '../../utils/jobDisplay'
+import { employmentLabel, formatSalary, getJobTaxonomyDisplay, levelLabel, postedDate } from '../../utils/jobDisplay'
 
 function errorMessage(error: unknown): string {
   if (!axios.isAxiosError(error) || !error.response) return 'Không thể kết nối tới máy chủ.'
@@ -103,6 +103,7 @@ export default function JobDetailPage() {
   const backLabel = backTo?.startsWith('/candidate/job-recommendations')
     ? 'Quay lại gợi ý việc làm'
     : backTo === '/jobs' ? 'Quay lại danh sách' : 'Quay lại việc làm đã lưu'
+  const taxonomyDisplay = getJobTaxonomyDisplay(job)
 
   return (
     <div className="min-h-screen bg-slate-50/60 pb-16">
@@ -135,6 +136,17 @@ export default function JobDetailPage() {
                 <h1 className="break-words text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 leading-tight">
                   {job.title}
                 </h1>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800">
+                    <BriefcaseBusiness size={14} className="text-[#49BBBD]" />
+                    {taxonomyDisplay.primaryName}
+                  </span>
+                  {taxonomyDisplay.isInactive && (
+                    <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-amber-700 ring-1 ring-amber-300">
+                      Danh mục lưu trữ
+                    </span>
+                  )}
+                </div>
               </div>
               <span className="h-fit w-fit shrink-0 rounded-full bg-[#49BBBD] px-3.5 py-1.5 text-xs font-bold text-white shadow-sm">
                 {employmentLabel(job.employment_type)}
@@ -153,7 +165,7 @@ export default function JobDetailPage() {
               </p>
               <p className="flex items-center gap-2.5 text-slate-600">
                 <BriefcaseBusiness size={18} className="shrink-0 text-[#49BBBD]" />
-                <span>{experienceLabel(job.experience_level)}</span>
+                <span>{levelLabel(job.level)}</span>
               </p>
               <p className="flex items-center gap-2.5 text-slate-600">
                 <CalendarDays size={18} className="shrink-0 text-[#49BBBD]" />

@@ -1,7 +1,8 @@
-import { Search, X, RotateCcw } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { Search, X } from 'lucide-react'
+import { useEffect, useMemo, useRef } from 'react'
 import { APPLICATION_STATUSES, type ApplicationStatus } from '../../../types/application'
 import { applicationStatusLabels } from './adminApplicationDisplay'
+import { AdminFilterPill, AdminFilterResetButton } from '../AdminFilterControls'
 
 export type AdminApplicationStatusFilter = ApplicationStatus | 'ALL'
 
@@ -10,16 +11,26 @@ type Props = {
   status: AdminApplicationStatusFilter
   onSearchChange: (value: string) => void
   onStatusChange: (value: AdminApplicationStatusFilter) => void
+  onReset?: () => void
 }
 
-export default function AdminApplicationFilters({ search, status, onSearchChange, onStatusChange }: Props) {
+export default function AdminApplicationFilters({
+  search,
+  status,
+  onSearchChange,
+  onStatusChange,
+  onReset,
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const timer = useRef<number | null>(null)
 
   useEffect(() => {
     if (inputRef.current && inputRef.current.value !== search) inputRef.current.value = search
   }, [search])
-  useEffect(() => () => { if (timer.current !== null) window.clearTimeout(timer.current) }, [])
+
+  useEffect(() => () => {
+    if (timer.current !== null) window.clearTimeout(timer.current)
+  }, [])
 
   const scheduleSearch = (value: string) => {
     if (timer.current !== null) window.clearTimeout(timer.current)
@@ -37,64 +48,68 @@ export default function AdminApplicationFilters({ search, status, onSearchChange
     onSearchChange('')
   }
 
-  const hasActiveFilters = Boolean(search || status !== 'ALL')
+  const statusOptions = useMemo(
+    () => [
+      { value: 'ALL' as AdminApplicationStatusFilter, label: 'Tất cả trạng thái' },
+      ...APPLICATION_STATUSES.map((item) => ({
+        value: item as AdminApplicationStatusFilter,
+        label: applicationStatusLabels[item],
+      })),
+    ],
+    []
+  )
+
+  const activeFilterCount = (status !== 'ALL' ? 1 : 0)
+  const hasActiveFilters = Boolean(search || activeFilterCount > 0)
 
   const handleReset = () => {
-    clear()
-    onStatusChange('ALL')
+    if (timer.current !== null) window.clearTimeout(timer.current)
+    if (inputRef.current) inputRef.current.value = ''
+    if (onReset) {
+      onReset()
+    } else {
+      clear()
+      onStatusChange('ALL')
+    }
   }
 
   return (
-    <section className="mt-5 flex flex-wrap items-center gap-2.5" aria-label="Tìm kiếm và lọc đơn ứng tuyển">
+    <section className="mt-5 flex flex-wrap items-center gap-2" aria-label="Tìm kiếm và lọc đơn ứng tuyển">
       {/* Compact Search Input */}
-      <label className="relative min-w-0 w-full sm:w-80 md:w-96">
+      <div className="relative min-w-[200px] flex-1 sm:max-w-xs md:max-w-sm">
         <span className="sr-only">Tìm đơn ứng tuyển</span>
-        <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+        <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
         <input
           ref={inputRef}
           defaultValue={search}
           onChange={(event) => scheduleSearch(event.target.value)}
-          placeholder="Tìm ứng viên, email, công việc, công ty..."
-          className="h-10 w-full rounded-xl border border-slate-200/90 bg-white py-2 pl-9 pr-8 text-xs sm:text-sm text-slate-900 shadow-2xs placeholder:text-slate-400 outline-none transition-all duration-150 hover:border-slate-300 focus:border-[#1C1C1C] focus:ring-3 focus:ring-black/10"
+          placeholder="Tìm ứng viên, email, công việc..."
+          className="h-9 w-full rounded-xl border border-slate-200/90 bg-white py-1.5 pl-8.5 pr-8 text-xs sm:text-sm text-slate-900 shadow-2xs placeholder:text-slate-400 outline-none transition-all duration-150 hover:border-slate-300 focus:border-[#1C1C1C] focus:ring-2 focus:ring-black/10"
         />
-        <button
-          type="button"
-          onClick={clear}
-          aria-label="Xóa từ khóa tìm kiếm"
-          className="pointer-events-auto absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-200/70 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1C] peer-placeholder-shown:pointer-events-none peer-placeholder-shown:opacity-0"
-        >
-          <X size={14} aria-hidden="true" />
-        </button>
-      </label>
+        {search && (
+          <button
+            type="button"
+            onClick={clear}
+            className="absolute right-2 top-1/2 inline-flex -translate-y-1/2 rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            aria-label="Xóa từ khóa tìm kiếm"
+          >
+            <X size={13} aria-hidden="true" />
+          </button>
+        )}
+      </div>
 
-      {/* Status Filter Dropdown */}
-      <label className="min-w-0 w-48 flex-1 sm:flex-initial">
-        <span className="sr-only">Lọc trạng thái đơn</span>
-        <select
-          value={status}
-          onChange={(event) => onStatusChange(event.target.value as AdminApplicationStatusFilter)}
-          className="h-10 w-full rounded-xl border border-slate-200/90 bg-white shadow-2xs px-3 text-xs sm:text-sm font-medium text-slate-700 outline-none transition-all duration-150 hover:border-slate-300 focus:border-[#1C1C1C] focus:ring-3 focus:ring-black/10"
-        >
-          <option value="ALL">Tất cả trạng thái</option>
-          {APPLICATION_STATUSES.map((item) => (
-            <option key={item} value={item}>
-              {applicationStatusLabels[item]}
-            </option>
-          ))}
-        </select>
-      </label>
+      {/* Status Pill */}
+      <AdminFilterPill
+        label="Trạng thái"
+        value={status}
+        options={statusOptions}
+        onChange={onStatusChange}
+        ariaLabel="Lọc trạng thái đơn ứng tuyển"
+      />
 
       {/* Quick Reset Button */}
       {hasActiveFilters && (
-        <button
-          type="button"
-          onClick={handleReset}
-          className="inline-flex items-center gap-1.5 h-10 px-3 text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50/80 rounded-xl transition-colors border border-transparent hover:border-red-200/60 ml-auto sm:ml-0"
-          title="Đặt lại toàn bộ bộ lọc"
-        >
-          <RotateCcw size={13} />
-          <span>Xóa lọc</span>
-        </button>
+        <AdminFilterResetButton onClick={handleReset} count={activeFilterCount} />
       )}
     </section>
   )

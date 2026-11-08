@@ -1,7 +1,7 @@
 import type { UserRole } from '../types/auth'
 import type { KnownNotificationType, NotificationItem } from '../types/notification'
 
-export type NotificationVisualCategory = 'neutral' | 'application' | 'status' | 'withdrawn' | 'approved' | 'rejected'
+export type NotificationVisualCategory = 'neutral' | 'application' | 'status' | 'withdrawn' | 'approved' | 'rejected' | 'feedback'
 
 const TYPE_CATEGORY: Record<KnownNotificationType, NotificationVisualCategory> = {
   SYSTEM: 'neutral',
@@ -10,6 +10,8 @@ const TYPE_CATEGORY: Record<KnownNotificationType, NotificationVisualCategory> =
   APPLICATION_WITHDRAWN: 'withdrawn',
   JOB_APPROVED: 'approved',
   JOB_REJECTED: 'rejected',
+  COMPANY_NEW_JOB: 'approved',
+  FEEDBACK_RECEIVED: 'feedback',
 }
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -52,7 +54,21 @@ export function getNotificationTargetPath({
     || notificationType === 'RECRUITER_REGISTERED'
   ) ? '/admin/users' : null
 
-  if (!targetType || !targetId || !UUID_PATTERN.test(targetId)) return registrationFallback
+  const feedbackFallback = role === 'ADMIN' && (
+    notificationType === 'FEEDBACK_RECEIVED'
+    || notificationType === 'FEEDBACK_SUBMITTED'
+  ) ? '/admin/feedbacks' : null
+
+  if (targetType === 'FEEDBACK') {
+    if (role === 'ADMIN') {
+      return targetId && UUID_PATTERN.test(targetId)
+        ? `/admin/feedbacks?id=${encodeURIComponent(targetId)}`
+        : '/admin/feedbacks'
+    }
+    return null
+  }
+
+  if (!targetType || !targetId || !UUID_PATTERN.test(targetId)) return registrationFallback ?? feedbackFallback
   const id = encodeURIComponent(targetId)
 
   if (targetType === 'USER') {
@@ -76,7 +92,7 @@ export function getNotificationTargetPath({
     if (role === 'ADMIN') return `/admin/cvs/${id}`
   }
 
-  return registrationFallback
+  return registrationFallback ?? feedbackFallback
 }
 
 export function formatNotificationTimestamp(value: string): string {
@@ -247,8 +263,19 @@ export function createReadNotificationPage(
   page: number,
   pageSize: number,
 ): { items: NotificationItem[]; total: number; page: number; page_size: number; total_pages: number } {
+  const readFeedbackIds = getStoredReadFeedbackIds()
+  const isItemRead = (item: NotificationItem) =>
+    item.is_read || (item.target_type === 'FEEDBACK' && item.target_id && readFeedbackIds.has(item.target_id))
+
   const uniqueReadItems = Array.from(
-    new Map(items.filter((item) => item.is_read).map((item) => [item.id, item])).values(),
+    new Map(
+      items
+        .filter(isItemRead)
+        .map((item) => [
+          item.id,
+          item.is_read ? item : { ...item, is_read: true, read_at: item.read_at || new Date().toISOString() },
+        ]),
+    ).values(),
   )
   const total = uniqueReadItems.length
   const start = (page - 1) * pageSize
@@ -258,5 +285,38 @@ export function createReadNotificationPage(
     page,
     page_size: pageSize,
     total_pages: total === 0 ? 0 : Math.ceil(total / pageSize),
+  }
+}
+
+export const STORAGE_KEY_READ_FEEDBACKS = 'gjob_admin_read_feedback_ids'
+
+export function getStoredReadFeedbackIds(): Set<string> {
+  try {
+    const raw = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY_READ_FEEDBACKS) : null
+    return raw ? new Set(JSON.parse(raw)) : new Set()
+  } catch {
+    return new Set()
+  }
+}
+
+export function saveStoredReadFeedbackId(id: string): void {
+  try {
+    if (typeof window === 'undefined') return
+    const ids = getStoredReadFeedbackIds()
+    ids.add(id)
+    localStorage.setItem(STORAGE_KEY_READ_FEEDBACKS, JSON.stringify([...ids]))
+  } catch {
+    // Ignore local storage errors
+  }
+}
+
+export function saveAllStoredReadFeedbackIds(newIds: string[]): void {
+  try {
+    if (typeof window === 'undefined') return
+    const ids = getStoredReadFeedbackIds()
+    newIds.forEach((id) => ids.add(id))
+    localStorage.setItem(STORAGE_KEY_READ_FEEDBACKS, JSON.stringify([...ids]))
+  } catch {
+    // Ignore local storage errors
   }
 }

@@ -22,7 +22,7 @@ function DetailSkeleton() {
 
 function returnLocation(state: unknown): string {
   if (state && typeof state === 'object' && 'returnTo' in state && typeof state.returnTo === 'string') return state.returnTo
-  return '/admin/jobs?status=PENDING'
+  return '/admin/jobs?status=ALL'
 }
 
 export default function AdminJobDetailPage() {

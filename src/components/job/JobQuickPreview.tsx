@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import type { CSSProperties, RefObject } from 'react'
 import type { Job } from '../../types/job'
-import { experienceRequirementLabel, formatSalary, workModeLabel } from '../../utils/jobDisplay'
+import { experienceRequirementLabel, formatSalary, getJobTaxonomyDisplay, workModeLabel } from '../../utils/jobDisplay'
 import { safeImageUrl } from '../../utils/publicUrl'
 
 type Props = {
@@ -92,6 +92,7 @@ export default function JobQuickPreview({ job, open, anchorRef, returnTo, onEnte
   if (!open || typeof document === 'undefined') return null
 
   const detailState = returnTo ? { returnTo } : undefined
+  const taxonomyDisplay = getJobTaxonomyDisplay(job)
   const preview = (
     <>
       {!placement.desktop && <button type="button" aria-label="Đóng xem nhanh" onClick={onClose} className="fixed inset-0 z-[70] bg-slate-950/35 backdrop-blur-[2px]" />}
@@ -123,6 +124,15 @@ export default function JobQuickPreview({ job, open, anchorRef, returnTo, onEnte
 
         <div className="overflow-y-auto overscroll-contain px-5 py-4 sm:px-6">
           <div className="flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-[#16898B]">
+              <BriefcaseBusiness size={13} />
+              {taxonomyDisplay.primaryName}
+            </span>
+            {taxonomyDisplay.isInactive && (
+              <span className="inline-flex items-center rounded-lg bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
+                Danh mục lưu trữ
+              </span>
+            )}
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-semibold text-slate-600"><MapPin size={13} />{job.location || 'Linh hoạt'}</span>
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-semibold text-slate-600"><BriefcaseBusiness size={13} />{experienceRequirementLabel(job.experience_requirement)}</span>
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-semibold text-slate-600"><Clock3 size={13} />{workModeLabel(job.work_mode)}</span>

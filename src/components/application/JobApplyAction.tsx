@@ -65,7 +65,7 @@ export default function JobApplyAction({ job }: Props) {
   }
   const handleCreateCV = () => {
     closeApplicationDialog()
-    navigate('/candidate/cvs/templates')
+    navigate('/candidate/cvs/templates/styles')
   }
   const handleSuccess = (application: JobApplication, message: string) => {
     closeApplicationDialog()

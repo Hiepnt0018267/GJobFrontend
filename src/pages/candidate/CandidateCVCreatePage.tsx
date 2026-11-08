@@ -1,12 +1,13 @@
 import { AlertCircle, ArrowLeft } from 'lucide-react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import CVInlineEditor from '../../components/cv/CVInlineEditor'
+import CVWorkspaceEditor from '../../components/cv/CVWorkspaceEditor'
+import { buildNewCVPresentationPatch } from '../../components/cv/cvEditorState'
 import { isSupportedCVTemplateLayout } from '../../components/cv/cvTemplateRegistry'
 import { cvService } from '../../services/cvService'
 import { cvTemplateService } from '../../services/cvTemplateService'
 import { useAuth } from '../../hooks/useAuth'
-import { emptyCV, type CVTemplate } from '../../types/cv'
+import { emptyCV, isBuilderCV, type CVTemplate } from '../../types/cv'
 
 export default function CandidateCVCreatePage() {
   const navigate = useNavigate()
@@ -45,9 +46,9 @@ export default function CandidateCVCreatePage() {
 
   if (loading) return <div className="min-h-screen bg-slate-50"><div className="mx-auto mt-8 h-[720px] max-w-4xl animate-pulse rounded-xl bg-slate-200" /></div>
   if (loadError) return <div className="min-h-screen bg-slate-50"><main className="mx-auto max-w-2xl px-4 py-10"><ErrorPanel text={loadError} retry={loadTemplates} /></main></div>
-  if (!selectedTemplate || !isSupportedCVTemplateLayout(selectedTemplate.layout_key)) return <div className="min-h-screen bg-slate-50"><main className="mx-auto max-w-2xl px-4 py-10"><div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800"><p className="font-semibold">Mẫu CV không khả dụng</p><p className="mt-1">Mẫu bạn chọn không còn hoạt động hoặc chưa được GJob hỗ trợ.</p><Link to="/candidate/cvs/templates" className="mt-4 inline-flex items-center gap-1 font-semibold underline underline-offset-2"><ArrowLeft size={15} />Quay lại chọn mẫu</Link></div></main></div>
+  if (!selectedTemplate || !isSupportedCVTemplateLayout(selectedTemplate.layout_key)) return <div className="min-h-screen bg-slate-50"><main className="mx-auto max-w-2xl px-4 py-10"><div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800"><p className="font-semibold">Mẫu CV không khả dụng</p><p className="mt-1">Mẫu bạn chọn không còn hoạt động hoặc chưa được GJob hỗ trợ.</p><Link to="/candidate/cvs/templates/styles" className="mt-4 inline-flex items-center gap-1 font-semibold underline underline-offset-2"><ArrowLeft size={15} />Quay lại chọn mẫu</Link></div></main></div>
 
-  return <>{saveError && <p role="alert" className="mx-auto mt-4 max-w-4xl rounded-lg bg-red-50 p-3 text-sm text-red-700">{saveError}</p>}<CVInlineEditor key={selectedTemplate.id} initial={initial!} currentTemplate={selectedTemplate} templates={templates} profileAvatarUrl={user?.avatar_url} submitLabel="Lưu CV" submitting={submitting} onCancel={() => navigate('/candidate/cvs')} onSave={async (data, pendingPhoto) => { setSubmitting(true); setSaveError(null); try { const cv = await cvService.createCV(data); if (pendingPhoto) await cvService.uploadCVPhoto(cv.id, pendingPhoto); navigate(`/candidate/cvs/${cv.id}`) } catch { setSaveError('Không thể lưu CV. Nội dung bạn đang chỉnh sửa vẫn được giữ.') } finally { setSubmitting(false) } }} /></>
+  return <>{saveError && <p role="alert" className="fixed bottom-4 right-4 z-[120] max-w-sm rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-xl">{saveError}</p>}<CVWorkspaceEditor key={selectedTemplate.id} initial={initial!} currentTemplate={selectedTemplate} templates={templates} submitLabel="Lưu CV" submitting={submitting} onCancel={() => navigate('/candidate/cvs')} onLibrary={() => navigate('/candidate/cvs')} onSave={async (data, presentationDraft, pendingPhoto) => { setSubmitting(true); setSaveError(null); try { let cv = await cvService.createCV(data); if (!isBuilderCV(cv)) throw new Error('Created CV is not builder-backed'); const presentationPatch = buildNewCVPresentationPatch(cv.presentation.locale, presentationDraft); if (Object.keys(presentationPatch).length) cv = await cvService.updateCVPresentation(cv.id, presentationPatch); if (pendingPhoto) cv = await cvService.uploadCVPhoto(cv.id, pendingPhoto); navigate(`/candidate/cvs/${cv.id}`); return cv } catch (requestError) { setSaveError('Không thể lưu CV. Nội dung bạn đang chỉnh sửa vẫn được giữ.'); throw requestError } finally { setSubmitting(false) } }} /></>
 }
 
 function ErrorPanel({ text, retry }: { text: string; retry: () => Promise<void> }) {

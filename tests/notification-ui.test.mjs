@@ -256,6 +256,8 @@ test('shared notification bell opens on hover and closes with a short grace peri
   assert.match(source, /onMouseLeave=\{scheduleHoverClose\}/)
   assert.match(source, /window\.setTimeout\(\(\) => \{/)
   assert.match(source, /\}, 180\)/)
+  assert.match(source, /right-\[14px\].*rotate-45.*border-l.*border-t/)
+  assert.match(source, /sm:top-full sm:w-\[25rem\] sm:pt-1/)
 })
 
 test('SSR popover renders SYSTEM item and notification page exposes loading/filter controls', () => {

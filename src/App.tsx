@@ -16,6 +16,7 @@ import PageTransition from './components/motion/PageTransition'
 const HomePage = lazy(candidateRouteModules.home)
 const JobListPage = lazy(candidateRouteModules.jobs)
 const JobDetailPage = lazy(candidateRouteModules.jobDetail)
+const PublicCompanyPage = lazy(candidateRouteModules.company)
 const CandidateProfilePage = lazy(candidateRouteModules.profile)
 const CandidateProfileEditPage = lazy(candidateRouteModules.profileEdit)
 const CandidateCVsPage = lazy(candidateRouteModules.cvs)
@@ -25,9 +26,14 @@ const CandidateCVEditPage = lazy(candidateRouteModules.cvEdit)
 const CandidateCVTemplatesPage = lazy(candidateRouteModules.cvTemplates)
 const CandidateApplicationsPage = lazy(candidateRouteModules.applications)
 const CandidateApplicationDetailPage = lazy(candidateRouteModules.applicationDetail)
+const SavedHubPage = lazy(candidateRouteModules.savedHub)
 const SavedJobsPage = lazy(candidateRouteModules.savedJobs)
+const FollowedCompaniesPage = lazy(candidateRouteModules.followedCompanies)
+void SavedJobsPage
+void FollowedCompaniesPage
 const CandidateJobRecommendationsPage = lazy(candidateRouteModules.recommendations)
 const CandidateSettingsPage = lazy(candidateRouteModules.settings)
+const HelpCenterPage = lazy(candidateRouteModules.help)
 
 // Recruiter/admin pages are split by route and prefetched from their workspace shell.
 const RecruiterDashboardPage = lazy(workspaceRouteModules.recruiterDashboard)
@@ -51,12 +57,14 @@ const AdminCVTemplatesPage = lazy(workspaceRouteModules.adminCVTemplates)
 const AdminCVTemplateCreatePage = lazy(workspaceRouteModules.adminCVTemplateCreate)
 const AdminCVTemplateDetailPage = lazy(workspaceRouteModules.adminCVTemplateDetail)
 const AdminCVTemplateEditPage = lazy(workspaceRouteModules.adminCVTemplateEdit)
+const AdminJobTaxonomyPage = lazy(workspaceRouteModules.adminJobTaxonomy)
 const AdminApplicationsPage = lazy(workspaceRouteModules.adminApplications)
 const AdminApplicationDetailPage = lazy(workspaceRouteModules.adminApplicationDetail)
 const AdminCandidateCVsPage = lazy(workspaceRouteModules.adminCandidateCVs)
 const AdminCandidateCVDetailPage = lazy(workspaceRouteModules.adminCandidateCVDetail)
 const AdminSubscriptionPlansPage = lazy(workspaceRouteModules.adminSubscriptionPlans)
 const AdminPaymentsPage = lazy(workspaceRouteModules.adminPayments)
+const AdminFeedbacksPage = lazy(workspaceRouteModules.adminFeedbacks)
 
 // Auth pages
 import AuthPage from './pages/auth/AuthPage'
@@ -95,6 +103,20 @@ function RedirectIfAuthenticated({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+function LegacyCVTemplateRedirect() {
+  const { search } = useLocation()
+  const params = new URLSearchParams(search)
+  const mode = params.has('industry_group') || params.has('job_position') ? 'positions' : 'styles'
+  return <Navigate to={`/candidate/cvs/templates/${mode}${search}`} replace />
+}
+
+function LegacySavedRedirect({ targetTab }: { targetTab: 'jobs' | 'companies' }) {
+  const { search } = useLocation()
+  const params = new URLSearchParams(search)
+  params.set('tab', targetTab)
+  return <Navigate to={`/candidate/saved?${params.toString()}`} replace />
+}
+
 function App() {
   return (
     <Routes>
@@ -103,19 +125,25 @@ function App() {
         <Route path="/"         element={<HomePage />} />
         <Route path="/jobs"     element={<JobListPage />} />
         <Route path="/jobs/:id" element={<JobDetailPage />} />
+        <Route path="/companies/:companyId" element={<PublicCompanyPage />} />
+        <Route path="/help"     element={<HelpCenterPage />} />
         <Route element={<ProtectedRoute loadingVariant="candidate" />}>
           <Route element={<RoleRoute allowedRoles={['CANDIDATE']} />}>
             <Route path="/candidate" element={<Navigate to="/" replace />} />
             <Route path="/candidate/profile" element={<CandidateProfilePage />} />
             <Route path="/candidate/profile/edit" element={<CandidateProfileEditPage />} />
             <Route path="/candidate/cvs" element={<CandidateCVsPage />} />
-            <Route path="/candidate/cvs/templates" element={<CandidateCVTemplatesPage />} />
+            <Route path="/candidate/cvs/templates" element={<LegacyCVTemplateRedirect />} />
+            <Route path="/candidate/cvs/templates/styles" element={<CandidateCVTemplatesPage mode="styles" />} />
+            <Route path="/candidate/cvs/templates/positions" element={<CandidateCVTemplatesPage mode="positions" />} />
             <Route path="/candidate/cvs/create" element={<CandidateCVCreatePage />} />
             <Route path="/candidate/cvs/:id" element={<CandidateCVDetailPage />} />
             <Route path="/candidate/cvs/:id/edit" element={<CandidateCVEditPage />} />
             <Route path="/candidate/applications" element={<CandidateApplicationsPage />} />
             <Route path="/candidate/applications/:id" element={<CandidateApplicationDetailPage />} />
-            <Route path="/candidate/saved-jobs" element={<SavedJobsPage />} />
+            <Route path="/candidate/saved" element={<SavedHubPage />} />
+            <Route path="/candidate/saved-jobs" element={<LegacySavedRedirect targetTab="jobs" />} />
+            <Route path="/candidate/followed-companies" element={<LegacySavedRedirect targetTab="companies" />} />
             <Route path="/candidate/job-recommendations" element={<CandidateJobRecommendationsPage />} />
             <Route path="/candidate/notifications" element={<NotificationCenterPage />} />
             <Route path="/candidate/settings" element={<CandidateSettingsPage />} />
@@ -125,15 +153,21 @@ function App() {
 
       {/* ── Auth pages (standalone, redirect if already logged in) ── */}
       <Route
+        path="/login"
         element={
           <RedirectIfAuthenticated>
-            <AuthPage />
+            <AuthPage initialMode="login" />
           </RedirectIfAuthenticated>
         }
-      >
-        <Route path="/login" />
-        <Route path="/register" />
-      </Route>
+      />
+      <Route
+        path="/register"
+        element={
+          <RedirectIfAuthenticated>
+            <AuthPage initialMode="register" />
+          </RedirectIfAuthenticated>
+        }
+      />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
@@ -176,12 +210,14 @@ function App() {
             <Route path="/admin/cv-templates/new" element={<AdminCVTemplateCreatePage />} />
             <Route path="/admin/cv-templates/:id" element={<AdminCVTemplateDetailPage />} />
             <Route path="/admin/cv-templates/:id/edit" element={<AdminCVTemplateEditPage />} />
+            <Route path="/admin/job-taxonomy" element={<AdminJobTaxonomyPage />} />
             <Route path="/admin/applications" element={<AdminApplicationsPage />} />
             <Route path="/admin/applications/:id" element={<AdminApplicationDetailPage />} />
             <Route path="/admin/cvs" element={<AdminCandidateCVsPage />} />
             <Route path="/admin/cvs/:id" element={<AdminCandidateCVDetailPage />} />
             <Route path="/admin/subscription-plans" element={<AdminSubscriptionPlansPage />} />
             <Route path="/admin/payments" element={<AdminPaymentsPage />} />
+            <Route path="/admin/feedbacks" element={<AdminFeedbacksPage />} />
             <Route path="/admin/notifications" element={<NotificationCenterPage />} />
           </Route>
         </Route>

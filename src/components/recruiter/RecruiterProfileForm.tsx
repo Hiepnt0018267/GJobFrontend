@@ -17,7 +17,7 @@ import type { ChangeEvent, FormEvent, ReactNode } from 'react'
 import { recruiterService } from '../../services/recruiterService'
 import type { RecruiterProfile, RecruiterProfileUpdate } from '../../types/recruiter'
 import { recruiterErrorMessage } from '../../utils/apiError'
-import { safeImageUrl } from '../../utils/publicUrl'
+import { safeExternalUrl, safeImageUrl } from '../../utils/publicUrl'
 
 type Props = {
   profile: RecruiterProfile
@@ -34,6 +34,16 @@ type FieldProps = {
 
 const MAX_LOGO_SIZE = 5 * 1024 * 1024
 const ACCEPTED_LOGO_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+const FIELD_LIMITS = {
+  fullName: 255,
+  phone: 20,
+  companyName: 255,
+  website: 512,
+  address: 500,
+  industry: 255,
+  description: 3000,
+  companySize: 10_000_000,
+} as const
 
 function Field({ label, hint, icon: Icon, children }: FieldProps) {
   return (
@@ -122,27 +132,63 @@ export default function RecruiterProfileForm({ profile, onSaved, onCancel }: Pro
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!form.full_name.trim()) {
+    const fullName = form.full_name.trim()
+    const phone = form.phone.trim()
+    const companyName = form.company_name.trim()
+    const website = form.company_website.trim()
+    const address = form.company_address.trim()
+    const industry = form.industry.trim()
+    const description = form.company_description.trim()
+
+    if (!fullName) {
       setError('Họ và tên là bắt buộc.')
+      return
+    }
+    if (fullName.length > FIELD_LIMITS.fullName) {
+      setError(`Họ và tên không được vượt quá ${FIELD_LIMITS.fullName} ký tự.`)
+      return
+    }
+    if (phone.length > FIELD_LIMITS.phone) {
+      setError(`Số điện thoại không được vượt quá ${FIELD_LIMITS.phone} ký tự.`)
+      return
+    }
+    if (companyName.length > FIELD_LIMITS.companyName) {
+      setError(`Tên công ty không được vượt quá ${FIELD_LIMITS.companyName} ký tự.`)
+      return
+    }
+    if (website && (!safeExternalUrl(website) || website.length > FIELD_LIMITS.website)) {
+      setError(`Website phải là địa chỉ HTTP/HTTPS hợp lệ và không vượt quá ${FIELD_LIMITS.website} ký tự.`)
+      return
+    }
+    if (address.length > FIELD_LIMITS.address) {
+      setError(`Địa chỉ công ty không được vượt quá ${FIELD_LIMITS.address} ký tự.`)
+      return
+    }
+    if (industry.length > FIELD_LIMITS.industry) {
+      setError(`Ngành nghề không được vượt quá ${FIELD_LIMITS.industry} ký tự.`)
+      return
+    }
+    if (description.length > FIELD_LIMITS.description) {
+      setError(`Giới thiệu công ty không được vượt quá ${FIELD_LIMITS.description} ký tự.`)
       return
     }
 
     const size = form.company_size.trim() ? Number(form.company_size) : null
-    if (size !== null && (!Number.isInteger(size) || size < 1)) {
-      setError('Quy mô công ty phải là số nguyên dương.')
+    if (size !== null && (!Number.isInteger(size) || size < 1 || size > FIELD_LIMITS.companySize)) {
+      setError(`Quy mô công ty phải là số nguyên lớn hơn 0 và không vượt quá ${FIELD_LIMITS.companySize.toLocaleString('vi-VN')}.`)
       return
     }
 
     const emptyToNull = (value: string) => value.trim() || null
     const payload: RecruiterProfileUpdate = {
-      full_name: form.full_name.trim(),
-      phone: emptyToNull(form.phone),
-      company_name: emptyToNull(form.company_name),
-      company_website: emptyToNull(form.company_website),
-      company_address: emptyToNull(form.company_address),
-      industry: emptyToNull(form.industry),
+      full_name: fullName,
+      phone: emptyToNull(phone),
+      company_name: emptyToNull(companyName),
+      company_website: emptyToNull(website),
+      company_address: emptyToNull(address),
+      industry: emptyToNull(industry),
       company_size: size,
-      company_description: emptyToNull(form.company_description),
+      company_description: emptyToNull(description),
     }
 
     setSaving(true)
@@ -162,10 +208,6 @@ export default function RecruiterProfileForm({ profile, onSaved, onCancel }: Pro
 
   return (
     <form onSubmit={submit} noValidate className="space-y-7">
-      <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
-        <span className="font-semibold text-slate-700">Email đăng nhập:</span> {profile.email}
-      </div>
-
       {success && (
         <div role="status" className="flex items-center gap-2 rounded-xl bg-slate-100 p-4 text-sm text-slate-800 ring-1 ring-slate-200">
           <CheckCircle2 size={17} />
@@ -179,34 +221,41 @@ export default function RecruiterProfileForm({ profile, onSaved, onCancel }: Pro
         </div>
       )}
 
-      <div className="grid gap-5 md:grid-cols-2">
-        <Field label="Họ và tên" icon={UserRound}>
-          <input value={form.full_name} onChange={(event) => change('full_name', event.target.value)} className={inputClass} disabled={saving} autoComplete="name" required />
-        </Field>
-        <Field label="Số điện thoại" icon={Phone}>
-          <input value={form.phone} onChange={(event) => change('phone', event.target.value)} className={inputClass} disabled={saving} autoComplete="tel" placeholder="0901 234 567" />
-        </Field>
+      <div>
+        <h2 className="text-base font-bold text-slate-900">Thông tin cá nhân</h2>
+        <p className="mt-1 text-sm text-slate-500">Thông tin liên hệ của người phụ trách tài khoản tuyển dụng.</p>
+        <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
+          <span className="font-semibold text-slate-700">Email đăng nhập:</span> {profile.email}
+        </div>
+        <div className="mt-5 grid gap-5 md:grid-cols-2">
+          <Field label="Họ và tên" icon={UserRound}>
+            <input value={form.full_name} onChange={(event) => change('full_name', event.target.value)} className={inputClass} disabled={saving} autoComplete="name" maxLength={FIELD_LIMITS.fullName} required />
+          </Field>
+          <Field label="Số điện thoại" icon={Phone}>
+            <input value={form.phone} onChange={(event) => change('phone', event.target.value)} className={inputClass} disabled={saving} autoComplete="tel" maxLength={FIELD_LIMITS.phone} placeholder="0901 234 567" />
+          </Field>
+        </div>
       </div>
 
       <div className="border-t border-slate-100 pt-7">
-        <h2 className="text-base font-bold text-slate-900">Thông tin công ty</h2>
-        <p className="mt-1 text-sm text-slate-500">Thông tin này sẽ xuất hiện trong hồ sơ nhà tuyển dụng.</p>
+        <h2 className="text-base font-bold text-slate-900">Hồ sơ công ty</h2>
+        <p className="mt-1 text-sm leading-6 text-slate-500">Thông tin trong phần này sẽ hiển thị công khai với ứng viên trên trang công ty.</p>
 
         <div className="mt-5 grid gap-5 md:grid-cols-2">
           <Field label="Tên công ty" icon={Building2}>
-            <input value={form.company_name} onChange={(event) => change('company_name', event.target.value)} className={inputClass} disabled={saving} placeholder="Tên doanh nghiệp" />
+            <input value={form.company_name} onChange={(event) => change('company_name', event.target.value)} className={inputClass} disabled={saving} maxLength={FIELD_LIMITS.companyName} placeholder="Tên doanh nghiệp" />
           </Field>
           <Field label="Website" icon={Globe2}>
-            <input type="url" value={form.company_website} onChange={(event) => change('company_website', event.target.value)} className={inputClass} disabled={saving} placeholder="https://example.com" />
+            <input type="url" value={form.company_website} onChange={(event) => change('company_website', event.target.value)} className={inputClass} disabled={saving} maxLength={FIELD_LIMITS.website} placeholder="https://example.com" />
           </Field>
           <Field label="Địa chỉ công ty" icon={MapPin}>
-            <input value={form.company_address} onChange={(event) => change('company_address', event.target.value)} className={inputClass} disabled={saving} autoComplete="street-address" placeholder="Tỉnh/Thành phố, Quốc gia" />
+            <input value={form.company_address} onChange={(event) => change('company_address', event.target.value)} className={inputClass} disabled={saving} autoComplete="street-address" maxLength={FIELD_LIMITS.address} placeholder="Tỉnh/Thành phố, Quốc gia" />
           </Field>
           <Field label="Ngành nghề" icon={Building2}>
-            <input value={form.industry} onChange={(event) => change('industry', event.target.value)} className={inputClass} disabled={saving} placeholder="Công nghệ, Tài chính..." />
+            <input value={form.industry} onChange={(event) => change('industry', event.target.value)} className={inputClass} disabled={saving} maxLength={FIELD_LIMITS.industry} placeholder="Công nghệ, Tài chính..." />
           </Field>
           <Field label="Quy mô công ty" icon={Users} hint="Số lượng nhân sự">
-            <input type="number" min="1" value={form.company_size} onChange={(event) => change('company_size', event.target.value)} className={inputClass} disabled={saving} placeholder="Ví dụ: 50" />
+            <input type="number" min="1" max={FIELD_LIMITS.companySize} value={form.company_size} onChange={(event) => change('company_size', event.target.value)} className={inputClass} disabled={saving} placeholder="Ví dụ: 50" />
           </Field>
 
           <div>
@@ -242,8 +291,9 @@ export default function RecruiterProfileForm({ profile, onSaved, onCancel }: Pro
 
         <div className="mt-5">
           <Field label="Giới thiệu công ty" icon={FileText}>
-            <textarea value={form.company_description} onChange={(event) => change('company_description', event.target.value)} className={`${inputClass} min-h-32 resize-y leading-relaxed`} disabled={saving} placeholder="Mô tả ngắn về doanh nghiệp, văn hóa và lĩnh vực hoạt động." />
+            <textarea value={form.company_description} onChange={(event) => change('company_description', event.target.value)} className={`${inputClass} min-h-32 resize-y leading-relaxed`} disabled={saving} maxLength={FIELD_LIMITS.description} placeholder="Mô tả ngắn về doanh nghiệp, văn hóa và lĩnh vực hoạt động." />
           </Field>
+          <p className="mt-1 text-right text-xs text-slate-400">Tối đa {FIELD_LIMITS.description.toLocaleString('vi-VN')} ký tự</p>
         </div>
       </div>
 
